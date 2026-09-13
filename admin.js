@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupQrModule();
   setupThemeEditor();
   setupImageDropzones();
+  setupQuickStock();
+  setupUsersManagement();
 });
 
 // ==========================================
@@ -47,7 +49,9 @@ function setupLogin() {
     const res = await db.loginApi(user, pass);
     if (res.success) {
       adminState.isLoggedIn = true;
+      adminState.currentUser = res.user || { role: user === 'staff' ? 'staff' : 'owner' };
       sessionStorage.setItem('aura_admin_logged', 'true');
+      sessionStorage.setItem('aura_user_role', adminState.currentUser.role || 'owner');
       loginError.style.display = 'none';
       showDashboard();
     } else {
@@ -58,6 +62,7 @@ function setupLogin() {
   document.getElementById('btnLogout').addEventListener('click', () => {
     db.logoutApi();
     adminState.isLoggedIn = false;
+    sessionStorage.removeItem('aura_user_role');
     document.getElementById('adminDashboardSection').style.display = 'none';
     document.getElementById('loginSection').style.display = 'flex';
   });
@@ -68,6 +73,7 @@ function setupLogin() {
       showToast('Base de datos restablecida a los valores iniciales');
       renderItemsTable();
       renderBannersList();
+      renderQuickStockGrid();
     }
   });
 }
@@ -76,10 +82,15 @@ function showDashboard() {
   document.getElementById('loginSection').style.display = 'none';
   document.getElementById('adminDashboardSection').style.display = 'block';
 
+  const userRole = sessionStorage.getItem('aura_user_role') || 'owner';
+  applyRolePermissions(userRole);
+
   populateCategoryFilter();
   renderItemsTable();
+  renderQuickStockGrid();
   renderBannersList();
   renderQrCode();
+  renderUsersList();
   loadThemeForm();
   if (window.lucide) window.lucide.createIcons();
 }
@@ -674,4 +685,203 @@ function showToast(msg) {
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
+}
+
+// ==========================================
+// 8. CONTROL DE ROLES Y PERMISOS (RBAC)
+// ==========================================
+function applyRolePermissions(role) {
+  const isStaff = role === 'staff';
+
+  // Si es Staff (Empleado), ocultamos la pestaña de usuarios, temas y deshabilitamos edición de precios masivos
+  const navUsers = document.getElementById('navTabUsers');
+  const navStyles = document.getElementById('navTabStyles');
+  const navQuickStock = document.getElementById('navTabQuickStock');
+
+  if (navUsers) navUsers.style.display = isStaff ? 'none' : 'flex';
+  if (navStyles) navStyles.style.display = isStaff ? 'none' : 'flex';
+
+  if (isStaff) {
+    // Activar pestaña Pausa Rápida por defecto para Staff
+    document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+    if (navQuickStock) navQuickStock.classList.add('active');
+    const tabQuickContent = document.getElementById('tabQuickStock');
+    if (tabQuickContent) tabQuickContent.classList.add('active');
+  }
+}
+
+// ==========================================
+// 9. MODO PAUSA RÁPIDA DE STOCK (BARRA / COCINA)
+// ==========================================
+function setupQuickStock() {
+  const searchInput = document.getElementById('quickStockSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      renderQuickStockGrid(e.target.value.toLowerCase().trim());
+    });
+  }
+}
+
+function renderQuickStockGrid(query = '') {
+  const grid = document.getElementById('quickStockGrid');
+  if (!grid) return;
+
+  let items = db.getItemsByProfile(adminState.currentProfileId);
+  if (query) {
+    items = items.filter(i => i.name.toLowerCase().includes(query) || (i.shortDescription || '').toLowerCase().includes(query));
+  }
+
+  grid.innerHTML = '';
+  if (items.length === 0) {
+    grid.innerHTML = `<div style="grid-column: 1/-1; color: #9ca3af; text-align: center; padding: 24px;">No hay platos coincidentes.</div>`;
+    return;
+  }
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.style.cssText = `
+      background: #111827;
+      border: 1px solid ${item.isAvailable ? '#1f2937' : '#991b1b'};
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.2s ease;
+    `;
+
+    const imgUrl = item.media?.heroImage || item.heroImage_url || 'assets/images/fresh_salmon.png';
+
+    card.innerHTML = `
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <img src="${imgUrl}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
+        <div>
+          <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">${item.name}</div>
+          <div style="font-size: 0.8rem; color: #38bdf8; font-weight: 700;">$ ${item.price}</div>
+        </div>
+      </div>
+
+      <button class="btn-toggle-stock ${item.isAvailable ? 'available' : 'out-of-stock'}" data-id="${item.id}" style="width: 100%; justify-content: center; padding: 10px; font-size: 0.9rem;">
+        ${item.isAvailable ? '✓ EN STOCK (Tocar para Pausar)' : '🔴 PAUSADO / AGOTADO (Tocar para Activar)'}
+      </button>
+    `;
+
+    card.querySelector('.btn-toggle-stock').addEventListener('click', () => {
+      const newStatus = db.toggleAvailability(item.id);
+      showToast(newStatus ? `Plato "${item.name}" activado` : `Plato "${item.name}" pausado por falta de stock`);
+      renderQuickStockGrid(query);
+      renderItemsTable();
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+// ==========================================
+// 10. GESTIÓN DE PERSONAL Y EMPLEADOS
+// ==========================================
+const STAFF_STORAGE_KEY = 'aura_staff_users_v1';
+
+function getStaffUsers() {
+  try {
+    const data = localStorage.getItem(STAFF_STORAGE_KEY);
+    if (data) return JSON.parse(data);
+  } catch (e) {
+    console.error('Error leyendo usuarios de staff:', e);
+  }
+  return [
+    { id: 'u-staff-1', name: 'Lucas Mozo Barra', email: 'barra@gourmetbistro.com', role: 'staff', createdAt: new Date().toISOString() },
+    { id: 'u-staff-2', name: 'Sofia Encargada', email: 'encargada@gourmetbistro.com', role: 'manager', createdAt: new Date().toISOString() }
+  ];
+}
+
+function saveStaffUsers(users) {
+  try {
+    localStorage.setItem(STAFF_STORAGE_KEY, JSON.stringify(users));
+  } catch (e) {
+    console.error('Error guardando usuarios de staff:', e);
+  }
+}
+
+function setupUsersManagement() {
+  const form = document.getElementById('addUserForm');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('newUserName').value.trim();
+    const email = document.getElementById('newUserEmail').value.trim();
+    const role = document.getElementById('newUserRole').value;
+
+    if (!name || !email) return;
+
+    const users = getStaffUsers();
+    users.unshift({
+      id: `user-${Date.now()}`,
+      name,
+      email,
+      role,
+      createdAt: new Date().toISOString()
+    });
+
+    saveStaffUsers(users);
+    showToast(`Empleado "${name}" registrado correctamente`);
+    form.reset();
+    renderUsersList();
+  });
+}
+
+function renderUsersList() {
+  const container = document.getElementById('usersListContainer');
+  if (!container) return;
+
+  const users = getStaffUsers();
+  container.innerHTML = '';
+
+  if (users.length === 0) {
+    container.innerHTML = `<div style="color: #9ca3af; font-size: 0.88rem;">No hay personal adicional registrado.</div>`;
+    return;
+  }
+
+  users.forEach(user => {
+    const div = document.createElement('div');
+    div.style.cssText = `
+      background: #1f2937;
+      border: 1px solid #374151;
+      padding: 12px 16px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    `;
+
+    const roleBadge = user.role === 'manager' 
+      ? '<span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight:700;">🛠️ MANAGER</span>'
+      : '<span style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight:700;">🔒 STAFF BARRA</span>';
+
+    div.innerHTML = `
+      <div>
+        <div style="font-weight: 700; font-size: 0.9rem; color: #fff;">${user.name} ${roleBadge}</div>
+        <div style="font-size: 0.8rem; color: #9ca3af;">${user.email}</div>
+      </div>
+      <button class="btn-delete-user btn-admin-danger" data-id="${user.id}" style="padding: 4px 8px; font-size: 0.75rem;">
+        <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
+      </button>
+    `;
+
+    div.querySelector('.btn-delete-user').addEventListener('click', () => {
+      if (confirm(`¿Eliminar acceso a ${user.name}?`)) {
+        const filtered = getStaffUsers().filter(u => u.id !== user.id);
+        saveStaffUsers(filtered);
+        showToast('Empleado eliminado');
+        renderUsersList();
+      }
+    });
+
+    container.appendChild(div);
+  });
+
+  if (window.lucide) window.lucide.createIcons();
 }
