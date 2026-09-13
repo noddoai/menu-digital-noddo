@@ -1,0 +1,677 @@
+/**
+ * AURA & MAISON - LÓGICA DEL PANEL DE ADMINISTRACIÓN (admin.js)
+ * Soporta Edición Rápida de Precios Inline, Aumento Masivo de Precios (%), Filtros Avanzados para Cartas Grandes, Popup Centrado y Códigos QR.
+ */
+
+import { BUSINESS_PROFILES } from './menuData.js';
+import { db } from './db.js';
+
+const adminState = {
+  isLoggedIn: false,
+  currentProfileId: 'restaurant',
+  searchQuery: '',
+  categoryFilter: 'all',
+  stockFilter: 'all',
+  editingDishId: null
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupLogin();
+  setupNavigation();
+  setupDishEditor();
+  setupBulkPriceHandler();
+  setupIngredientRowsHandler();
+  setupPromoManager();
+  setupQrModule();
+  setupThemeEditor();
+  setupImageDropzones();
+});
+
+// ==========================================
+// 1. AUTENTICACIÓN
+// ==========================================
+function setupLogin() {
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+
+  if (sessionStorage.getItem('aura_admin_logged') === 'true') {
+    adminState.isLoggedIn = true;
+    showDashboard();
+  }
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = document.getElementById('loginUser').value.trim();
+    const pass = document.getElementById('loginPass').value.trim();
+
+    const res = await db.loginApi(user, pass);
+    if (res.success) {
+      adminState.isLoggedIn = true;
+      sessionStorage.setItem('aura_admin_logged', 'true');
+      loginError.style.display = 'none';
+      showDashboard();
+    } else {
+      loginError.style.display = 'block';
+    }
+  });
+
+  document.getElementById('btnLogout').addEventListener('click', () => {
+    db.logoutApi();
+    adminState.isLoggedIn = false;
+    document.getElementById('adminDashboardSection').style.display = 'none';
+    document.getElementById('loginSection').style.display = 'flex';
+  });
+
+  document.getElementById('btnResetDefaults').addEventListener('click', () => {
+    if (confirm('¿Restablecer los platos y promociones por defecto?')) {
+      db.resetToDefaults();
+      showToast('Base de datos restablecida a los valores iniciales');
+      renderItemsTable();
+      renderBannersList();
+    }
+  });
+}
+
+function showDashboard() {
+  document.getElementById('loginSection').style.display = 'none';
+  document.getElementById('adminDashboardSection').style.display = 'block';
+
+  populateCategoryFilter();
+  renderItemsTable();
+  renderBannersList();
+  renderQrCode();
+  loadThemeForm();
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// ==========================================
+// 2. NAVEGACIÓN, TABS Y FILTROS AVANZADOS
+// ==========================================
+function populateCategoryFilter() {
+  const select = document.getElementById('adminCategoryFilter');
+  if (!select) return;
+
+  const profile = adminState.currentProfileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
+  select.innerHTML = '<option value="all">Todas las Categorías</option>';
+  profile.categories.filter(c => c.id !== 'all').forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat.id;
+    opt.textContent = cat.name;
+    select.appendChild(opt);
+  });
+}
+
+function setupNavigation() {
+  const profileSelect = document.getElementById('adminProfileSelect');
+  profileSelect.addEventListener('change', (e) => {
+    adminState.currentProfileId = e.target.value;
+    document.documentElement.dataset.theme = adminState.currentProfileId;
+    populateCategoryFilter();
+    renderItemsTable();
+    renderBannersList();
+    renderQrCode();
+    loadThemeForm();
+  });
+
+  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+
+      btn.classList.add('active');
+      const tabId = btn.dataset.tab;
+      const targetContent = document.getElementById(tabId);
+      if (targetContent) targetContent.classList.add('active');
+
+      if (tabId === 'tabQrCode') renderQrCode();
+      if (tabId === 'tabPromos') renderBannersList();
+      if (window.lucide) window.lucide.createIcons();
+    });
+  });
+
+  document.getElementById('adminSearchInput')?.addEventListener('input', (e) => {
+    adminState.searchQuery = e.target.value.toLowerCase().trim();
+    renderItemsTable();
+  });
+
+  document.getElementById('adminCategoryFilter')?.addEventListener('change', (e) => {
+    adminState.categoryFilter = e.target.value;
+    renderItemsTable();
+  });
+
+  document.getElementById('adminStockFilter')?.addEventListener('change', (e) => {
+    adminState.stockFilter = e.target.value;
+    renderItemsTable();
+  });
+}
+
+// ==========================================
+// 3. TABLA CON EDICIÓN RÁPIDA DE PRECIO INLINE
+// ==========================================
+function renderItemsTable() {
+  const tbody = document.getElementById('adminItemsTableBody');
+  if (!tbody) return;
+
+  let items = db.getItemsByProfile(adminState.currentProfileId);
+
+  // Filtrado
+  items = items.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(adminState.searchQuery) || (item.shortDescription || '').toLowerCase().includes(adminState.searchQuery);
+    const matchesCategory = adminState.categoryFilter === 'all' || item.category === adminState.categoryFilter;
+    const matchesStock = adminState.stockFilter === 'all' || (adminState.stockFilter === 'available' ? item.isAvailable : !item.isAvailable);
+    return matchesSearch && matchesCategory && matchesStock;
+  });
+
+  tbody.innerHTML = '';
+
+  if (items.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 24px; color: #9ca3af;">No se encontraron platos con los filtros seleccionados.</td></tr>`;
+    return;
+  }
+
+  items.forEach(item => {
+    const tr = document.createElement('tr');
+    const imgUrl = item.media?.heroImage || item.heroImage_url || 'assets/images/fresh_salmon.png';
+
+    tr.innerHTML = `
+      <td>
+        <img src="${imgUrl}" alt="${item.name}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px;">
+      </td>
+      <td>
+        <div style="font-weight: 700;">${item.name}</div>
+        <div style="font-size: 0.75rem; color: #9ca3af;">Cat: ${item.category} | ${item.layersOrIngredients?.length || 0} comp.</div>
+      </td>
+      <td>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-weight:700; color:#38bdf8;">$</span>
+          <input type="number" class="inline-price-input" data-id="${item.id}" value="${item.price}" step="100">
+        </div>
+      </td>
+      <td>
+        <button class="btn-toggle-stock ${item.isAvailable ? 'available' : 'out-of-stock'}" data-id="${item.id}">
+          ${item.isAvailable ? '✓ En Stock' : '✗ Agotado'}
+        </button>
+      </td>
+      <td>
+        <button class="btn-toggle-featured" data-id="${item.id}" style="background: transparent; border: none; cursor: pointer; font-size: 1.1rem;">
+          ${item.isFeatured ? '⭐' : '☆'}
+        </button>
+      </td>
+      <td>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn-edit-item btn-admin-secondary" data-id="${item.id}" style="padding: 5px 10px; font-size: 0.78rem;">
+            <i data-lucide="edit-3" style="width:13px;height:13px;"></i> Editar
+          </button>
+          <button class="btn-delete-item btn-admin-danger" data-id="${item.id}" style="padding: 5px 10px; font-size: 0.78rem;">
+            <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
+          </button>
+        </div>
+      </td>
+    `;
+
+    // Edición directa de precio al modificar el input inline
+    const priceInput = tr.querySelector('.inline-price-input');
+    const updateInlinePrice = () => {
+      const newPrice = parseFloat(priceInput.value);
+      if (!isNaN(newPrice) && newPrice >= 0 && newPrice !== item.price) {
+        item.price = newPrice;
+        item.formattedPrice = `$ ${newPrice.toLocaleString('es-AR')}`;
+        db.saveItem(item);
+        showToast(`Precio de "${item.name}" actualizado a $${newPrice}`);
+      }
+    };
+
+    priceInput.addEventListener('change', updateInlinePrice);
+    priceInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        priceInput.blur();
+      }
+    });
+
+    tr.querySelector('.btn-toggle-stock').addEventListener('click', () => {
+      const isAvailable = db.toggleAvailability(item.id);
+      showToast(isAvailable ? 'Plato En Stock' : 'Plato Agotado');
+      renderItemsTable();
+    });
+
+    tr.querySelector('.btn-toggle-featured').addEventListener('click', () => {
+      const isFeatured = db.toggleFeatured(item.id);
+      showToast(isFeatured ? 'Añadido a Destacados' : 'Quitado de Destacados');
+      renderItemsTable();
+    });
+
+    tr.querySelector('.btn-edit-item').addEventListener('click', () => {
+      openDishModal(item);
+    });
+
+    tr.querySelector('.btn-delete-item').addEventListener('click', () => {
+      if (confirm(`¿Eliminar el plato "${item.name}"?`)) {
+        db.deleteItem(item.id);
+        showToast('Plato eliminado');
+        renderItemsTable();
+      }
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// ==========================================
+// 4. AUMENTO MASIVO DE PRECIOS (%)
+// ==========================================
+function setupBulkPriceHandler() {
+  document.getElementById('btnApplyBulkPrice')?.addEventListener('click', () => {
+    const percentInput = document.getElementById('bulkPercentInput');
+    const percent = parseFloat(percentInput.value);
+
+    if (isNaN(percent) || percent === 0) {
+      alert('Ingrese un porcentaje válido');
+      return;
+    }
+
+    const direction = percent > 0 ? `incrementar un +${percent}%` : `descontar un ${percent}%`;
+    if (confirm(`¿Desea ${direction} a los precios de los platos actuales?`)) {
+      const items = db.getItemsByProfile(adminState.currentProfileId);
+      let count = 0;
+
+      items.forEach(item => {
+        // Filtrar según categoría activa si no es 'all'
+        if (adminState.categoryFilter === 'all' || item.category === adminState.categoryFilter) {
+          const factor = 1 + (percent / 100);
+          item.price = Math.round(item.price * factor);
+          item.formattedPrice = `$ ${item.price.toLocaleString('es-AR')}`;
+          db.saveItem(item);
+          count++;
+        }
+      });
+
+      showToast(`Se actualizaron ${count} platos con un ${percent}%`);
+      renderItemsTable();
+    }
+  });
+}
+
+// ==========================================
+// 5. MODAL POPUP Y GESTOR DE INGREDIENTES
+// ==========================================
+function setupDishEditor() {
+  document.getElementById('btnAddNewDish').addEventListener('click', () => {
+    openDishModal(null);
+  });
+
+  document.getElementById('btnCloseAdminModal').addEventListener('click', closeDishModal);
+  document.getElementById('btnCancelEdit').addEventListener('click', closeDishModal);
+  document.getElementById('adminModalBackdrop').addEventListener('click', closeDishModal);
+
+  document.getElementById('dishEditForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    saveDishData();
+  });
+}
+
+function openDishModal(item) {
+  const modal = document.getElementById('adminDishModal');
+  const backdrop = document.getElementById('adminModalBackdrop');
+  const categorySelect = document.getElementById('editDishCategory');
+
+  const profile = adminState.currentProfileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
+  categorySelect.innerHTML = '';
+  profile.categories.filter(c => c.id !== 'all').forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat.id;
+    opt.textContent = cat.name;
+    categorySelect.appendChild(opt);
+  });
+
+  const ingredientsContainer = document.getElementById('ingredientsRowsContainer');
+  ingredientsContainer.innerHTML = '';
+
+  if (item) {
+    adminState.editingDishId = item.id;
+    document.getElementById('adminModalTitle').textContent = 'Editar Plato';
+    document.getElementById('editDishId').value = item.id;
+    document.getElementById('editDishName').value = item.name;
+    document.getElementById('editDishCategory').value = item.category;
+    document.getElementById('editDishPrice').value = item.price;
+    document.getElementById('editIsFeatured').checked = !!item.isFeatured;
+    document.getElementById('editIsAvailable').checked = item.isAvailable !== false;
+    document.getElementById('editShortDesc').value = item.shortDescription || '';
+    document.getElementById('editFullStory').value = item.fullStory || '';
+    document.getElementById('editHeroImage').value = item.media?.heroImage || item.heroImage_url || '';
+
+    const preview = document.getElementById('dishImagePreview');
+    if (preview && (item.media?.heroImage || item.heroImage_url)) {
+      preview.src = item.media?.heroImage || item.heroImage_url;
+      preview.style.display = 'block';
+    }
+
+    const flags = item.dietaryFlags || {};
+    document.getElementById('dietGlutenFree').checked = !!flags.isGlutenFree;
+    document.getElementById('dietVegan').checked = !!flags.isVegan;
+    document.getElementById('dietVegetarian').checked = !!flags.isVegetarian;
+    document.getElementById('dietDairy').checked = !!flags.containsDairy;
+    document.getElementById('dietNuts').checked = !!flags.containsNuts;
+
+    if (item.layersOrIngredients && Array.isArray(item.layersOrIngredients)) {
+      item.layersOrIngredients.forEach(ing => addIngredientRow(ing));
+    }
+  } else {
+    adminState.editingDishId = null;
+    document.getElementById('adminModalTitle').textContent = 'Crear Nuevo Plato';
+    document.getElementById('dishEditForm').reset();
+    document.getElementById('editDishId').value = '';
+    const preview = document.getElementById('dishImagePreview');
+    if (preview) preview.style.display = 'none';
+  }
+
+  modal.classList.add('active');
+  backdrop.classList.add('active');
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function closeDishModal() {
+  document.getElementById('adminDishModal').classList.remove('active');
+  document.getElementById('adminModalBackdrop').classList.remove('active');
+}
+
+function setupIngredientRowsHandler() {
+  document.getElementById('btnAddIngredientRow')?.addEventListener('click', () => {
+    addIngredientRow();
+  });
+}
+
+function addIngredientRow(data = {}) {
+  const container = document.getElementById('ingredientsRowsContainer');
+  if (!container) return;
+
+  const row = document.createElement('div');
+  row.className = 'layer-item-row';
+  row.innerHTML = `
+    <input type="text" class="ing-name" placeholder="Componente (ej: Salmón)" value="${data.name || ''}" required>
+    <input type="text" class="ing-desc" placeholder="Descripción breve" value="${data.description || ''}">
+    <input type="text" class="ing-allergen" placeholder="Alérgenos" value="${data.allergenWarning || ''}">
+    <button type="button" class="btn-remove-layer btn-admin-danger" style="padding:4px; border-radius:6px;"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+  `;
+
+  row.querySelector('.btn-remove-layer').addEventListener('click', () => row.remove());
+  container.appendChild(row);
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function collectIngredientRows() {
+  const container = document.getElementById('ingredientsRowsContainer');
+  if (!container) return [];
+
+  const rows = container.querySelectorAll('.layer-item-row');
+  const ingredients = [];
+
+  rows.forEach(row => {
+    const name = row.querySelector('.ing-name')?.value.trim();
+    const description = row.querySelector('.ing-desc')?.value.trim();
+    const allergenWarning = row.querySelector('.ing-allergen')?.value.trim() || null;
+
+    if (name) {
+      ingredients.push({
+        name,
+        description,
+        icon: name.toLowerCase().includes('pescado') || name.toLowerCase().includes('salmón') ? 'fish' : 'leaf',
+        allergenWarning
+      });
+    }
+  });
+
+  return ingredients;
+}
+
+function saveDishData() {
+  const name = document.getElementById('editDishName').value.trim();
+  const price = parseFloat(document.getElementById('editDishPrice').value) || 0;
+  const category = document.getElementById('editDishCategory').value;
+  const shortDescription = document.getElementById('editShortDesc').value.trim();
+  const fullStory = document.getElementById('editFullStory').value.trim();
+  const heroImage = document.getElementById('editHeroImage').value.trim() || 'assets/images/fresh_salmon.png';
+  const layersOrIngredients = collectIngredientRows();
+
+  const itemData = {
+    id: adminState.editingDishId || undefined,
+    businessProfile: adminState.currentProfileId,
+    name,
+    price,
+    formattedPrice: `$ ${price.toLocaleString('es-AR')}`,
+    category,
+    shortDescription,
+    fullStory,
+    isAvailable: document.getElementById('editIsAvailable').checked,
+    isFeatured: document.getElementById('editIsFeatured').checked,
+    isChefSpecial: true,
+    prepTime: '20 min',
+    rating: 4.8,
+    media: { heroImage },
+    layersOrIngredients,
+    dietaryFlags: {
+      isGlutenFree: document.getElementById('dietGlutenFree').checked,
+      isVegan: document.getElementById('dietVegan').checked,
+      isVegetarian: document.getElementById('dietVegetarian').checked,
+      containsDairy: document.getElementById('dietDairy').checked,
+      containsNuts: document.getElementById('dietNuts').checked
+    }
+  };
+
+  db.saveItem(itemData);
+  closeDishModal();
+  showToast(adminState.editingDishId ? 'Plato actualizado' : 'Nuevo plato creado');
+  renderItemsTable();
+}
+
+// ==========================================
+// 6. UPLOADER DRAG AND DROP
+// ==========================================
+function setupImageDropzones() {
+  setupDropzone('dishDropzone', 'dishFileInput', 'dishImagePreview', 'editHeroImage');
+  setupDropzone('bannerDropzone', 'bannerFileInput', 'bannerImagePreview', 'bannerImage');
+}
+
+function setupDropzone(boxId, fileInputId, previewImgId, hiddenInputId) {
+  const box = document.getElementById(boxId);
+  const fileInput = document.getElementById(fileInputId);
+  const preview = document.getElementById(previewImgId);
+  const hiddenInput = document.getElementById(hiddenInputId);
+
+  if (!box || !fileInput) return;
+
+  box.addEventListener('click', () => fileInput.click());
+
+  box.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    box.classList.add('drag-over');
+  });
+
+  box.addEventListener('dragleave', () => box.classList.remove('drag-over'));
+
+  box.addEventListener('drop', (e) => {
+    e.preventDefault();
+    box.classList.remove('drag-over');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0], preview, hiddenInput);
+    }
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0], preview, hiddenInput);
+    }
+  });
+}
+
+function handleFile(file, previewImg, hiddenInput) {
+  if (!file.type.startsWith('image/')) {
+    alert('Por favor seleccione una imagen válida');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    if (previewImg) {
+      previewImg.src = dataUrl;
+      previewImg.style.display = 'block';
+    }
+    if (hiddenInput) {
+      hiddenInput.value = dataUrl;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ==========================================
+// 7. BANNERS Y CÓDIGO QR
+// ==========================================
+function setupPromoManager() {
+  const promoForm = document.getElementById('promoBannerForm');
+  if (promoForm) {
+    promoForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const bannerData = {
+        id: document.getElementById('editBannerId').value || undefined,
+        enabled: true,
+        title: document.getElementById('bannerTitle').value.trim(),
+        image: document.getElementById('bannerImage').value.trim() || 'assets/images/fresh_salmon.png'
+      };
+
+      db.saveSinglePromoBanner(adminState.currentProfileId, bannerData);
+      promoForm.reset();
+      document.getElementById('editBannerId').value = '';
+      const preview = document.getElementById('bannerImagePreview');
+      if (preview) preview.style.display = 'none';
+
+      showToast('Banner promocional guardado');
+      renderBannersList();
+    });
+  }
+}
+
+function renderBannersList() {
+  const container = document.getElementById('activeBannersList');
+  if (!container) return;
+
+  const banners = db.getPromoBanners(adminState.currentProfileId);
+  container.innerHTML = '';
+
+  if (banners.length === 0) {
+    container.innerHTML = '<p style="font-size:0.85rem; color:#9ca3af;">No hay banners promocionales cargados.</p>';
+    return;
+  }
+
+  banners.forEach(b => {
+    const card = document.createElement('div');
+    card.style.background = '#1f2937';
+    card.style.border = '1px solid #374151';
+    card.style.padding = '12px';
+    card.style.borderRadius = '10px';
+    card.style.display = 'flex';
+    card.style.alignItems = 'center';
+    card.style.gap = '12px';
+
+    card.innerHTML = `
+      <img src="${b.image}" style="width:80px; height:45px; object-fit:cover; border-radius:6px;">
+      <div style="flex-grow:1;">
+        <div style="font-weight:700; font-size:0.88rem;">${b.title || 'Banner Promocional'}</div>
+      </div>
+      <button class="btn-delete-banner btn-admin-danger" style="padding:6px 10px; font-size:0.75rem;">
+        <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+      </button>
+    `;
+
+    card.querySelector('.btn-delete-banner').addEventListener('click', () => {
+      db.deletePromoBanner(adminState.currentProfileId, b.id);
+      showToast('Banner eliminado');
+      renderBannersList();
+    });
+
+    container.appendChild(card);
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function setupQrModule() {
+  const btnPng = document.getElementById('btnDownloadQrPng');
+  const btnSvg = document.getElementById('btnDownloadQrSvg');
+
+  if (btnPng) btnPng.addEventListener('click', () => downloadQr('png'));
+  if (btnSvg) btnSvg.addEventListener('click', () => downloadQr('svg'));
+}
+
+function renderQrCode() {
+  const qrImg = document.getElementById('qrCodeImage');
+  const urlText = document.getElementById('qrTargetUrlText');
+  if (!qrImg) return;
+
+  const targetPage = adminState.currentProfileId === 'restaurant' ? 'restaurant.html' : 'cafe.html';
+  const fullUrl = `${window.location.origin}/${targetPage}`;
+
+  if (urlText) urlText.textContent = fullUrl;
+
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1024x1024&data=${encodeURIComponent(fullUrl)}&format=png&color=20-117-103`;
+  qrImg.src = qrApiUrl;
+}
+
+function downloadQr(format) {
+  const targetPage = adminState.currentProfileId === 'restaurant' ? 'restaurant.html' : 'cafe.html';
+  const fullUrl = `${window.location.origin}/${targetPage}`;
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1024x1024&data=${encodeURIComponent(fullUrl)}&format=${format}&color=20-117-103`;
+
+  const a = document.createElement('a');
+  a.href = qrApiUrl;
+  a.download = `QR-Menu-${adminState.currentProfileId}.${format}`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast(`Descargando Código QR (${format.toUpperCase()})`);
+}
+
+function setupThemeEditor() {
+  const form = document.getElementById('themeConfigForm');
+  if (!form) return;
+
+  const colorInput = document.getElementById('inputAccentColor');
+  const textInput = document.getElementById('inputAccentColorText');
+
+  colorInput.addEventListener('input', (e) => textInput.value = e.target.value);
+  textInput.addEventListener('input', (e) => colorInput.value = e.target.value);
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const config = {
+      name: document.getElementById('inputBrandName').value.trim(),
+      tagline: document.getElementById('inputBrandTagline').value.trim(),
+      accentColor: colorInput.value
+    };
+    db.saveThemeConfig(adminState.currentProfileId, config);
+    showToast('Configuración de marca guardada');
+  });
+}
+
+function loadThemeForm() {
+  const config = db.getThemeConfig(adminState.currentProfileId);
+  if (document.getElementById('inputBrandName')) {
+    document.getElementById('inputBrandName').value = config.name || '';
+    document.getElementById('inputBrandTagline').value = config.tagline || '';
+    document.getElementById('inputAccentColor').value = config.accentColor || '#207567';
+    document.getElementById('inputAccentColorText').value = config.accentColor || '#207567';
+  }
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toastNotification');
+  const text = document.getElementById('toastMessage');
+  if (toast && text) {
+    text.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+}

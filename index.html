@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="restaurant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AURA & MAISON | Solución de Menú Digital Premium</title>
+  <meta name="description" content="Portal de menús digitales interactivos mobile-first y panel de administración para restaurantes y cafeterías de alta gama.">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="portal-body">
+
+  <main class="portal-wrapper">
+    <header class="portal-header">
+      <div class="brand-logo-icon" style="width: 56px; height: 56px; font-size: 1.8rem; margin: 0 auto 16px auto;">A</div>
+      <h1>AURA & MAISON</h1>
+      <p>Solución Integral de Menú Digital Interactivo & Control Center</p>
+    </header>
+
+    <div class="portal-cards-grid">
+      
+      <!-- CARD 1: RESTAURANTE -->
+      <a href="restaurant.html" class="portal-card restaurant-card">
+        <div class="portal-card-badge">MICHELIN SELECTION</div>
+        <div class="portal-card-icon"><i data-lucide="wine"></i></div>
+        <h2>AURA Prime Dining</h2>
+        <p>Menú digital en Dark Mode para restaurantes de autor, cortes premium, pastas artesanales y coctelería botánica.</p>
+
+        <span class="portal-card-btn">
+          Ver Menú Restaurante <i data-lucide="arrow-right"></i>
+        </span>
+      </a>
+
+      <!-- CARD 2: CAFETERÍA -->
+      <a href="cafe.html" class="portal-card cafe-card">
+        <div class="portal-card-badge">BEST SPECIALTY CAFE</div>
+        <div class="portal-card-icon"><i data-lucide="coffee"></i></div>
+        <h2>Maison de la Brioche</h2>
+        <p>Menú digital en Warm Bright para cafeterías de especialidad, viennoiserie, brunchs y pastelería francesa.</p>
+
+        <span class="portal-card-btn">
+          Ver Menú Cafetería <i data-lucide="arrow-right"></i>
+        </span>
+      </a>
+
+      <!-- CARD 3: PANEL ADMIN -->
+      <a href="admin.html" class="portal-card admin-portal-card">
+        <div class="portal-card-badge" style="background: rgba(255,255,255,0.2);">ACCESO RESTRINGIDO</div>
+        <div class="portal-card-icon"><i data-lucide="settings"></i></div>
+        <h2>Panel de Administración</h2>
+        <p>Gestione en tiempo real la disponibilidad de stock (isAvailable), cambie precios ($), edite platos y personalice colores.</p>
+
+        <span class="portal-card-btn">
+          Ingresar al Panel Admin <i data-lucide="lock"></i>
+        </span>
+      </a>
+
+    </div>
+
+    <footer style="margin-top: 40px; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+      &copy; 2026 AURA & MAISON Digital Menu Platform &bull; Mobile-First WebAR 60 FPS Engine
+    </footer>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) window.lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

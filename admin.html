@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="restaurant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Control SaaS | Menú Digital</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="admin-body">
+
+  <!-- ==========================================
+       PANTALLA DE LOGIN DE ADMINISTRADOR
+       ========================================== -->
+  <section id="loginSection" class="admin-login-wrapper">
+    <div class="admin-login-card">
+      <div class="admin-login-header" style="text-align: center; margin-bottom: 24px;">
+        <div class="brand-logo-icon" style="margin: 0 auto 16px auto;">A</div>
+        <h2 style="font-family: var(--font-heading); font-size: 1.8rem;">Panel de Control</h2>
+        <p style="color: #94a3b8; font-size: 0.88rem;">Gestión autónoma de menú, precios y promociones</p>
+      </div>
+
+      <form id="loginForm" class="admin-form" style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="form-group">
+          <label for="loginUser">Usuario de Administración</label>
+          <input type="text" id="loginUser" value="admin" required placeholder="ej: admin">
+        </div>
+        <div class="form-group">
+          <label for="loginPass">Contraseña</label>
+          <input type="password" id="loginPass" value="admin123" required placeholder="ej: admin123">
+        </div>
+        <div id="loginError" class="login-error-message" style="display:none; color: #ef4444; font-size: 0.85rem; text-align: center;">Usuario o contraseña incorrectos</div>
+
+        <button type="submit" class="btn-admin-primary" style="width: 100%; justify-content: center; padding: 12px; margin-top: 8px;">
+          <i data-lucide="lock"></i> Ingresar al Panel de Control
+        </button>
+      </form>
+
+      <div style="margin-top: 24px; text-align: center;">
+        <a href="index.html" style="color: #94a3b8; font-size: 0.85rem; text-decoration: underline;">Volver al Portal Principal</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       DASHBOARD PRINCIPAL DE ADMINISTRACIÓN
+       ========================================== -->
+  <section id="adminDashboardSection" class="admin-dashboard" style="display: none;">
+    
+    <!-- Admin Header Bar -->
+    <header class="admin-header-bar">
+      <div class="admin-brand-info" style="display: flex; align-items: center; gap: 12px;">
+        <div class="brand-logo-icon">A</div>
+        <div>
+          <h1 id="adminBrandTitle" style="font-size: 1.25rem; font-weight: 700;">Control Center</h1>
+          <span style="font-size: 0.7rem; color: #38bdf8; font-weight: 700;">PLATAFORMA SAAS B2B</span>
+        </div>
+      </div>
+
+      <div class="admin-header-controls" style="display: flex; align-items: center; gap: 12px;">
+        <select id="adminProfileSelect" style="padding: 8px 14px; border-radius: 8px; background: #1f2937; border: 1px solid #374151; color: #ffffff; cursor: pointer;">
+          <option value="restaurant">🍷 Gourmet Bistro & Grill</option>
+          <option value="bakery_cafe">☕ Maison Cafe & Bakery</option>
+        </select>
+
+        <button id="btnResetDefaults" class="btn-admin-danger" title="Restablecer datos">
+          <i data-lucide="rotate-ccw"></i> Reset Datos
+        </button>
+
+        <button id="btnLogout" class="btn-admin-secondary">
+          <i data-lucide="log-out"></i> Salir
+        </button>
+      </div>
+    </header>
+
+    <!-- Admin Tab Navigation -->
+    <div class="admin-tabs-wrapper">
+      <button class="admin-tab-btn active" data-tab="tabItems">
+        <i data-lucide="utensils-crossed"></i> Platos & Precios
+      </button>
+      <button class="admin-tab-btn" data-tab="tabPromos">
+        <i data-lucide="sparkles"></i> Banners Promocionales
+      </button>
+      <button class="admin-tab-btn" data-tab="tabQrCode">
+        <i data-lucide="qr-code"></i> Código QR Mesas
+      </button>
+      <button class="admin-tab-btn" data-tab="tabStyles">
+        <i data-lucide="palette"></i> Marca & Colores
+      </button>
+      <button class="admin-tab-btn" data-tab="tabPreviews">
+        <i data-lucide="external-link"></i> Ver Menú
+      </button>
+    </div>
+
+    <!-- TAB 1: GESTIÓN DE PLATOS & PRECIOS (CON FILTROS Y CAMBIO MASIVO DE PRECIOS) -->
+    <div id="tabItems" class="admin-tab-content active">
+      
+      <!-- TOOLBAR DE BÚSQUEDA Y FILTROS -->
+      <div class="admin-toolbar-card">
+        <div style="display: flex; gap: 12px; align-items: center; flex-grow: 1; flex-wrap: wrap;">
+          <input type="text" id="adminSearchInput" placeholder="Buscar por nombre..." style="width: 220px;">
+          
+          <select id="adminCategoryFilter" style="width: 180px;">
+            <option value="all">Todas las Categorías</option>
+          </select>
+
+          <select id="adminStockFilter" style="width: 150px;">
+            <option value="all">Todos los Stocks</option>
+            <option value="available">✓ Solo En Stock</option>
+            <option value="unavailable">✗ Solo Agotados</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <!-- AUMENTO MASIVO DE PRECIOS -->
+          <div class="bulk-price-box">
+            <span style="font-size: 0.8rem; font-weight: 700; color: #9ca3af;">Aumento Masivo:</span>
+            <input type="number" id="bulkPercentInput" value="10" step="1" title="Porcentaje de ajuste">%
+            <button type="button" id="btnApplyBulkPrice" class="btn-admin-secondary" style="padding: 5px 10px; font-size: 0.78rem;">
+              Aplicar %
+            </button>
+          </div>
+
+          <button id="btnAddNewDish" class="btn-admin-primary">
+            <i data-lucide="plus"></i> Crear Nuevo Plato
+          </button>
+        </div>
+      </div>
+
+      <!-- TABLA DE PLATOS Y PRECIOS INLINE -->
+      <div class="admin-table-card">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Imagen</th>
+              <th>Nombre & Categoría</th>
+              <th>Precio ($) [Edición Rápida]</th>
+              <th>Disponibilidad</th>
+              <th>Destacado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="adminItemsTableBody">
+            <!-- Filas inyectadas dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: PROMOCIONES & BANNERS -->
+    <div id="tabPromos" class="admin-tab-content">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        
+        <div style="background: #111827; padding: 24px; border-radius: 16px; border: 1px solid #1f2937;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.4rem; margin-bottom: 8px;">Subir Banner Promocional</h3>
+          <p style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 20px;">Cargue las imágenes publicitarias de sus promociones (bancarias, happy hours, menú diario) para ser mostradas en el carrusel superior.</p>
+
+          <form id="promoBannerForm" style="display: flex; flex-direction: column; gap: 14px;">
+            <input type="hidden" id="editBannerId">
+
+            <div class="form-group">
+              <label>Nombre / Título del Banner</label>
+              <input type="text" id="bannerTitle" placeholder="ej: Promo Galicia 20% OFF" required>
+            </div>
+
+            <div class="form-group">
+              <label>Imagen del Banner (Arrastre o Seleccione)</label>
+              <div class="image-uploader-box" id="bannerDropzone">
+                <i data-lucide="upload-cloud"></i>
+                <p style="font-size:0.85rem; color:#9ca3af;">Arrastre la imagen aquí o <span style="color:#38bdf8; font-weight:700;">examinar archivos</span></p>
+                <input type="file" id="bannerFileInput" accept="image/*" style="display:none;">
+                <img id="bannerImagePreview" class="image-preview-thumb" style="display:none;">
+              </div>
+              <input type="hidden" id="bannerImage">
+            </div>
+
+            <button type="submit" class="btn-admin-primary" style="width: 100%; justify-content: center; margin-top: 8px;">
+              <i data-lucide="plus-circle"></i> Guardar Banner Promocional
+            </button>
+          </form>
+        </div>
+
+        <div style="background: #111827; padding: 24px; border-radius: 16px; border: 1px solid #1f2937;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.4rem; margin-bottom: 16px;">Banners Activos</h3>
+          <div id="activeBannersList" style="display: flex; flex-direction: column; gap: 12px;">
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 3: CÓDIGO QR PARA MESAS -->
+    <div id="tabQrCode" class="admin-tab-content">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+        
+        <div style="background: #111827; padding: 28px; border-radius: 16px; border: 1px solid #1f2937; text-align: center;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.6rem;">Código QR para Mesas</h3>
+          <p style="font-size: 0.88rem; color: #9ca3af; margin-top: 4px;">Vínculo directo al menú digital de su comercio</p>
+
+          <div style="background: #ffffff; padding: 16px; border-radius: 16px; display: inline-block; margin: 20px 0;">
+            <img id="qrCodeImage" src="" alt="Código QR del Menú" style="width: 200px; height: 200px; display: block;">
+          </div>
+
+          <p id="qrTargetUrlText" style="font-size: 0.82rem; color: #38bdf8; font-family: monospace; margin-bottom: 20px;">https://miapp.com/menu/gourmet-bistro</p>
+
+          <div style="display: flex; gap: 12px; width: 100%;">
+            <button id="btnDownloadQrPng" class="btn-admin-primary" style="flex:1; justify-content:center;">
+              <i data-lucide="download"></i> Descargar PNG (HD)
+            </button>
+            <button id="btnDownloadQrSvg" class="btn-admin-secondary" style="flex:1; justify-content:center;">
+              <i data-lucide="file-code"></i> Descargar Vector SVG
+            </button>
+          </div>
+        </div>
+
+        <div style="background: #111827; padding: 28px; border-radius: 16px; border: 1px solid #1f2937;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.4rem; margin-bottom: 12px;">Guía de Impresión & Mesas</h3>
+          <ul style="color: #9ca3af; font-size: 0.9rem; line-height: 1.8; padding-left: 20px; margin-bottom: 20px;">
+            <li>Imprima el código en formato de 10x10cm para soportes acrílicos sobre mesa.</li>
+            <li>La resolución generada es de alta definición (1024px) lista para imprenta.</li>
+            <li>Los comensales podrán escanear con la cámara nativa de iOS y Android sin instalar aplicaciones.</li>
+          </ul>
+
+          <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid #38bdf8; padding: 14px; border-radius: 10px; color: #7dd3fc; font-size: 0.85rem;">
+            💡 <strong>Tip Comercial:</strong> Coloque un cartel pequeño indicando: <em>"Escanee aquí para ver nuestra carta digital con fotos y promociones"</em>.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 4: MARCA & COLORES -->
+    <div id="tabStyles" class="admin-tab-content">
+      <div style="background: #111827; padding: 28px; border-radius: 16px; border: 1px solid #1f2937; max-width: 600px;">
+        <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 8px;">Personalización Estética & Marca</h3>
+        <p style="font-size: 0.85rem; color: #9ca3af; margin-bottom: 20px;">Configure el nombre público y color distintivo de su comercio.</p>
+
+        <form id="themeConfigForm" style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="form-group">
+            <label>Nombre del Establecimiento</label>
+            <input type="text" id="inputBrandName" required>
+          </div>
+          <div class="form-group">
+            <label>Slogan / Subtítulo</label>
+            <input type="text" id="inputBrandTagline" required>
+          </div>
+          <div class="form-group">
+            <label>Color Principal de Acento</label>
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <input type="color" id="inputAccentColor" style="width: 50px; height: 42px; border: none; cursor: pointer; background: transparent;">
+              <input type="text" id="inputAccentColorText" style="flex-grow: 1;">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-admin-primary" style="width: 100%; justify-content: center; margin-top: 10px;">
+            <i data-lucide="save"></i> Guardar Cambios de Marca
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB 5: VISTAS PREVIAS -->
+    <div id="tabPreviews" class="admin-tab-content">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <a href="restaurant.html" target="_blank" style="background: #111827; border: 1px solid #1f2937; padding: 24px; border-radius: 16px; text-decoration: none; color: #ffffff; display: block;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.3rem;">🍷 Ver Menú Restaurante AURA</h3>
+          <p style="font-size: 0.85rem; color: #9ca3af; margin-top: 6px;">Abrir experiencia del cliente en vista nocturna.</p>
+        </a>
+
+        <a href="cafe.html" target="_blank" style="background: #111827; border: 1px solid #1f2937; padding: 24px; border-radius: 16px; text-decoration: none; color: #ffffff; display: block;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.3rem;">☕ Ver Menú Cafetería Maison</h3>
+          <p style="font-size: 0.85rem; color: #9ca3af; margin-top: 6px;">Abrir experiencia del cliente en vista cálida.</p>
+        </a>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ==========================================
+       MODAL DE EDICIÓN COMPLETA DE PLATO (POPUP CENTRADO)
+       ========================================== -->
+  <div class="modal-backdrop" id="adminModalBackdrop"></div>
+  <div class="admin-modal-center" id="adminDishModal" role="dialog">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #1f2937; padding-bottom: 12px;">
+      <h2 id="adminModalTitle" style="font-family: var(--font-heading); font-size: 1.4rem;">Editar Plato</h2>
+      <button class="btn-admin-secondary" id="btnCloseAdminModal" style="padding: 6px 12px;"><i data-lucide="x"></i></button>
+    </div>
+
+    <form id="dishEditForm" style="display: flex; flex-direction: column; gap: 14px;">
+      <input type="hidden" id="editDishId">
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label>Nombre del Plato *</label>
+          <input type="text" id="editDishName" required>
+        </div>
+        <div class="form-group">
+          <label>Categoría *</label>
+          <select id="editDishCategory" required>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label>Precio ($) *</label>
+          <input type="number" id="editDishPrice" required step="100">
+        </div>
+        <div class="form-group">
+          <label>⭐ Destacado en Carrusel</label>
+          <label style="display:flex;align-items:center;gap:6px;margin-top:8px;cursor:pointer;font-size:0.8rem;color:#f59e0b;font-weight:700;">
+            <input type="checkbox" id="editIsFeatured"> Destacar
+          </label>
+        </div>
+        <div class="form-group">
+          <label>Stock Activo</label>
+          <label style="display:flex;align-items:center;gap:6px;margin-top:8px;cursor:pointer;font-size:0.8rem;color:#4ade80;">
+            <input type="checkbox" id="editIsAvailable" checked> Disponible
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Descripción Corta *</label>
+        <input type="text" id="editShortDesc" required>
+      </div>
+
+      <div class="form-group">
+        <label>Historia Completa / Notas del Chef</label>
+        <textarea id="editFullStory" rows="2"></textarea>
+      </div>
+
+      <!-- Drag & Drop Uploader para Imagen del Plato -->
+      <div class="form-group">
+        <label>Foto del Plato (Arrastre o Seleccione)</label>
+        <div class="image-uploader-box" id="dishDropzone">
+          <i data-lucide="image"></i>
+          <p style="font-size:0.85rem; color:#9ca3af;">Arrastre la foto aquí o <span style="color:#38bdf8; font-weight:700;">examinar archivos</span></p>
+          <input type="file" id="dishFileInput" accept="image/*" style="display:none;">
+          <img id="dishImagePreview" class="image-preview-thumb" style="display:none;">
+        </div>
+        <input type="hidden" id="editHeroImage">
+      </div>
+
+      <!-- SECCIÓN CONFIGURACIÓN COMPLEJA DE INGREDIENTES / CAPAS -->
+      <div style="background: #1f2937; border: 1px solid #374151; padding: 14px; border-radius: 10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+          <h4 style="font-size: 0.88rem; font-weight: 700; color: #38bdf8;">🍳 Desglose de Componentes & Alérgenos</h4>
+          <button type="button" id="btnAddIngredientRow" class="btn-admin-secondary" style="padding: 4px 10px; font-size: 0.75rem;">
+            <i data-lucide="plus"></i> Agregar Componente
+          </button>
+        </div>
+
+        <div id="ingredientsRowsContainer">
+        </div>
+      </div>
+
+      <!-- Banderas Dietéticas -->
+      <label style="font-weight:700;font-size:0.82rem;color:#9ca3af;">Etiquetas Dietéticas:</label>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+        <label style="font-size:0.8rem;"><input type="checkbox" id="dietGlutenFree"> Sin TACC</label>
+        <label style="font-size:0.8rem;"><input type="checkbox" id="dietVegan"> Vegano</label>
+        <label style="font-size:0.8rem;"><input type="checkbox" id="dietVegetarian"> Vegetariano</label>
+        <label style="font-size:0.8rem;"><input type="checkbox" id="dietDairy"> Contiene Lactosa</label>
+        <label style="font-size:0.8rem;"><input type="checkbox" id="dietNuts"> Contiene Frutos Secos</label>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 10px;">
+        <button type="button" class="btn-admin-secondary" id="btnCancelEdit" style="flex:1; justify-content:center;">Cancelar</button>
+        <button type="submit" class="btn-admin-primary" style="flex:2; justify-content:center;"><i data-lucide="save"></i> Guardar Plato</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-notification" id="toastNotification">
+    <i data-lucide="check-circle" style="color: #38bdf8;"></i>
+    <span id="toastMessage">Acción realizada</span>
+  </div>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
