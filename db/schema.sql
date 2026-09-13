@@ -24,22 +24,34 @@ CREATE TABLE IF NOT EXISTS tenants (
 CREATE INDEX IF NOT EXISTS idx_tenants_slug ON tenants(slug);
 CREATE INDEX IF NOT EXISTS idx_tenants_active ON tenants(is_active) WHERE is_active = TRUE;
 
--- 2. TABLA USERS (Usuarios Administradores del Comercio)
+-- 2. TABLA USERS (Usuarios de la Plataforma)
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(120) NOT NULL,
-    role VARCHAR(30) NOT NULL DEFAULT 'admin' CHECK (role IN ('owner', 'admin', 'staff')),
+    global_role VARCHAR(30) NOT NULL DEFAULT 'client' CHECK (global_role IN ('superadmin', 'client', 'staff')),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     last_login_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 2.1 TABLA USER_TENANTS (Asignación Multilocal & Roles Granulares)
+CREATE TABLE IF NOT EXISTS user_tenants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    role VARCHAR(30) NOT NULL DEFAULT 'staff' CHECK (role IN ('owner', 'manager', 'staff')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_user_tenant UNIQUE (user_id, tenant_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_users_tenant_id ON users(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_user_tenants_user ON user_tenants(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_tenants_tenant ON user_tenants(tenant_id);
 
 -- 3. TABLA MENUS (Cartas Principales: Mediodía, Noche, Cafetería, Coctelería)
 CREATE TABLE IF NOT EXISTS menus (
