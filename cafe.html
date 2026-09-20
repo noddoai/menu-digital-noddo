@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="bakery_cafe" data-profile="bakery_cafe">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Maison Cafe & Bakery | Menú Digital</title>
+  <meta name="description" content="Menú digital en Warm Bright para cafeterías de especialidad, viennoiserie, brunchs y pastelería francesa.">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-top" style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+      <div class="brand-container">
+        <a href="index.html" class="btn-back-portal" title="Volver al Portal" style="color: var(--text-muted); display: flex; align-items: center; text-decoration: none; margin-right: 4px;">
+          <i data-lucide="chevron-left"></i>
+        </a>
+        <div class="brand-logo-icon" id="brandLogoIcon">M</div>
+        <div class="brand-info">
+          <h1 id="brandTitle">Maison Cafe & Bakery</h1>
+          <p id="brandTagline">Café de Especialidad, Brunchs & Pastelería Fresca</p>
+        </div>
+      </div>
+
+      <!-- Control de Modo Vista (Visual / Compacto) -->
+      <div class="view-switchers" style="display: flex; gap: 4px; background: var(--bg-surface-elevated); padding: 4px; border-radius: var(--radius-pill); border: 1px solid var(--border-color);">
+        <button id="btnViewVisual" class="view-switch-btn active" title="Vista Visual" style="padding: 6px 12px; border: none; background: transparent; color: var(--text-main); border-radius: var(--radius-pill); cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 600;">
+          <i data-lucide="layout-grid" style="width:14px;height:14px;"></i> Visual
+        </button>
+        <button id="btnViewCompact" class="view-switch-btn" title="Vista Lista" style="padding: 6px 12px; border: none; background: transparent; color: var(--text-muted); border-radius: var(--radius-pill); cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 0.8rem; font-weight: 600;">
+          <i data-lucide="list" style="width:14px;height:14px;"></i> Lista
+        </button>
+      </div>
+    </div>
+
+    <!-- Búsqueda y Filtros Dietéticos -->
+    <div class="filter-search-container" style="margin-top: 12px;">
+      <div class="search-input-box" style="position: relative; margin-bottom: 10px;">
+        <i data-lucide="search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted);"></i>
+        <input type="text" id="searchInput" placeholder="Buscar producto, especialidad..." style="width: 100%; padding: 10px 14px 10px 38px; border-radius: var(--radius-pill); border: 1px solid var(--border-color); background: var(--bg-surface-elevated); color: var(--text-main); outline: none; font-size: 0.88rem;">
+      </div>
+
+      <div class="dietary-chips-scroll">
+        <button class="chip-filter" data-filter="isGlutenFree"><i data-lucide="wheat-off" style="width:13px;height:13px;"></i> Sin TACC</button>
+        <button class="chip-filter" data-filter="isVegan"><i data-lucide="sprout" style="width:13px;height:13px;"></i> Vegano</button>
+        <button class="chip-filter" data-filter="isVegetarian"><i data-lucide="leaf" style="width:13px;height:13px;"></i> Vegetariano</button>
+        <button class="chip-filter" data-filter="containsDairy" data-invert="true"><i data-lucide="milk-off" style="width:13px;height:13px;"></i> Sin Lactosa</button>
+      </div>
+    </div>
+
+    <!-- Navegación de Categorías -->
+    <div class="category-nav-wrapper">
+      <nav class="category-nav" id="categoryNavList"></nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    <!-- Banner Promocional (Carrusel) -->
+    <div id="promoBannerContainer"></div>
+
+    <!-- Sección Los Más Elegidos (Carrusel Horizontal) -->
+    <section id="featuredSection" style="margin-bottom: 28px;">
+      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; color: var(--text-main);">
+        <i data-lucide="star" style="width:18px;height:18px;color:var(--accent-gold);fill:var(--accent-gold);"></i> Los Más Elegidos
+      </h2>
+      <div id="featuredCarousel" class="featured-carousel-scroll" style="display: flex; gap: 14px; overflow-x: auto; scrollbar-width: none; padding-bottom: 8px;"></div>
+    </section>
+
+    <!-- Título de la Categoría Activa -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2 id="currentCategoryTitle" style="font-family: var(--font-heading); font-size: 1.35rem; color: var(--text-main);">Todas las Opciones</h2>
+    </div>
+
+    <!-- Grilla / Lista de Platos -->
+    <div id="dishesContainer" class="visual-grid"></div>
+  </main>
+
+  <!-- Bottom Sheet / Modal de Detalle de Plato -->
+  <div id="dishModalBackdrop" class="sheet-backdrop"></div>
+  <div id="dishModalSheet" class="bottom-sheet">
+    <div class="sheet-media-header sheet-hero-media" id="modalHeroMediaContainer">
+      <button class="btn-close-sheet" id="btnCloseDishModal" aria-label="Cerrar"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="sheet-body">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
+        <h2 id="modalDishTitle" style="font-family: var(--font-heading); font-size: 1.4rem; color: var(--text-main);"></h2>
+        <span id="modalDishPrice" style="font-weight: 800; font-size: 1.3rem; color: var(--accent-gold); white-space: nowrap;"></span>
+      </div>
+
+      <div id="modalDietaryBadges" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;"></div>
+
+      <p id="modalDishStory" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;"></p>
+
+      <div id="arButtonContainer" style="margin-bottom: 16px;"></div>
+
+      <div style="margin-bottom: 20px;">
+        <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;">Desglose de Capas e Ingredientes</h3>
+        <div id="modalLayersList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+
+      <div id="modalPairingContainer"></div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

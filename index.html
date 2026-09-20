@@ -64,6 +64,15 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const tenant = params.get('tenant') || params.get('profile');
+      if (tenant === 'gourmet-bistro' || tenant === 'restaurant') {
+        window.location.replace('restaurant.html');
+        return;
+      } else if (tenant === 'maison-cafe' || tenant === 'cafe' || tenant === 'bakery_cafe') {
+        window.location.replace('cafe.html');
+        return;
+      }
       if (window.lucide) window.lucide.createIcons();
     });
   </script>
