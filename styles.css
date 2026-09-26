@@ -1218,3 +1218,311 @@ button.category-pill,
 .toast-notification.show {
   transform: translateX(-50%) translateY(0);
 }
+
+/* =============================================================================
+   ESTILOS PREMIUM Y MODERNOS PARA EL PANEL DE ADMINISTRACIÓN SAAS
+   ============================================================================= */
+
+.admin-body {
+  background: #0b0f19;
+  color: #f1f5f9;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}
+
+/* Glassmorphism Panel */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  border-radius: 20px !important;
+}
+
+.admin-login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.15), transparent 60%), #090d16;
+}
+
+.admin-login-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 36px 32px;
+}
+
+.admin-login-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.glow-avatar {
+  background: linear-gradient(135deg, #0284c7, #0d9488) !important;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+  margin: 0 auto 14px auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.admin-login-header h2 {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.admin-login-header p {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.admin-form .form-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+}
+
+.admin-form input,
+.admin-form select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-form input:focus,
+.admin-form select:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+.btn-glow-action {
+  background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  padding: 12px !important;
+  width: 100%;
+  justify-content: center;
+  font-size: 0.95rem !important;
+}
+
+.btn-glow-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
+}
+
+.quick-demo-access {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.quick-demo-title {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.quick-demo-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btn-demo-pill {
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #38bdf8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-demo-pill:hover {
+  background: #38bdf8;
+  color: #0f172a;
+  border-color: #38bdf8;
+  transform: scale(1.04);
+}
+
+.admin-login-footer {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.admin-login-footer .back-link {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s ease;
+}
+
+.admin-login-footer .back-link:hover { color: #38bdf8; }
+
+/* Admin Header & Bar */
+.admin-header-bar {
+  background: #0f172a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-brand-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-brand-info h1 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.db-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+}
+
+.admin-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tenant-switcher-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 10px;
+}
+
+.tenant-switcher-box select {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  outline: none;
+}
+
+/* KPI GRID CARDS */
+.admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  max-width: 1320px;
+  margin: 24px auto 0 auto;
+  padding: 0 28px;
+}
+
+.kpi-card {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.kpi-icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.kpi-icon-box.cyan { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+.kpi-icon-box.emerald { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+.kpi-icon-box.amber { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+.kpi-icon-box.purple { background: rgba(192, 132, 252, 0.15); color: #c084fc; }
+
+.kpi-data {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.kpi-value-small {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #c084fc;
+  font-family: monospace;
+}
+

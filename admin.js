@@ -36,6 +36,33 @@ function setupLogin() {
   const loginForm = document.getElementById('loginForm');
   const loginError = document.getElementById('loginError');
 
+  // Botones de acceso rápido para pruebas
+  document.getElementById('btnQuickDemoBistro')?.addEventListener('click', async () => {
+    document.getElementById('loginUser').value = 'admin@gourmetbistro.com';
+    document.getElementById('loginPass').value = 'admin123';
+    adminState.currentProfileId = 'restaurant';
+    const res = await db.loginApi('admin@gourmetbistro.com', 'admin123');
+    if (res.success) {
+      adminState.isLoggedIn = true;
+      sessionStorage.setItem('aura_admin_logged', 'true');
+      showDashboard();
+      showToast('Sesión iniciada como Gourmet Bistro & Grill');
+    }
+  });
+
+  document.getElementById('btnQuickDemoCafe')?.addEventListener('click', async () => {
+    document.getElementById('loginUser').value = 'admin@maisoncafe.com';
+    document.getElementById('loginPass').value = 'admin123';
+    adminState.currentProfileId = 'bakery_cafe';
+    const res = await db.loginApi('admin@maisoncafe.com', 'admin123');
+    if (res.success) {
+      adminState.isLoggedIn = true;
+      sessionStorage.setItem('aura_admin_logged', 'true');
+      showDashboard();
+      showToast('Sesión iniciada como Maison Cafe & Bakery');
+    }
+  });
+
   if (sessionStorage.getItem('aura_admin_logged') === 'true') {
     adminState.isLoggedIn = true;
     showDashboard();
@@ -156,10 +183,29 @@ function setupNavigation() {
   });
 }
 
+function updateKpiMetrics() {
+  const allProfileItems = db.getItemsByProfile(adminState.currentProfileId);
+  const total = allProfileItems.length;
+  const available = allProfileItems.filter(i => i.isAvailable).length;
+  const featured = allProfileItems.filter(i => i.isFeatured).length;
+  const slug = adminState.currentProfileId === 'restaurant' ? 'gourmet-bistro' : 'maison-cafe';
+
+  const elTotal = document.getElementById('kpiTotalDishes');
+  const elAvail = document.getElementById('kpiAvailableDishes');
+  const elFeat = document.getElementById('kpiFeaturedDishes');
+  const elSlug = document.getElementById('kpiSlugName');
+
+  if (elTotal) elTotal.textContent = total;
+  if (elAvail) elAvail.textContent = available;
+  if (elFeat) elFeat.textContent = featured;
+  if (elSlug) elSlug.textContent = slug;
+}
+
 // ==========================================
 // 3. TABLA CON EDICIÓN RÁPIDA DE PRECIO INLINE
 // ==========================================
 function renderItemsTable() {
+  updateKpiMetrics();
   const tbody = document.getElementById('adminItemsTableBody');
   if (!tbody) return;
 

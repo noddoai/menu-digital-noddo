@@ -13,31 +13,46 @@
        PANTALLA DE LOGIN DE ADMINISTRADOR
        ========================================== -->
   <section id="loginSection" class="admin-login-wrapper">
-    <div class="admin-login-card">
-      <div class="admin-login-header" style="text-align: center; margin-bottom: 24px;">
-        <div class="brand-logo-icon" style="margin: 0 auto 16px auto;">A</div>
-        <h2 style="font-family: var(--font-heading); font-size: 1.8rem;">Panel de Control</h2>
-        <p style="color: #94a3b8; font-size: 0.88rem;">Gestión autónoma de menú, precios y promociones</p>
+    <div class="admin-login-card glass-panel">
+      <div class="admin-login-header">
+        <div class="brand-logo-icon glow-avatar">N</div>
+        <h2>Panel de Control Gastronómico</h2>
+        <p>Gestión inteligente de menú, precios en tiempo real y QR para mesas</p>
       </div>
 
-      <form id="loginForm" class="admin-form" style="display: flex; flex-direction: column; gap: 16px;">
+      <form id="loginForm" class="admin-form">
         <div class="form-group">
-          <label for="loginUser">Usuario de Administración</label>
-          <input type="text" id="loginUser" value="admin" required placeholder="ej: admin">
+          <label for="loginUser"><i data-lucide="mail"></i> Usuario / Email</label>
+          <input type="text" id="loginUser" value="admin@gourmetbistro.com" required placeholder="ej: admin@gourmetbistro.com">
         </div>
         <div class="form-group">
-          <label for="loginPass">Contraseña</label>
-          <input type="password" id="loginPass" value="admin123" required placeholder="ej: admin123">
+          <label for="loginPass"><i data-lucide="key-round"></i> Contraseña</label>
+          <input type="password" id="loginPass" value="admin123" required placeholder="••••••••">
         </div>
-        <div id="loginError" class="login-error-message" style="display:none; color: #ef4444; font-size: 0.85rem; text-align: center;">Usuario o contraseña incorrectos</div>
+        <div id="loginError" class="login-error-message" style="display:none;">
+          <i data-lucide="alert-triangle"></i> Usuario o contraseña incorrectos
+        </div>
 
-        <button type="submit" class="btn-admin-primary" style="width: 100%; justify-content: center; padding: 12px; margin-top: 8px;">
-          <i data-lucide="lock"></i> Ingresar al Panel de Control
+        <button type="submit" class="btn-admin-primary btn-glow-action">
+          <i data-lucide="log-in"></i> Iniciar Sesión en el Panel
         </button>
       </form>
 
-      <div style="margin-top: 24px; text-align: center;">
-        <a href="index.html" style="color: #94a3b8; font-size: 0.85rem; text-decoration: underline;">Volver al Portal Principal</a>
+      <!-- BOTONES DE ACCESO RÁPIDO PARA DEMOSTRACIÓN -->
+      <div class="quick-demo-access">
+        <span class="quick-demo-title">Acceso Rápido de Prueba:</span>
+        <div class="quick-demo-buttons">
+          <button type="button" class="btn-demo-pill" id="btnQuickDemoBistro">
+            🍷 Demo Bistro
+          </button>
+          <button type="button" class="btn-demo-pill" id="btnQuickDemoCafe">
+            ☕ Demo Cafetería
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-login-footer">
+        <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Volver al Portal de Menú Digital</a>
       </div>
     </div>
   </section>
@@ -49,22 +64,28 @@
     
     <!-- Admin Header Bar -->
     <header class="admin-header-bar">
-      <div class="admin-brand-info" style="display: flex; align-items: center; gap: 12px;">
-        <div class="brand-logo-icon">A</div>
+      <div class="admin-brand-info">
+        <div class="brand-logo-icon glow-avatar">N</div>
         <div>
-          <h1 id="adminBrandTitle" style="font-size: 1.25rem; font-weight: 700;">Control Center</h1>
-          <span style="font-size: 0.7rem; color: #38bdf8; font-weight: 700;">PLATAFORMA SAAS B2B</span>
+          <h1 id="adminBrandTitle">Noddo SaaS Control</h1>
+          <div class="db-status-badge">
+            <span class="status-dot online"></span>
+            <span id="dbStatusText">Base de Datos Supabase Conectada</span>
+          </div>
         </div>
       </div>
 
-      <div class="admin-header-controls" style="display: flex; align-items: center; gap: 12px;">
-        <select id="adminProfileSelect" style="padding: 8px 14px; border-radius: 8px; background: #1f2937; border: 1px solid #374151; color: #ffffff; cursor: pointer;">
-          <option value="restaurant">🍷 Gourmet Bistro & Grill</option>
-          <option value="bakery_cafe">☕ Maison Cafe & Bakery</option>
-        </select>
+      <div class="admin-header-controls">
+        <div class="tenant-switcher-box">
+          <i data-lucide="store" style="color: #38bdf8; width: 16px; height: 16px;"></i>
+          <select id="adminProfileSelect">
+            <option value="restaurant">🍷 Gourmet Bistro & Grill</option>
+            <option value="bakery_cafe">☕ Maison Cafe & Bakery</option>
+          </select>
+        </div>
 
-        <button id="btnResetDefaults" class="btn-admin-danger" title="Restablecer datos">
-          <i data-lucide="rotate-ccw"></i> Reset Datos
+        <button id="btnResetDefaults" class="btn-admin-danger" title="Restablecer datos por defecto">
+          <i data-lucide="rotate-ccw"></i> Reset
         </button>
 
         <button id="btnLogout" class="btn-admin-secondary">
@@ -73,10 +94,42 @@
       </div>
     </header>
 
+    <!-- BARRA KPI DE MÉTRICAS EN VIVO -->
+    <div class="admin-kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon-box cyan"><i data-lucide="utensils"></i></div>
+        <div class="kpi-data">
+          <span class="kpi-label">Total Platos</span>
+          <span class="kpi-value" id="kpiTotalDishes">0</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-box emerald"><i data-lucide="check-circle-2"></i></div>
+        <div class="kpi-data">
+          <span class="kpi-label">En Stock / Visibles</span>
+          <span class="kpi-value" id="kpiAvailableDishes">0</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-box amber"><i data-lucide="star"></i></div>
+        <div class="kpi-data">
+          <span class="kpi-label">Platos Destacados</span>
+          <span class="kpi-value" id="kpiFeaturedDishes">0</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-box purple"><i data-lucide="qr-code"></i></div>
+        <div class="kpi-data">
+          <span class="kpi-label">Slug Menú QR</span>
+          <span class="kpi-value-small" id="kpiSlugName">gourmet-bistro</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Admin Tab Navigation -->
     <div class="admin-tabs-wrapper">
       <button class="admin-tab-btn active" data-tab="tabItems" id="navTabItems">
-        <i data-lucide="utensils-crossed"></i> Platos & Precios
+        <i data-lucide="utensils-crossed"></i> Catálogo & Precios
       </button>
       <button class="admin-tab-btn" data-tab="tabQuickStock" id="navTabQuickStock">
         <i data-lucide="zap"></i> Pausa Rápida Stock
