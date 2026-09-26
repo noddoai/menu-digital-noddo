@@ -2181,12 +2181,17 @@ button.category-pill,
 }
 
 .input-price-wrapper input {
+  flex: 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   padding: 12px 16px !important;
   font-weight: 700 !important;
+  font-size: 1rem !important;
   color: #0f172a !important;
+  background: transparent !important;
 }
 
 /* INGREDIENTES & COMPONENTES DINÁMICOS */
@@ -2338,6 +2343,208 @@ button.category-pill,
   color: #1d4ed8 !important;
   font-weight: 700 !important;
 }
+
+/* =============================================================================
+   SWITCHES DE ESTADO (iOS STYLE TOGGLE SWITCHES) & CONTENEDOR DE TARJETAS
+   ============================================================================= */
+.switches-container-card {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 16px !important;
+  margin-top: 16px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
+}
+
+.switch-item-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  background: #f8fafc !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+}
+
+.switch-label-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.switch-title {
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  color: #0f172a !important;
+}
+
+.switch-hint {
+  font-size: 0.78rem !important;
+  color: #64748b !important;
+}
+
+/* TOGGLE SWITCH CÓMODO Y ELEGANTE CON SLIDER ANIMADO */
+.toggle-switch {
+  position: relative !important;
+  display: inline-block !important;
+  width: 50px !important;
+  height: 28px !important;
+  flex-shrink: 0 !important;
+}
+
+.toggle-switch input {
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.toggle-switch .slider {
+  position: absolute !important;
+  cursor: pointer !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: #cbd5e1 !important;
+  transition: all 0.25s ease !important;
+  border-radius: 28px !important;
+}
+
+.toggle-switch .slider:before {
+  position: absolute !important;
+  content: "" !important;
+  height: 22px !important;
+  width: 22px !important;
+  left: 3px !important;
+  bottom: 3px !important;
+  background-color: #ffffff !important;
+  transition: all 0.25s ease !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) !important;
+}
+
+.toggle-switch input:checked + .slider {
+  background-color: #16a34a !important;
+}
+
+.toggle-switch input:checked + .slider:before {
+  transform: translateX(22px) !important;
+}
+
+/* SWITCH DESTACADO (DORADO) */
+#editIsFeatured:checked + .slider {
+  background-color: #f59e0b !important;
+}
+
+/* BOTÓN "+ AGREGAR COMPONENTE" */
+.btn-secondary-xs {
+  background: #eff6ff !important;
+  border: 1.5px solid #bfdbfe !important;
+  color: #2563eb !important;
+  font-weight: 700 !important;
+  font-size: 0.84rem !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-secondary-xs:hover {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #2563eb !important;
+}
+
+/* TARJETAS DE COMPONENTES E INGREDIENTES (ESPACIOSAS, SIN TEXTO CORTADO) */
+.component-card-item {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 12px !important;
+  padding: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03) !important;
+  margin-bottom: 10px !important;
+}
+
+.component-card-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.component-card-header .ing-name {
+  flex-grow: 1 !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  font-size: 0.92rem !important;
+  background: #ffffff !important;
+}
+
+.component-card-details {
+  display: grid !important;
+  grid-template-columns: 1.3fr 1fr !important;
+  gap: 10px !important;
+}
+
+.component-card-details input {
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 9px 12px !important;
+  font-size: 0.86rem !important;
+  background: #f8fafc !important;
+  color: #334155 !important;
+}
+
+.component-card-details input:focus {
+  background: #ffffff !important;
+  border-color: #2563eb !important;
+}
+
+.btn-remove-layer {
+  background: #fef2f2 !important;
+  border: 1.5px solid #fecaca !important;
+  color: #ef4444 !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  transition: all 0.15s ease !important;
+}
+
+.btn-remove-layer:hover {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+}
+
+/* MODAL MAX WIDTH AMPLIADO */
+.corporate-modal-spacious {
+  max-width: 1020px !important;
+  padding: 32px 36px !important;
+}
+
+.modal-sections-grid {
+  display: grid !important;
+  grid-template-columns: 1.45fr 1fr !important;
+  gap: 32px !important;
+}
+
 
 
 

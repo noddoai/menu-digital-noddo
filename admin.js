@@ -485,17 +485,23 @@ function addIngredientRow(data = {}) {
   const container = document.getElementById('ingredientsRowsContainer');
   if (!container) return;
 
-  const row = document.createElement('div');
-  row.className = 'layer-item-row';
-  row.innerHTML = `
-    <input type="text" class="ing-name" placeholder="Componente (ej: Salmón)" value="${data.name || ''}" required>
-    <input type="text" class="ing-desc" placeholder="Descripción breve" value="${data.description || ''}">
-    <input type="text" class="ing-allergen" placeholder="Alérgenos" value="${data.allergenWarning || ''}">
-    <button type="button" class="btn-remove-layer btn-admin-danger" style="padding:4px; border-radius:6px;"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+  const card = document.createElement('div');
+  card.className = 'component-card-item';
+  card.innerHTML = `
+    <div class="component-card-header">
+      <input type="text" class="ing-name" placeholder="Nombre del componente (ej: Salmón Fresco)" value="${data.name || ''}" required>
+      <button type="button" class="btn-remove-layer" title="Eliminar componente">
+        <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+      </button>
+    </div>
+    <div class="component-card-details">
+      <input type="text" class="ing-desc" placeholder="Descripción (ej: Corte magro rico en Omega-3)" value="${data.description || ''}">
+      <input type="text" class="ing-allergen" placeholder="Alérgenos (ej: Pescado)" value="${data.allergenWarning || ''}">
+    </div>
   `;
 
-  row.querySelector('.btn-remove-layer').addEventListener('click', () => row.remove());
-  container.appendChild(row);
+  card.querySelector('.btn-remove-layer').addEventListener('click', () => card.remove());
+  container.appendChild(card);
   if (window.lucide) window.lucide.createIcons();
 }
 
@@ -503,13 +509,13 @@ function collectIngredientRows() {
   const container = document.getElementById('ingredientsRowsContainer');
   if (!container) return [];
 
-  const rows = container.querySelectorAll('.layer-item-row');
+  const cards = container.querySelectorAll('.component-card-item, .layer-item-row');
   const ingredients = [];
 
-  rows.forEach(row => {
-    const name = row.querySelector('.ing-name')?.value.trim();
-    const description = row.querySelector('.ing-desc')?.value.trim();
-    const allergenWarning = row.querySelector('.ing-allergen')?.value.trim() || null;
+  cards.forEach(card => {
+    const name = card.querySelector('.ing-name')?.value.trim();
+    const description = card.querySelector('.ing-desc')?.value.trim();
+    const allergenWarning = card.querySelector('.ing-allergen')?.value.trim() || null;
 
     if (name) {
       ingredients.push({
