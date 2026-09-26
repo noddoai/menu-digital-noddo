@@ -154,7 +154,7 @@
             <i data-lucide="qr-code"></i> Código QR
           </button>
           <button class="admin-tab-btn" data-tab="tabStyles" id="navTabStyles">
-            <i data-lucide="palette"></i> Marca & Colores
+            <i data-lucide="settings"></i> Configuración
           </button>
           <button class="admin-tab-btn" data-tab="tabUsers" id="navTabUsers">
             <i data-lucide="users"></i> Personal
@@ -281,22 +281,25 @@
           </div>
         </div>
 
-        <!-- TAB 4: MARCA & COLORES -->
+        <!-- TAB 5: CONFIGURACIÓN GENERAL DEL COMERCIO -->
         <div id="tabStyles" class="admin-tab-content">
           <div class="corporate-card max-w-600">
             <div class="card-header-clean">
-              <h3>Personalización de Marca</h3>
-              <p>Ajuste el nombre comercial y color identitario del menú</p>
+              <h3>Configuración General del Comercio</h3>
+              <p>Ajuste la identidad comercial, la moneda de los precios y la paleta de colores</p>
             </div>
 
             <form id="themeConfigForm" class="clean-form">
               <div class="form-group">
-                <label>Nombre del Establecimiento</label>
-                <input type="text" id="inputBrandName" required>
+                <label>Nombre del Establecimiento *</label>
+                <input type="text" id="inputBrandName" required placeholder="ej: Gourmet Bistro & Grill">
               </div>
+
               <div class="form-group">
-                <label>Slogan o Descripción Corta</label>
-                <input type="text" id="inputBrandTagline" required>
+                <label>Slogan o Descripción Corta *</label>
+                <input type="text" id="inputBrandTagline" required placeholder="ej: Cocina Fresca & Sabores de Estación">
+              </div>
+
               <div class="form-group">
                 <label for="inputCurrency">Moneda del Comercio (Símbolo de Precios) *</label>
                 <select id="inputCurrency" class="form-select">
@@ -313,14 +316,25 @@
               </div>
 
               <div class="form-group">
-                <label>Color Distintivo Principal</label>
-                <div class="color-picker-row">
-                  <input type="color" id="inputAccentColor" class="color-input">
-                  <input type="text" id="inputAccentColorText" class="color-text-input">
+                <label style="font-weight:700; font-size:0.85rem; color:#334155;">Color Identitario de Resaltado</label>
+                <div class="color-picker-wrapper">
+                  <input type="color" id="inputAccentColor" class="color-square-input" value="#207567">
+                  <input type="text" id="inputAccentColorText" class="color-text-hex" value="#207567" placeholder="#207567">
+                </div>
+                <div style="font-size: 0.76rem; font-weight: 600; color: #64748b; margin-top: 10px; margin-bottom: 6px;">Paletas Sugeridas (Respetan contraste automático de texto):</div>
+                <div class="brand-swatches-grid">
+                  <button type="button" class="brand-swatch-btn" data-color="#207567" style="background: #207567;" title="Verde Esmeralda"></button>
+                  <button type="button" class="brand-swatch-btn" data-color="#7c4a27" style="background: #7c4a27;" title="Moca Café"></button>
+                  <button type="button" class="brand-swatch-btn" data-color="#d97706" style="background: #d97706;" title="Dorado Calidez"></button>
+                  <button type="button" class="brand-swatch-btn" data-color="#1e3a8a" style="background: #1e3a8a;" title="Azul Real"></button>
+                  <button type="button" class="brand-swatch-btn" data-color="#991b1b" style="background: #991b1b;" title="Rojo Borgoña"></button>
+                  <button type="button" class="brand-swatch-btn" data-color="#0f172a" style="background: #0f172a;" title="Negro Elegante"></button>
+                  <button type="button" class="brand-swatch-btn" data-color="#fbbf24" style="background: #fbbf24;" title="Amarillo Pastel (Ajusta texto a oscuro)"></button>
+                  <button type="button" class="brand-swatch-btn" data-color="#38bdf8" style="background: #38bdf8;" title="Cian Claro (Ajusta texto a oscuro)"></button>
                 </div>
               </div>
 
-              <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 10px;">
+              <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 16px;">
                 <i data-lucide="save"></i> Guardar Configuración General
               </button>
             </form>

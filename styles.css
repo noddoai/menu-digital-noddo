@@ -2860,6 +2860,108 @@ button.category-pill,
   border-top: 1px solid #f1f5f9 !important;
 }
 
+/* =============================================================================
+   SELECTOR DE COLOR CORPORATIVO Y CONTRASTE AUTOMÁTICO
+   ============================================================================= */
+.color-picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.color-square-input {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  height: 44px !important;
+  border-radius: 10px !important;
+  border: 2px solid #cbd5e1 !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  background: none !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
+  transition: transform 0.15s ease, border-color 0.15s ease !important;
+  flex-shrink: 0 !important;
+}
+
+.color-square-input:hover {
+  transform: scale(1.06) !important;
+  border-color: #64748b !important;
+}
+
+.color-square-input::-webkit-color-swatch-wrapper {
+  padding: 0 !important;
+}
+
+.color-square-input::-webkit-color-swatch {
+  border: none !important;
+  border-radius: 8px !important;
+}
+
+.color-square-input::-moz-color-swatch {
+  border: none !important;
+  border-radius: 8px !important;
+}
+
+.color-text-hex {
+  width: 130px !important;
+  max-width: 130px !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  border: 1px solid #cbd5e1 !important;
+  font-family: monospace !important;
+  font-weight: 700 !important;
+  font-size: 0.95rem !important;
+  color: #0f172a !important;
+  background: #ffffff !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.brand-swatches-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.brand-swatch-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px #cbd5e1, 0 2px 4px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  padding: 0;
+}
+
+.brand-swatch-btn:hover {
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 0 0 0 2px #0f172a, 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.brand-swatch-btn.active {
+  box-shadow: 0 0 0 2px #0f172a, 0 0 0 4px rgba(15, 23, 42, 0.25);
+  transform: scale(1.08);
+}
+
+/* REGLAS DE CONTRASTE DINÁMICO PARA BOTONES Y ELEMENTOS DE DESTACADO */
+.btn-view-toggle.active, 
+.view-switch-btn.active,
+.btn-open-detail,
+.btn-detail-trigger,
+.btn-admin-primary,
+.badge-accent-solid {
+  color: var(--accent-text-color, #ffffff) !important;
+}
+
+
 
 
 

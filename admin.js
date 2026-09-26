@@ -987,6 +987,18 @@ function downloadQr(format) {
   showToast(`Descargando Código QR (${format.toUpperCase()})`);
 }
 
+function getContrastColor(hexColor) {
+  if (!hexColor) return '#ffffff';
+  let hex = hexColor.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  if (hex.length !== 6) return '#ffffff';
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.62 ? '#0f172a' : '#ffffff';
+}
+
 function updateGlobalCurrencySymbol(symbol) {
   adminState.currencySymbol = symbol || '$';
   document.querySelectorAll('.price-symbol, .currency-symbol-label, .currency-symbol-inline, .inline-price-symbol').forEach(el => {
@@ -1002,8 +1014,42 @@ function setupThemeEditor() {
   const textInput = document.getElementById('inputAccentColorText');
   const currencySelect = document.getElementById('inputCurrency');
 
-  colorInput.addEventListener('input', (e) => textInput.value = e.target.value);
-  textInput.addEventListener('input', (e) => colorInput.value = e.target.value);
+  const updateColorPreview = (hex) => {
+    if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+      document.documentElement.style.setProperty('--accent-gold', hex);
+      document.documentElement.style.setProperty('--accent-text-color', getContrastColor(hex));
+      document.querySelectorAll('.brand-swatch-btn').forEach(btn => {
+        if (btn.dataset.color.toLowerCase() === hex.toLowerCase()) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+  };
+
+  if (colorInput && textInput) {
+    colorInput.addEventListener('input', (e) => {
+      textInput.value = e.target.value;
+      updateColorPreview(e.target.value);
+    });
+
+    textInput.addEventListener('input', (e) => {
+      let val = e.target.value;
+      if (!val.startsWith('#')) val = '#' + val;
+      colorInput.value = val;
+      updateColorPreview(val);
+    });
+  }
+
+  document.querySelectorAll('.brand-swatch-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const color = btn.dataset.color;
+      if (colorInput) colorInput.value = color;
+      if (textInput) textInput.value = color;
+      updateColorPreview(color);
+    });
+  });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1015,7 +1061,7 @@ function setupThemeEditor() {
     const config = {
       name: document.getElementById('inputBrandName').value.trim(),
       tagline: document.getElementById('inputBrandTagline').value.trim(),
-      accentColor: colorInput.value,
+      accentColor: colorInput ? colorInput.value : '#207567',
       currencySymbol: symbol,
       currencyCode: code
     };
@@ -1030,13 +1076,25 @@ function setupThemeEditor() {
 function loadThemeForm() {
   const config = db.getThemeConfig(adminState.currentProfileId);
   adminState.currencySymbol = config.currencySymbol || '$';
+  const savedAccentColor = config.accentColor || '#207567';
 
   if (document.getElementById('inputBrandName')) {
     document.getElementById('inputBrandName').value = config.name || '';
     document.getElementById('inputBrandTagline').value = config.tagline || '';
-    document.getElementById('inputAccentColor').value = config.accentColor || '#207567';
-    document.getElementById('inputAccentColorText').value = config.accentColor || '#207567';
+    document.getElementById('inputAccentColor').value = savedAccentColor;
+    document.getElementById('inputAccentColorText').value = savedAccentColor;
   }
+
+  document.documentElement.style.setProperty('--accent-gold', savedAccentColor);
+  document.documentElement.style.setProperty('--accent-text-color', getContrastColor(savedAccentColor));
+
+  document.querySelectorAll('.brand-swatch-btn').forEach(btn => {
+    if (btn.dataset.color.toLowerCase() === savedAccentColor.toLowerCase()) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
 
   const currencySelect = document.getElementById('inputCurrency');
   if (currencySelect) {

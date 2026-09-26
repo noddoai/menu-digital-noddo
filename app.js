@@ -102,6 +102,18 @@ function setupEventListeners() {
   if (modalBackdrop) modalBackdrop.addEventListener('click', closeDishModal);
 }
 
+function getContrastColor(hexColor) {
+  if (!hexColor) return '#ffffff';
+  let hex = hexColor.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  if (hex.length !== 6) return '#ffffff';
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.62 ? '#0f172a' : '#ffffff';
+}
+
 // ==========================================
 // 3. RENDERIZADO DE INTERFAZ
 // ==========================================
@@ -112,6 +124,7 @@ function renderApp() {
   // Apply custom accent color if saved
   if (themeConfig.accentColor) {
     document.documentElement.style.setProperty('--accent-gold', themeConfig.accentColor);
+    document.documentElement.style.setProperty('--accent-text-color', getContrastColor(themeConfig.accentColor));
   }
 
   // 1. Render Header Brand Info
