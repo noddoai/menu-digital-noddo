@@ -152,6 +152,12 @@ export const MENU_ITEMS = [
     isAvailable: true,
     isChefSpecial: true,
     isFeatured: true,
+    hasVariations: true,
+    variations: [
+      { name: "300g Mediano", price: 28000 },
+      { name: "400g Estándar", price: 34000 },
+      { name: "600g XL Doble", price: 46000 }
+    ],
     prepTime: "25 min",
     rating: 4.9,
     dietaryFlags: {

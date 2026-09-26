@@ -218,6 +218,17 @@ function renderPromoBanner() {
   if (window.lucide) window.lucide.createIcons();
 }
 
+function getGlobalCurrencySymbol() {
+  const themeConfig = db.getThemeConfig(state.profileId);
+  return themeConfig?.currencySymbol || '$';
+}
+
+function formatPrice(amount, symbol) {
+  if (amount === undefined || amount === null || isNaN(amount)) return '';
+  const currSymbol = symbol || getGlobalCurrencySymbol();
+  return `${currSymbol} ${Number(amount).toLocaleString('es-AR')}`;
+}
+
 /**
  * Renderiza el Carrusel Horizontal "Los Más Elegidos"
  */
@@ -235,11 +246,13 @@ function renderFeaturedCarousel() {
   section.style.display = 'block';
   carousel.innerHTML = '';
 
+  const currSymbol = getGlobalCurrencySymbol();
+
   featuredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'featured-card';
 
-    const formattedPrice = item.formattedPrice || `$ ${Number(item.price).toLocaleString('es-AR')}`;
+    const formattedPrice = formatPrice(item.price, currSymbol);
     const rating = item.rating || 4.8;
 
     const prepTime = item.prepTime || "20 min";
@@ -383,7 +396,8 @@ function createVisualCard(dish) {
   const card = document.createElement('article');
   card.className = 'dish-card-visual';
 
-  const formattedPrice = dish.formattedPrice || `$ ${Number(dish.price).toLocaleString('es-AR')}`;
+  const currSymbol = getGlobalCurrencySymbol();
+  const formattedPrice = formatPrice(dish.price, currSymbol);
   const hasVideo = !!dish.media?.videoLoopUrl;
   const hasAR = !!dish.media?.model3dUrl;
 
@@ -428,6 +442,20 @@ function createVisualCard(dish) {
     </div>
   `;
 
+  let variationsHTML = '';
+  if (dish.hasVariations && dish.variations && dish.variations.length > 0) {
+    variationsHTML = `
+      <div class="item-variations-container" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px;">
+        ${dish.variations.map((v, idx) => `
+          <button type="button" class="variation-pill ${idx === 0 ? 'active' : ''}" data-price="${v.price}">
+            <span>${v.name}</span>
+            <span style="font-weight:700;">${formatPrice(v.price, currSymbol)}</span>
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
   card.innerHTML = `
     ${unavailableOverlay}
     <div class="card-media-box">
@@ -442,7 +470,9 @@ function createVisualCard(dish) {
       </div>
       <p class="card-description">${dish.shortDescription || ''}</p>
 
-      <div class="dietary-tags-row">
+      ${variationsHTML}
+
+      <div class="dietary-tags-row" style="margin-top: 8px;">
         ${tagsHTML}
       </div>
 
@@ -453,6 +483,20 @@ function createVisualCard(dish) {
       </div>
     </div>
   `;
+
+  // Variation pills listener
+  card.querySelectorAll('.variation-pill').forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      card.querySelectorAll('.variation-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      const pVal = pill.dataset.price;
+      const priceEl = card.querySelector('.card-price');
+      if (priceEl && pVal) {
+        priceEl.textContent = formatPrice(pVal, currSymbol);
+      }
+    });
+  });
 
   // Listeners
   card.querySelector('.btn-open-detail').addEventListener('click', (e) => {
@@ -474,7 +518,8 @@ function createCompactCard(dish) {
   const card = document.createElement('article');
   card.className = 'dish-card-compact';
 
-  const formattedPrice = dish.formattedPrice || `$ ${Number(dish.price).toLocaleString('es-AR')}`;
+  const currSymbol = getGlobalCurrencySymbol();
+  const formattedPrice = formatPrice(dish.price, currSymbol);
 
   card.innerHTML = `
     <img src="${dish.media?.heroImage || 'assets/images/wagyu_ribeye.png'}" alt="${dish.name}" class="compact-thumb" loading="lazy">
@@ -501,10 +546,45 @@ function createCompactCard(dish) {
 function openDishModal(dish) {
   state.selectedDishForModal = dish;
 
-  const formattedPrice = dish.formattedPrice || `$ ${Number(dish.price).toLocaleString('es-AR')}`;
+  const currSymbol = getGlobalCurrencySymbol();
+  const formattedPrice = formatPrice(dish.price, currSymbol);
 
   document.getElementById('modalDishTitle').textContent = dish.name;
   document.getElementById('modalDishPrice').textContent = formattedPrice;
+  document.getElementById('modalDishStory').textContent = dish.fullStory || dish.shortDescription || '';
+
+  // Render Variations if present
+  const modalVariationsContainer = document.getElementById('modalVariationsContainer');
+  if (modalVariationsContainer) {
+    if (dish.hasVariations && dish.variations && dish.variations.length > 0) {
+      modalVariationsContainer.style.display = 'block';
+      modalVariationsContainer.innerHTML = `
+        <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px;">Seleccionar Tamaños / Opciones</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          ${dish.variations.map((v, idx) => `
+            <button type="button" class="variation-pill ${idx === 0 ? 'active' : ''}" data-price="${v.price}">
+              <span>${v.name}</span>
+              <span style="font-weight:700;">${formatPrice(v.price, currSymbol)}</span>
+            </button>
+          `).join('')}
+        </div>
+      `;
+      modalVariationsContainer.querySelectorAll('.variation-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          modalVariationsContainer.querySelectorAll('.variation-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          const pVal = pill.dataset.price;
+          const priceEl = document.getElementById('modalDishPrice');
+          if (priceEl && pVal) {
+            priceEl.textContent = formatPrice(pVal, currSymbol);
+          }
+        });
+      });
+    } else {
+      modalVariationsContainer.style.display = 'none';
+      modalVariationsContainer.innerHTML = '';
+    }
+  }
   document.getElementById('modalDishStory').textContent = dish.fullStory || dish.shortDescription || '';
 
   // Render Hero Media

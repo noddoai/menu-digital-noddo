@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDishEditor();
   setupBulkPriceHandler();
   setupIngredientRowsHandler();
+  setupVariationRowsHandler();
   setupPromoManager();
   setupQrModule();
   setupThemeEditor();
@@ -249,6 +250,7 @@ function renderItemsTable() {
     return;
   }
 
+  const currSymbol = adminState.currencySymbol || '$';
   items.forEach(item => {
     const tr = document.createElement('tr');
     const imgUrl = item.media?.heroImage || item.heroImage_url || item.heroImage || 'assets/images/fresh_salmon.png';
@@ -263,7 +265,7 @@ function renderItemsTable() {
       </td>
       <td>
         <div style="display:flex; align-items:center; gap:6px;">
-          <span style="font-weight:700; color:#2563eb;">$</span>
+          <span class="inline-price-symbol" style="font-weight:700; color:#475569;">${currSymbol}</span>
           <input type="number" class="inline-price-input" data-id="${item.id}" value="${item.price}" step="100">
         </div>
       </td>
@@ -318,9 +320,9 @@ function renderItemsTable() {
       const newPrice = parseFloat(priceInput.value);
       if (!isNaN(newPrice) && newPrice >= 0 && newPrice !== item.price) {
         item.price = newPrice;
-        item.formattedPrice = `$ ${newPrice.toLocaleString('es-AR')}`;
+        item.formattedPrice = `${currSymbol} ${newPrice.toLocaleString('es-AR')}`;
         db.saveItem(item);
-        showToast(`Precio de "${item.name}" actualizado a $${newPrice}`);
+        showToast(`Precio de "${item.name}" actualizado a ${currSymbol}${newPrice}`);
         reloadPhonePreview();
       }
     };
@@ -741,37 +743,68 @@ function downloadQr(format) {
   showToast(`Descargando Código QR (${format.toUpperCase()})`);
 }
 
+function updateGlobalCurrencySymbol(symbol) {
+  adminState.currencySymbol = symbol || '$';
+  document.querySelectorAll('.price-symbol, .currency-symbol-label, .currency-symbol-inline, .inline-price-symbol').forEach(el => {
+    el.textContent = adminState.currencySymbol;
+  });
+}
+
 function setupThemeEditor() {
   const form = document.getElementById('themeConfigForm');
   if (!form) return;
 
   const colorInput = document.getElementById('inputAccentColor');
   const textInput = document.getElementById('inputAccentColorText');
+  const currencySelect = document.getElementById('inputCurrency');
 
   colorInput.addEventListener('input', (e) => textInput.value = e.target.value);
   textInput.addEventListener('input', (e) => colorInput.value = e.target.value);
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
+    const symbol = currencySelect ? currencySelect.value : '$';
+    const code = currencySelect && currencySelect.options[currencySelect.selectedIndex] 
+      ? currencySelect.options[currencySelect.selectedIndex].dataset.code || 'ARS' 
+      : 'ARS';
+
     const config = {
       name: document.getElementById('inputBrandName').value.trim(),
       tagline: document.getElementById('inputBrandTagline').value.trim(),
-      accentColor: colorInput.value
+      accentColor: colorInput.value,
+      currencySymbol: symbol,
+      currencyCode: code
     };
     db.saveThemeConfig(adminState.currentProfileId, config);
-    showToast('Configuración de marca guardada');
+    updateGlobalCurrencySymbol(symbol);
+    renderItemsTable();
+    showToast(`Configuración guardada (Moneda: ${code} ${symbol})`);
     reloadPhonePreview();
   });
 }
 
 function loadThemeForm() {
   const config = db.getThemeConfig(adminState.currentProfileId);
+  adminState.currencySymbol = config.currencySymbol || '$';
+
   if (document.getElementById('inputBrandName')) {
     document.getElementById('inputBrandName').value = config.name || '';
     document.getElementById('inputBrandTagline').value = config.tagline || '';
     document.getElementById('inputAccentColor').value = config.accentColor || '#207567';
     document.getElementById('inputAccentColorText').value = config.accentColor || '#207567';
   }
+
+  const currencySelect = document.getElementById('inputCurrency');
+  if (currencySelect) {
+    for (let opt of currencySelect.options) {
+      if (opt.dataset.code === config.currencyCode || (config.currencySymbol && opt.value === config.currencySymbol)) {
+        opt.selected = true;
+        break;
+      }
+    }
+  }
+
+  updateGlobalCurrencySymbol(adminState.currencySymbol);
 }
 
 function showToast(msg) {
@@ -845,7 +878,7 @@ function renderQuickStockGrid(query = '') {
       <img src="${imgUrl}" alt="${item.name}">
       <div class="quick-stock-info">
         <div class="quick-stock-name">${item.name}</div>
-        <div class="quick-stock-price">$ ${item.price.toLocaleString('es-AR')}</div>
+        <div class="quick-stock-price">${adminState.currencySymbol || '$'} ${item.price.toLocaleString('es-AR')}</div>
       </div>
       <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
         <label class="toggle-switch" title="Activar/Pausar stock">
