@@ -2791,6 +2791,76 @@ button.category-pill,
   background: #e2e8f0 !important;
 }
 
+/* BANNERS PROMOCIONALES GRID & TARJETAS */
+.banners-grid-container {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+  gap: 20px !important;
+  margin-top: 16px !important;
+}
+
+.banner-item-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.banner-item-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+  border-color: #cbd5e1 !important;
+}
+
+.banner-card-media {
+  position: relative !important;
+  width: 100% !important;
+  aspect-ratio: 16 / 6 !important;
+  background: #0f172a !important;
+  overflow: hidden !important;
+}
+
+.banner-card-media img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.banner-status-badge {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  padding: 3px 10px !important;
+  border-radius: 20px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.4px !important;
+}
+
+.banner-status-badge.active {
+  background: rgba(16, 185, 129, 0.9) !important;
+  color: #ffffff !important;
+}
+
+.banner-status-badge.inactive {
+  background: rgba(100, 116, 139, 0.9) !important;
+  color: #ffffff !important;
+}
+
+.banner-card-actions {
+  padding: 12px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  background: #f8fafc !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+
 
 
 

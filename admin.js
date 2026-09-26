@@ -733,28 +733,148 @@ function handleFile(file, previewImg, hiddenInput) {
 }
 
 // ==========================================
-// 7. BANNERS Y CÓDIGO QR
+// 7. BANNERS PROMOCIONALES & CÓDIGO QR
 // ==========================================
-function setupPromoManager() {
-  const promoForm = document.getElementById('promoBannerForm');
-  if (promoForm) {
-    promoForm.addEventListener('submit', (e) => {
-      e.preventDefault();
+let currentCropImage = null;
 
-      const bannerData = {
-        id: document.getElementById('editBannerId').value || undefined,
+function setupPromoManager() {
+  const btnOpenModal = document.getElementById('btnOpenBannerModal');
+  const btnCloseModal = document.getElementById('btnCloseBannerCropModal');
+  const btnCancelModal = document.getElementById('btnCancelBannerCropModal');
+  const backdrop = document.getElementById('bannerCropModalBackdrop');
+  const modal = document.getElementById('bannerCropModal');
+  const fileInput = document.getElementById('cropFileInput');
+  const cropArea = document.getElementById('cropAreaWrapper');
+  const canvas = document.getElementById('bannerCropCanvas');
+  const sliderOffsetY = document.getElementById('sliderOffsetY');
+  const sliderZoom = document.getElementById('sliderZoom');
+  const valOffsetY = document.getElementById('valOffsetY');
+  const valZoom = document.getElementById('valZoom');
+  const btnSave = document.getElementById('btnSaveCroppedBanner');
+
+  function openCropModal() {
+    modal.style.opacity = '1';
+    modal.style.pointerEvents = 'auto';
+    modal.style.transform = 'translate(-50%, -50%) scale(1)';
+    backdrop.classList.add('active');
+    if (fileInput) fileInput.value = '';
+    if (cropArea) cropArea.style.display = 'none';
+    if (btnSave) {
+      btnSave.disabled = true;
+      btnSave.style.opacity = '0.5';
+    }
+    currentCropImage = null;
+  }
+
+  function closeCropModal() {
+    modal.style.opacity = '0';
+    modal.style.pointerEvents = 'none';
+    modal.style.transform = 'translate(-50%, -50%) scale(0.95)';
+    backdrop.classList.remove('active');
+  }
+
+  if (btnOpenModal) btnOpenModal.addEventListener('click', openCropModal);
+  if (btnCloseModal) btnCloseModal.addEventListener('click', closeCropModal);
+  if (btnCancelModal) btnCancelModal.addEventListener('click', closeCropModal);
+  if (backdrop) backdrop.addEventListener('click', closeCropModal);
+
+  function drawCroppedImage() {
+    if (!currentCropImage || !canvas) return;
+    const ctx = canvas.getContext('2d');
+    const targetW = 1200;
+    const targetH = 450;
+
+    const zoom = parseFloat(sliderZoom.value) / 100;
+    const offsetYPercent = parseFloat(sliderOffsetY.value) / 100;
+
+    ctx.clearRect(0, 0, targetW, targetH);
+
+    const imgW = currentCropImage.width;
+    const imgH = currentCropImage.height;
+
+    const targetRatio = targetW / targetH;
+    const imgRatio = imgW / imgH;
+
+    let drawWidth, drawHeight;
+
+    if (imgRatio > targetRatio) {
+      drawHeight = targetH * zoom;
+      drawWidth = drawHeight * imgRatio;
+    } else {
+      drawWidth = targetW * zoom;
+      drawHeight = drawWidth / imgRatio;
+    }
+
+    const extraX = drawWidth - targetW;
+    const extraY = drawHeight - targetH;
+
+    const drawX = -(extraX / 2);
+    const drawY = -(extraY * offsetYPercent);
+
+    ctx.drawImage(currentCropImage, drawX, drawY, drawWidth, drawHeight);
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor seleccione una imagen válida');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const img = new Image();
+        img.onload = () => {
+          currentCropImage = img;
+          cropArea.style.display = 'block';
+          sliderOffsetY.value = 50;
+          sliderZoom.value = 100;
+          valOffsetY.textContent = '50%';
+          valZoom.textContent = '100%';
+          btnSave.disabled = false;
+          btnSave.style.opacity = '1';
+          drawCroppedImage();
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (sliderOffsetY) {
+    sliderOffsetY.addEventListener('input', (e) => {
+      valOffsetY.textContent = `${e.target.value}%`;
+      drawCroppedImage();
+    });
+  }
+
+  if (sliderZoom) {
+    sliderZoom.addEventListener('input', (e) => {
+      valZoom.textContent = `${e.target.value}%`;
+      drawCroppedImage();
+    });
+  }
+
+  if (btnSave) {
+    btnSave.addEventListener('click', () => {
+      if (!currentCropImage || !canvas) return;
+      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.88);
+
+      const banners = db.getPromoBanners(adminState.currentProfileId) || [];
+      const newBanner = {
+        id: `banner-${Date.now()}`,
         enabled: true,
-        title: document.getElementById('bannerTitle').value.trim(),
-        image: document.getElementById('bannerImage').value.trim() || 'assets/images/fresh_salmon.png'
+        image: croppedBase64
       };
 
-      db.saveSinglePromoBanner(adminState.currentProfileId, bannerData);
-      promoForm.reset();
-      document.getElementById('editBannerId').value = '';
-      const preview = document.getElementById('bannerImagePreview');
-      if (preview) preview.style.display = 'none';
+      banners.unshift(newBanner);
+      db.savePromoBanners(adminState.currentProfileId, banners);
 
-      showToast('Banner promocional guardado');
+      closeCropModal();
+      showToast('Nuevo banner promocional guardado y encuadrado');
       renderBannersList();
       reloadPhonePreview();
     });
@@ -768,36 +888,61 @@ function renderBannersList() {
   const banners = db.getPromoBanners(adminState.currentProfileId);
   container.innerHTML = '';
 
-  if (banners.length === 0) {
-    container.innerHTML = '<p style="font-size:0.85rem; color:#9ca3af;">No hay banners promocionales cargados.</p>';
+  if (!banners || banners.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #64748b; background: #ffffff; border-radius: 12px; border: 1px dashed #cbd5e1;">
+        <i data-lucide="image" style="width: 40px; height: 40px; margin-bottom: 8px; opacity: 0.5;"></i>
+        <h4 style="font-size: 1rem; color: #1e293b; margin-bottom: 4px;">No hay banners promocionales cargados</h4>
+        <p style="font-size: 0.85rem;">Haga clic en "+ Subir Nuevo Banner" para publicar ofertas o eventos.</p>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
     return;
   }
 
-  banners.forEach(b => {
+  banners.forEach((banner) => {
     const card = document.createElement('div');
-    card.style.background = '#ffffff';
-    card.style.border = '1px solid #e2e8f0';
-    card.style.padding = '12px';
-    card.style.borderRadius = '10px';
-    card.style.display = 'flex';
-    card.style.alignItems = 'center';
-    card.style.gap = '12px';
+    card.className = 'banner-item-card';
 
     card.innerHTML = `
-      <img src="${b.image}" style="width:80px; height:45px; object-fit:cover; border-radius:6px;">
-      <div style="flex-grow:1;">
-        <div style="font-weight:700; font-size:0.88rem; color:#0f172a;">${b.title || 'Banner Promocional'}</div>
+      <div class="banner-card-media">
+        <img src="${banner.image}" alt="Banner promocional">
+        <span class="banner-status-badge ${banner.enabled !== false ? 'active' : 'inactive'}">
+          ${banner.enabled !== false ? 'Activo en Carta' : 'Desactivado'}
+        </span>
       </div>
-      <button class="btn-delete-banner btn-admin-danger" style="padding:6px 10px; font-size:0.75rem;">
-        <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
-      </button>
+      <div class="banner-card-actions">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label class="toggle-switch" title="Activar/Desactivar banner">
+            <input type="checkbox" class="btn-toggle-banner" data-id="${banner.id}" ${banner.enabled !== false ? 'checked' : ''}>
+            <span class="slider"></span>
+          </label>
+          <span style="font-size: 0.82rem; font-weight: 600; color: #475569;">
+            ${banner.enabled !== false ? 'Visible' : 'Oculto'}
+          </span>
+        </div>
+        <button type="button" class="btn-delete-banner btn-admin-danger" data-id="${banner.id}" style="padding: 6px 12px; font-size: 0.78rem;">
+          <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i> Eliminar
+        </button>
+      </div>
     `;
 
-    card.querySelector('.btn-delete-banner').addEventListener('click', () => {
-      db.deletePromoBanner(adminState.currentProfileId, b.id);
-      showToast('Banner eliminado');
+    card.querySelector('.btn-toggle-banner').addEventListener('change', (e) => {
+      banner.enabled = e.target.checked;
+      db.savePromoBanners(adminState.currentProfileId, banners);
+      showToast(e.target.checked ? 'Banner activado en la carta' : 'Banner desactivado');
       renderBannersList();
       reloadPhonePreview();
+    });
+
+    card.querySelector('.btn-delete-banner').addEventListener('click', () => {
+      if (confirm('¿Eliminar este banner promocional?')) {
+        const updated = banners.filter(b => b.id !== banner.id);
+        db.savePromoBanners(adminState.currentProfileId, updated);
+        showToast('Banner eliminado');
+        renderBannersList();
+        reloadPhonePreview();
+      }
     });
 
     container.appendChild(card);

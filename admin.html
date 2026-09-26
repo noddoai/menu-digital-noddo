@@ -226,55 +226,20 @@
 
         <!-- TAB 3: BANNERS PROMOCIONALES -->
         <div id="tabPromos" class="admin-tab-content">
-          <div class="two-column-grid">
-            
-            <div class="corporate-card">
-              <div class="card-header-clean">
-                <h3>Crear Banner Promocional</h3>
-                <p>Promociones de encabezado para el menú digital</p>
+          <div class="corporate-card margin-b-20">
+            <div class="flex-between-center flex-wrap gap-16">
+              <div>
+                <h3>Banners Promocionales</h3>
+                <p class="text-muted">Cargue y gestione los banners gráficos de ofertas, tarjetas o eventos (Formato 16:6)</p>
               </div>
-
-              <form id="promoBannerForm" class="clean-form">
-                <input type="hidden" id="editBannerId">
-
-                <div class="form-group">
-                  <label>Título de la Promoción *</label>
-                  <input type="text" id="bannerTitle" placeholder="ej: 20% OFF en Coctelería" required>
-                </div>
-
-                <div class="form-group">
-                  <label>Imagen del Banner</label>
-                  <div class="compact-media-uploader" id="bannerDropzone">
-                    <div class="media-preview-container flex-preview">
-                      <img id="bannerImagePreview" src="assets/images/specialty_coffee.png" alt="Vista previa banner">
-                    </div>
-                    <div class="upload-controls">
-                      <p class="upload-hint">Sugerido: 1200x500px JPG/PNG</p>
-                      <button type="button" class="btn-upload-subtle" onclick="document.getElementById('bannerFileInput').click()">
-                        <i data-lucide="upload"></i> Seleccionar Imagen
-                      </button>
-                      <input type="file" id="bannerFileInput" accept="image/*" style="display:none;">
-                    </div>
-                  </div>
-                  <input type="hidden" id="bannerImage">
-                </div>
-
-                <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 12px;">
-                  <i data-lucide="save"></i> Guardar Banner
-                </button>
-              </form>
+              <button type="button" id="btnOpenBannerModal" class="btn-admin-primary">
+                <i data-lucide="plus"></i> Subir Nuevo Banner
+              </button>
             </div>
+          </div>
 
-            <div class="corporate-card">
-              <div class="card-header-clean">
-                <h3>Banners Activos</h3>
-                <p>Promociones visibles actualmente en la carta</p>
-              </div>
-              <div id="activeBannersList" class="banners-stack">
-                <!-- Lista de Banners -->
-              </div>
-            </div>
-
+          <div id="activeBannersList" class="banners-grid-container">
+            <!-- Inyectado dinámicamente -->
           </div>
         </div>
 
@@ -624,6 +589,62 @@
 
     </form>
 
+  </div>
+
+  <!-- MODAL DE SUBIDA Y ENCUADRE DE BANNER PROMOCIONAL -->
+  <div id="bannerCropModalBackdrop" class="sheet-backdrop"></div>
+  <div id="bannerCropModal" class="admin-modal-card" style="max-width: 680px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); opacity: 0; pointer-events: none; transition: all 0.2s ease; z-index: 1000; background: #ffffff; border-radius: 16px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+    <div class="modal-header-corporate" style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 2px;">Subir & Encuadrar Banner</h3>
+        <p style="font-size: 0.82rem; color: #64748b; margin: 0;">Ajuste el recorte de la imagen en formato horizontal 16:6</p>
+      </div>
+      <button type="button" class="btn-close-modal" id="btnCloseBannerCropModal" aria-label="Cerrar" style="background: none; border: none; font-size: 1.5rem; color: #64748b; cursor: pointer;">&times;</button>
+    </div>
+    
+    <div style="padding: 20px 24px;">
+      <div style="display: flex; align-items: center; gap: 8px; background: #e0f2fe; color: #0369a1; padding: 10px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; margin-bottom: 16px;">
+        <i data-lucide="info" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+        <span>Formato recomendado: <strong>16:6 (1200 x 450 px)</strong>. La información de la promo debe estar en la misma imagen.</span>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label style="font-weight: 700; font-size: 0.85rem; color: #334155; margin-bottom: 6px; display: block;">Seleccionar Imagen desde su dispositivo *</label>
+        <input type="file" id="cropFileInput" accept="image/*" class="form-select" style="padding: 8px; width: 100%;">
+      </div>
+
+      <!-- ÁREA DE ENCUADRE CON CANVAS -->
+      <div id="cropAreaWrapper" style="display: none; margin-top: 16px;">
+        <label style="font-weight: 700; font-size: 0.82rem; color: #475569; margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px;">Vista Previa de Encuadre (16:6):</label>
+        <div style="background: #0f172a; border-radius: 12px; padding: 8px; display: flex; justify-content: center; align-items: center; border: 1px solid #cbd5e1;">
+          <canvas id="bannerCropCanvas" width="1200" height="450" style="width: 100%; height: auto; max-height: 220px; border-radius: 6px; object-fit: contain;"></canvas>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; background: #f8fafc; padding: 12px 16px; border-radius: 10px; border: 1px solid #e2e8f0;">
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
+              <span>Ajuste Vertical (Y)</span>
+              <span id="valOffsetY">50%</span>
+            </label>
+            <input type="range" id="sliderOffsetY" min="0" max="100" value="50" style="width: 100%; margin-top: 6px;">
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; font-weight: 700; color: #475569; display: flex; justify-content: space-between;">
+              <span>Zoom / Escala</span>
+              <span id="valZoom">100%</span>
+            </label>
+            <input type="range" id="sliderZoom" min="100" max="200" value="100" style="width: 100%; margin-top: 6px;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 16px 16px;">
+      <button type="button" class="btn-admin-secondary" id="btnCancelBannerCropModal">Cancelar</button>
+      <button type="button" class="btn-admin-primary" id="btnSaveCroppedBanner" disabled style="opacity: 0.5;">
+        <i data-lucide="check"></i> Guardar y Publicar Banner
+      </button>
+    </div>
   </div>
 
   <!-- NOTIFICACIÓN TOAST -->

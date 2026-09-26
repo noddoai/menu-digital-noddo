@@ -168,14 +168,7 @@ function renderPromoBanner() {
       <div class="promo-carousel-track" id="promoCarouselTrack">
         ${banners.map((b, idx) => `
           <div class="promo-slide" data-index="${idx}">
-            <img src="${b.image || 'assets/images/fresh_salmon.png'}" alt="${b.title}" class="promo-slide-img">
-            <div class="promo-slide-overlay"></div>
-            <div class="promo-slide-content">
-              <span class="promo-badge-tag">${b.badge || 'PROMOCIÓN'}</span>
-              <h3>${b.title}</h3>
-              <p>${b.subtitle}</p>
-              ${b.buttonText ? `<button class="promo-banner-btn">${b.buttonText} <i data-lucide="chevron-right" style="width:14px;height:14px;"></i></button>` : ''}
-            </div>
+            <img src="${b.image || 'assets/images/specialty_coffee.png'}" alt="Banner Promocional" class="promo-slide-img" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
         `).join('')}
       </div>
