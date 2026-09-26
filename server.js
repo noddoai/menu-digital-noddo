@@ -18,9 +18,22 @@ const JWT_SECRET = process.env.JWT_SECRET || 'aura_saas_super_secret_key_2026';
 
 // Configuración del Pool de PostgreSQL (Opcional si hay DATABASE_URL)
 const { Pool } = pg;
-const pool = process.env.DATABASE_URL
-  ? new Pool({ connectionString: process.env.DATABASE_URL })
-  : null;
+let pool = null;
+
+if (process.env.DATABASE_URL) {
+  try {
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      connectionTimeoutMillis: 5000
+    });
+    pool.on('error', (err) => {
+      console.log('💡 Notificación de conexión PG:', err.message);
+    });
+  } catch (e) {
+    console.log('Fallback a base local de memoria:', e.message);
+  }
+}
+
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
