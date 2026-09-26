@@ -14,7 +14,7 @@
 <body class="admin-body">
 
   <!-- ==========================================
-       1. PANTALLA DE LOGIN DE ADMINISTRADOR (CLEAN CORPORATE LIGHT)
+       1. PANTALLA DE LOGIN DE ADMINISTRADOR
        ========================================== -->
   <section id="loginSection" class="admin-login-wrapper">
     <div class="admin-login-card">
@@ -65,7 +65,7 @@
   </section>
 
   <!-- ==========================================
-       2. DASHBOARD PRINCIPAL DE ADMINISTRACIÓN (CORPORATE DASHBOARD)
+       2. DASHBOARD CON VISTA PREVIA SMARTPHONE EN TIEMPO REAL (SPLIT SCREEN)
        ========================================== -->
   <section id="adminDashboardSection" class="admin-dashboard-layout" style="display: none;">
     
@@ -101,478 +101,490 @@
       </div>
     </header>
 
-    <div class="dashboard-main-container">
+    <!-- WORKSPACE CON SPLIT-SCREEN (PANEL EDITOR + MOCKUP DE SMARTPHONE) -->
+    <div class="workspace-split-container">
       
-      <!-- BARRA KPI RESUMEN DE MÉTRICAS -->
-      <div class="admin-kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-icon-box icon-blue"><i data-lucide="utensils"></i></div>
-          <div class="kpi-info">
-            <span class="kpi-label">Total Productos</span>
-            <span class="kpi-value" id="kpiTotalDishes">0</span>
-          </div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon-box icon-green"><i data-lucide="check-circle-2"></i></div>
-          <div class="kpi-info">
-            <span class="kpi-label">Disponibles en Stock</span>
-            <span class="kpi-value" id="kpiAvailableDishes">0</span>
-          </div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon-box icon-amber"><i data-lucide="star"></i></div>
-          <div class="kpi-info">
-            <span class="kpi-label">Platos Destacados</span>
-            <span class="kpi-value" id="kpiFeaturedDishes">0</span>
-          </div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon-box icon-purple"><i data-lucide="qr-code"></i></div>
-          <div class="kpi-info">
-            <span class="kpi-label">Identificador QR</span>
-            <span class="kpi-value-code" id="kpiSlugName">gourmet-bistro</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- NAVEGACIÓN POR PESTAÑAS (SEGMENTED TABS) -->
-      <div class="admin-tabs-nav">
-        <button class="admin-tab-btn active" data-tab="tabItems" id="navTabItems">
-          <i data-lucide="shopping-bag"></i> Catálogo & Precios
-        </button>
-        <button class="admin-tab-btn" data-tab="tabQuickStock" id="navTabQuickStock">
-          <i data-lucide="zap"></i> Pausa Rápida Stock
-        </button>
-        <button class="admin-tab-btn" data-tab="tabPromos" id="navTabPromos">
-          <i data-lucide="sparkles"></i> Banners Promocionales
-        </button>
-        <button class="admin-tab-btn" data-tab="tabQrCode" id="navTabQrCode">
-          <i data-lucide="qr-code"></i> Código QR Mesas
-        </button>
-        <button class="admin-tab-btn" data-tab="tabStyles" id="navTabStyles">
-          <i data-lucide="palette"></i> Marca & Colores
-        </button>
-        <button class="admin-tab-btn" data-tab="tabUsers" id="navTabUsers">
-          <i data-lucide="users"></i> Personal & Claves
-        </button>
-        <button class="admin-tab-btn" data-tab="tabPreviews" id="navTabPreviews">
-          <i data-lucide="external-link"></i> Ver Menú En Vivo
-        </button>
-      </div>
-
-      <!-- TAB 1: CATÁLOGO DE PRODUCTOS & PRECIOS -->
-      <div id="tabItems" class="admin-tab-content active">
+      <!-- LADO IZQUIERDO: PANEL DE ADMINISTRACIÓN Y FORMULARIOS -->
+      <main class="editor-main-panel">
         
-        <div class="admin-toolbar">
-          <div class="toolbar-left">
-            <div class="search-input-box">
-              <i data-lucide="search"></i>
-              <input type="text" id="adminSearchInput" placeholder="Buscar por nombre o descripción...">
+        <!-- BARRA KPI RESUMEN DE MÉTRICAS -->
+        <div class="admin-kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-box icon-blue"><i data-lucide="utensils"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Total Productos</span>
+              <span class="kpi-value" id="kpiTotalDishes">0</span>
             </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box icon-green"><i data-lucide="check-circle-2"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">En Stock</span>
+              <span class="kpi-value" id="kpiAvailableDishes">0</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box icon-amber"><i data-lucide="star"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Destacados</span>
+              <span class="kpi-value" id="kpiFeaturedDishes">0</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon-box icon-purple"><i data-lucide="qr-code"></i></div>
+            <div class="kpi-info">
+              <span class="kpi-label">Slug QR</span>
+              <span class="kpi-value-code" id="kpiSlugName">gourmet-bistro</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- NAVEGACIÓN POR PESTAÑAS -->
+        <div class="admin-tabs-nav">
+          <button class="admin-tab-btn active" data-tab="tabItems" id="navTabItems">
+            <i data-lucide="shopping-bag"></i> Catálogo & Precios
+          </button>
+          <button class="admin-tab-btn" data-tab="tabQuickStock" id="navTabQuickStock">
+            <i data-lucide="zap"></i> Pausa Rápida
+          </button>
+          <button class="admin-tab-btn" data-tab="tabPromos" id="navTabPromos">
+            <i data-lucide="sparkles"></i> Banners Promocionales
+          </button>
+          <button class="admin-tab-btn" data-tab="tabQrCode" id="navTabQrCode">
+            <i data-lucide="qr-code"></i> Código QR
+          </button>
+          <button class="admin-tab-btn" data-tab="tabStyles" id="navTabStyles">
+            <i data-lucide="palette"></i> Marca & Colores
+          </button>
+          <button class="admin-tab-btn" data-tab="tabUsers" id="navTabUsers">
+            <i data-lucide="users"></i> Personal
+          </button>
+        </div>
+
+        <!-- TAB 1: CATÁLOGO DE PRODUCTOS & PRECIOS -->
+        <div id="tabItems" class="admin-tab-content active">
+          
+          <div class="admin-toolbar">
+            <div class="toolbar-left">
+              <div class="search-input-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="adminSearchInput" placeholder="Buscar por nombre...">
+              </div>
+              
+              <select id="adminCategoryFilter" class="toolbar-select">
+                <option value="all">Todas las Categorías</option>
+              </select>
+
+              <select id="adminStockFilter" class="toolbar-select">
+                <option value="all">Todos los Estados</option>
+                <option value="available">✓ En Stock</option>
+                <option value="unavailable">✗ Agotados</option>
+              </select>
+            </div>
+
+            <div class="toolbar-right">
+              <div class="bulk-price-container">
+                <span class="bulk-label">Ajuste Masivo %:</span>
+                <input type="number" id="bulkPercentInput" value="10" step="1">
+                <button type="button" id="btnApplyBulkPrice" class="btn-secondary-sm">
+                  Aplicar %
+                </button>
+              </div>
+
+              <button id="btnAddNewDish" class="btn-admin-primary">
+                <i data-lucide="plus"></i> Nuevo Producto
+              </button>
+            </div>
+          </div>
+
+          <!-- TABLA DE PRODUCTOS CORPORATIVA -->
+          <div class="corporate-table-card">
+            <table class="corporate-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">Imagen</th>
+                  <th>Producto & Categoría</th>
+                  <th style="width: 160px;">Precio ($)</th>
+                  <th style="width: 150px;">Disponibilidad</th>
+                  <th style="width: 90px; text-align: center;">Destacado</th>
+                  <th style="width: 130px; text-align: right;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="adminItemsTableBody">
+                <!-- Filas inyectadas por admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 2: BANNERS PROMOCIONALES -->
+        <div id="tabPromos" class="admin-tab-content">
+          <div class="two-column-grid">
             
-            <select id="adminCategoryFilter" class="toolbar-select">
-              <option value="all">Todas las Categorías</option>
-            </select>
-
-            <select id="adminStockFilter" class="toolbar-select">
-              <option value="all">Todos los Estados</option>
-              <option value="available">✓ En Stock</option>
-              <option value="unavailable">✗ Agotados</option>
-            </select>
-          </div>
-
-          <div class="toolbar-right">
-            <div class="bulk-price-container">
-              <span class="bulk-label">Ajuste Masivo %:</span>
-              <input type="number" id="bulkPercentInput" value="10" step="1" title="Porcentaje de aumento">
-              <button type="button" id="btnApplyBulkPrice" class="btn-secondary-sm">
-                Aplicar %
-              </button>
-            </div>
-
-            <button id="btnAddNewDish" class="btn-admin-primary">
-              <i data-lucide="plus"></i> Nuevo Producto
-            </button>
-          </div>
-        </div>
-
-        <!-- TABLA DE PRODUCTOS CORPORATIVA -->
-        <div class="corporate-table-card">
-          <table class="corporate-table">
-            <thead>
-              <tr>
-                <th style="width: 70px;">Imagen</th>
-                <th>Producto & Categoría</th>
-                <th style="width: 170px;">Precio ($) [Edición Rápida]</th>
-                <th style="width: 160px;">Disponibilidad</th>
-                <th style="width: 100px; text-align: center;">Destacado</th>
-                <th style="width: 130px; text-align: right;">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="adminItemsTableBody">
-              <!-- Filas inyectadas por admin.js -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- TAB 2: BANNERS PROMOCIONALES -->
-      <div id="tabPromos" class="admin-tab-content">
-        <div class="two-column-grid">
-          
-          <div class="corporate-card">
-            <div class="card-header-clean">
-              <h3>Crear Banner Promocional</h3>
-              <p>Promociones de encabezado para el menú digital</p>
-            </div>
-
-            <form id="promoBannerForm" class="clean-form">
-              <input type="hidden" id="editBannerId">
-
-              <div class="form-group">
-                <label>Título de la Promoción *</label>
-                <input type="text" id="bannerTitle" placeholder="ej: 20% OFF en Coctelería de Autor" required>
+            <div class="corporate-card">
+              <div class="card-header-clean">
+                <h3>Crear Banner Promocional</h3>
+                <p>Promociones de encabezado para el menú digital</p>
               </div>
 
-              <div class="form-group">
-                <label>Imagen del Banner</label>
-                <div class="compact-media-uploader" id="bannerDropzone">
-                  <div class="media-preview-container flex-preview">
-                    <img id="bannerImagePreview" src="assets/images/specialty_coffee.png" alt="Vista previa banner">
-                  </div>
-                  <div class="upload-controls">
-                    <p class="upload-hint">Sugerido: 1200x500px JPG/PNG</p>
-                    <button type="button" class="btn-upload-subtle" onclick="document.getElementById('bannerFileInput').click()">
-                      <i data-lucide="upload"></i> Seleccionar Imagen
-                    </button>
-                    <input type="file" id="bannerFileInput" accept="image/*" style="display:none;">
-                  </div>
+              <form id="promoBannerForm" class="clean-form">
+                <input type="hidden" id="editBannerId">
+
+                <div class="form-group">
+                  <label>Título de la Promoción *</label>
+                  <input type="text" id="bannerTitle" placeholder="ej: 20% OFF en Coctelería" required>
                 </div>
-                <input type="hidden" id="bannerImage">
+
+                <div class="form-group">
+                  <label>Imagen del Banner</label>
+                  <div class="compact-media-uploader" id="bannerDropzone">
+                    <div class="media-preview-container flex-preview">
+                      <img id="bannerImagePreview" src="assets/images/specialty_coffee.png" alt="Vista previa banner">
+                    </div>
+                    <div class="upload-controls">
+                      <p class="upload-hint">Sugerido: 1200x500px JPG/PNG</p>
+                      <button type="button" class="btn-upload-subtle" onclick="document.getElementById('bannerFileInput').click()">
+                        <i data-lucide="upload"></i> Seleccionar Imagen
+                      </button>
+                      <input type="file" id="bannerFileInput" accept="image/*" style="display:none;">
+                    </div>
+                  </div>
+                  <input type="hidden" id="bannerImage">
+                </div>
+
+                <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 12px;">
+                  <i data-lucide="save"></i> Guardar Banner
+                </button>
+              </form>
+            </div>
+
+            <div class="corporate-card">
+              <div class="card-header-clean">
+                <h3>Banners Activos</h3>
+                <p>Promociones visibles actualmente en la carta</p>
+              </div>
+              <div id="activeBannersList" class="banners-stack">
+                <!-- Lista de Banners -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAB 3: CÓDIGO QR PARA MESAS -->
+        <div id="tabQrCode" class="admin-tab-content">
+          <div class="two-column-grid">
+            
+            <div class="corporate-card text-center">
+              <h3>Código QR del Menú Digital</h3>
+              <p class="text-muted">Imprima este código para colocar en mesas, barra o folletos</p>
+
+              <div class="qr-preview-box">
+                <img id="qrCodeImage" src="" alt="Código QR del Menú">
               </div>
 
-              <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 12px;">
-                <i data-lucide="save"></i> Guardar Banner Promocional
-              </button>
-            </form>
-          </div>
+              <div class="url-display-pill" id="qrTargetUrlText">
+                https://miapp.com/menu/gourmet-bistro
+              </div>
 
-          <div class="corporate-card">
+              <div class="qr-action-buttons">
+                <button id="btnDownloadQrPng" class="btn-admin-primary flex-1">
+                  <i data-lucide="download"></i> Descargar PNG
+                </button>
+                <button id="btnDownloadQrSvg" class="btn-admin-secondary flex-1">
+                  <i data-lucide="file-code"></i> Vector SVG
+                </button>
+              </div>
+            </div>
+
+            <div class="corporate-card">
+              <h3>Recomendaciones de Uso</h3>
+              <ul class="guide-list">
+                <li><strong>Tamaño Recomendado:</strong> 10x10 cm para soportes sobre mesa.</li>
+                <li><strong>Vectorial:</strong> Formato SVG listo para imprenta profesional.</li>
+                <li><strong>Directo:</strong> Escaneo con cámara nativa iOS y Android.</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TAB 4: MARCA & COLORES -->
+        <div id="tabStyles" class="admin-tab-content">
+          <div class="corporate-card max-w-600">
             <div class="card-header-clean">
-              <h3>Banners Activos</h3>
-              <p>Promociones visibles actualmente en la carta</p>
-            </div>
-            <div id="activeBannersList" class="banners-stack">
-              <!-- Lista de Banners -->
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- TAB 3: CÓDIGO QR PARA MESAS -->
-      <div id="tabQrCode" class="admin-tab-content">
-        <div class="two-column-grid">
-          
-          <div class="corporate-card text-center">
-            <h3>Código QR del Menú Digital</h3>
-            <p class="text-muted">Imprima este código para colocar en mesas, barra o folletos</p>
-
-            <div class="qr-preview-box">
-              <img id="qrCodeImage" src="" alt="Código QR del Menú">
+              <h3>Personalización de Marca</h3>
+              <p>Ajuste el nombre comercial y color identitario del menú</p>
             </div>
 
-            <div class="url-display-pill" id="qrTargetUrlText">
-              https://miapp.com/menu/gourmet-bistro
-            </div>
-
-            <div class="qr-action-buttons">
-              <button id="btnDownloadQrPng" class="btn-admin-primary flex-1">
-                <i data-lucide="download"></i> Descargar PNG (Alta Res)
-              </button>
-              <button id="btnDownloadQrSvg" class="btn-admin-secondary flex-1">
-                <i data-lucide="file-code"></i> Vector SVG (Imprenta)
-              </button>
-            </div>
-          </div>
-
-          <div class="corporate-card">
-            <h3>Recomendaciones de Uso</h3>
-            <ul class="guide-list">
-              <li><strong>Tamaño Recomendado:</strong> 10x10 cm para exhibidores acrílicos sobre mesa.</li>
-              <li><strong>Formato Vectorial:</strong> Descargue el archivo SVG para enviar a imprentas o diseñadores.</li>
-              <li><strong>Sin Apps:</strong> Los clientes escanean directamente desde la cámara nativa de su smartphone.</li>
-            </ul>
-
-            <div class="info-callout">
-              <i data-lucide="lightbulb"></i>
-              <div>
-                <strong>Consejo Comercial:</strong>
-                <p>Agregue un texto sugerente como: "Escanee aquí para ver la carta completa con fotos de cada plato".</p>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- TAB 4: MARCA & COLORES -->
-      <div id="tabStyles" class="admin-tab-content">
-        <div class="corporate-card max-w-600">
-          <div class="card-header-clean">
-            <h3>Personalización de Marca</h3>
-            <p>Ajuste el nombre comercial y color identitario del menú</p>
-          </div>
-
-          <form id="themeConfigForm" class="clean-form">
-            <div class="form-group">
-              <label>Nombre del Establecimiento</label>
-              <input type="text" id="inputBrandName" required>
-            </div>
-            <div class="form-group">
-              <label>Slogan o Descripción Corta</label>
-              <input type="text" id="inputBrandTagline" required>
-            </div>
-            <div class="form-group">
-              <label>Color Distintivo Principal</label>
-              <div class="color-picker-row">
-                <input type="color" id="inputAccentColor" class="color-input">
-                <input type="text" id="inputAccentColorText" class="color-text-input">
-              </div>
-            </div>
-
-            <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 10px;">
-              <i data-lucide="save"></i> Guardar Cambios de Marca
-            </button>
-          </form>
-        </div>
-      </div>
-
-      <!-- TAB 5: PAUSA RÁPIDA DE STOCK -->
-      <div id="tabQuickStock" class="admin-tab-content">
-        <div class="corporate-card margin-b-20">
-          <div class="flex-between-center flex-wrap gap-16">
-            <div>
-              <h3>Pausa Rápida de Stock (Cocina / Barra)</h3>
-              <p class="text-muted">Desactive rápidamente productos agotados durante el servicio en tiempo real</p>
-            </div>
-            <div class="search-input-box width-240">
-              <i data-lucide="search"></i>
-              <input type="text" id="quickStockSearch" placeholder="Filtrar productos...">
-            </div>
-          </div>
-        </div>
-
-        <div id="quickStockGrid" class="quick-stock-grid">
-          <!-- Inyectado dinámicamente -->
-        </div>
-      </div>
-
-      <!-- TAB 6: PERSONAL & PERMISOS -->
-      <div id="tabUsers" class="admin-tab-content">
-        <div class="two-column-grid">
-          
-          <div class="corporate-card">
-            <div class="card-header-clean">
-              <h3>Crear Acceso de Personal</h3>
-              <p>Asigne cuentas restringidas para encargados o mozos</p>
-            </div>
-
-            <form id="addUserForm" class="clean-form">
+            <form id="themeConfigForm" class="clean-form">
               <div class="form-group">
-                <label>Nombre del Empleado *</label>
-                <input type="text" id="newUserName" placeholder="ej: Mateo González" required>
+                <label>Nombre del Establecimiento</label>
+                <input type="text" id="inputBrandName" required>
               </div>
-
               <div class="form-group">
-                <label>Correo Electrónico *</label>
-                <input type="email" id="newUserEmail" placeholder="ej: mateo@restaurante.com" required>
+                <label>Slogan o Descripción Corta</label>
+                <input type="text" id="inputBrandTagline" required>
               </div>
-
               <div class="form-group">
-                <label>Contraseña *</label>
-                <input type="password" id="newUserPassword" placeholder="Mínimo 6 caracteres" required>
-              </div>
-
-              <div class="form-group">
-                <label>Nivel de Permisos *</label>
-                <select id="newUserRole" class="form-select">
-                  <option value="staff">🔒 Staff (Solo control de stock)</option>
-                  <option value="manager">🛠️ Encargado (Edición completa de menú)</option>
-                </select>
+                <label>Color Distintivo Principal</label>
+                <div class="color-picker-row">
+                  <input type="color" id="inputAccentColor" class="color-input">
+                  <input type="text" id="inputAccentColorText" class="color-text-input">
+                </div>
               </div>
 
               <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 10px;">
-                <i data-lucide="user-plus"></i> Crear Cuenta de Usuario
+                <i data-lucide="save"></i> Guardar Cambios de Marca
               </button>
             </form>
           </div>
+        </div>
 
-          <div class="corporate-card">
-            <div class="card-header-clean">
-              <h3>Usuarios Autorizados</h3>
-              <p>Personal con acceso activo al panel de este local</p>
-            </div>
-            <div id="usersListContainer" class="users-list-stack">
-              <!-- Lista de Usuarios -->
+        <!-- TAB 5: PAUSA RÁPIDA DE STOCK -->
+        <div id="tabQuickStock" class="admin-tab-content">
+          <div class="corporate-card margin-b-20">
+            <div class="flex-between-center flex-wrap gap-16">
+              <div>
+                <h3>Pausa Rápida de Stock</h3>
+                <p class="text-muted">Desactive rápidamente productos agotados durante el servicio</p>
+              </div>
+              <div class="search-input-box width-240">
+                <i data-lucide="search"></i>
+                <input type="text" id="quickStockSearch" placeholder="Filtrar productos...">
+              </div>
             </div>
           </div>
 
+          <div id="quickStockGrid" class="quick-stock-grid">
+            <!-- Inyectado dinámicamente -->
+          </div>
         </div>
-      </div>
 
-      <!-- TAB 7: VISTAS PREVIAS -->
-      <div id="tabPreviews" class="admin-tab-content">
-        <div class="two-column-grid">
-          <a id="previewBtnBistro" href="index.html?tenant=gourmet-bistro" target="_blank" class="preview-card-link">
-            <div class="preview-icon">🍷</div>
-            <div>
-              <h3>Ver Carta en Vivo: Gourmet Bistro</h3>
-              <p>Abrir menú público de restaurante en nueva pestaña</p>
-            </div>
-          </a>
+        <!-- TAB 6: PERSONAL & PERMISOS -->
+        <div id="tabUsers" class="admin-tab-content">
+          <div class="two-column-grid">
+            
+            <div class="corporate-card">
+              <div class="card-header-clean">
+                <h3>Crear Acceso de Personal</h3>
+                <p>Asigne cuentas para encargados o mozos</p>
+              </div>
 
-          <a id="previewBtnCafe" href="index.html?tenant=maison-cafe" target="_blank" class="preview-card-link">
-            <div class="preview-icon">☕</div>
-            <div>
-              <h3>Ver Carta en Vivo: Maison Cafe</h3>
-              <p>Abrir menú público de cafetería en nueva pestaña</p>
+              <form id="addUserForm" class="clean-form">
+                <div class="form-group">
+                  <label>Nombre del Empleado *</label>
+                  <input type="text" id="newUserName" placeholder="ej: Mateo González" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Correo Electrónico *</label>
+                  <input type="email" id="newUserEmail" placeholder="ej: mateo@restaurante.com" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Contraseña *</label>
+                  <input type="password" id="newUserPassword" placeholder="Mínimo 6 caracteres" required>
+                </div>
+
+                <div class="form-group">
+                  <label>Nivel de Permisos *</label>
+                  <select id="newUserRole" class="form-select">
+                    <option value="staff">🔒 Staff (Solo control de stock)</option>
+                    <option value="manager">🛠️ Encargado (Edición completa)</option>
+                  </select>
+                </div>
+
+                <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 10px;">
+                  <i data-lucide="user-plus"></i> Crear Cuenta
+                </button>
+              </form>
             </div>
-          </a>
+
+            <div class="corporate-card">
+              <div class="card-header-clean">
+                <h3>Usuarios Autorizados</h3>
+                <p>Personal registrado en este local</p>
+              </div>
+              <div id="usersListContainer" class="users-list-stack">
+                <!-- Lista de Usuarios -->
+              </div>
+            </div>
+
+          </div>
         </div>
-      </div>
+
+      </main>
+
+      <!-- LADO DERECHO: VISTA PREVIA EN VIVO DENTRO DE MARCO DE SMARTPHONE -->
+      <aside class="admin-preview-sidebar">
+        <div class="preview-sticky-card">
+          
+          <div class="preview-header-bar">
+            <div class="live-sync-indicator">
+              <span class="live-dot-pulse"></span>
+              <span>VISTA PREVIA SMARTPHONE</span>
+            </div>
+            <button type="button" class="btn-reload-preview" id="btnReloadPhoneFrame" title="Recargar vista previa">
+              <i data-lucide="rotate-cw"></i>
+            </button>
+          </div>
+
+          <!-- MOCKUP DEL IPHONE 15 -->
+          <div class="iphone-mockup-frame">
+            <div class="iphone-notch">
+              <div class="iphone-camera"></div>
+              <div class="iphone-speaker"></div>
+            </div>
+            <div class="iphone-screen">
+              <iframe id="phonePreviewIframe" src="restaurant.html" frameborder="0"></iframe>
+            </div>
+            <div class="iphone-home-bar"></div>
+          </div>
+
+          <div class="preview-footer-note">
+            <i data-lucide="smartphone"></i>
+            <span>Sincronización en tiempo real al editar</span>
+          </div>
+
+        </div>
+      </aside>
 
     </div>
   </section>
 
   <!-- ==========================================
-       3. MODAL DE EDICIÓN DE PLATO (REDISEÑADO, ELEGANTE & COMPACTO)
+       3. MODAL DE EDICIÓN DE PLATO (FORMULARIO AMPLIO, CÓMODO Y ELEGANTE)
        ========================================== -->
   <div class="modal-backdrop" id="adminModalBackdrop"></div>
-  <div class="admin-modal-center corporate-modal" id="adminDishModal" role="dialog">
+  <div class="admin-modal-center corporate-modal-spacious" id="adminDishModal" role="dialog">
     
     <div class="modal-header-clean">
       <div>
         <h2 id="adminModalTitle">Editar Producto</h2>
-        <p class="modal-subtitle">Gestión de detalles, precio, fotos e ingredientes</p>
+        <p class="modal-subtitle">Gestión de detalles, precios, imágenes e ingredientes</p>
       </div>
       <button class="btn-icon-close" id="btnCloseAdminModal"><i data-lucide="x"></i></button>
     </div>
 
-    <form id="dishEditForm" class="corporate-modal-grid">
+    <form id="dishEditForm" class="spacious-modal-form">
       <input type="hidden" id="editDishId">
 
-      <!-- COLUMNA IZQUIERDA: INFORMACIÓN PRINCIPAL -->
-      <div class="modal-col-main">
+      <div class="modal-sections-grid">
         
-        <div class="form-row-2col">
-          <div class="form-group">
-            <label for="editDishName">Nombre del Producto *</label>
-            <input type="text" id="editDishName" placeholder="ej: Salmón a la Limonada" required>
-          </div>
-          <div class="form-group">
-            <label for="editDishCategory">Categoría *</label>
-            <select id="editDishCategory" required class="form-select"></select>
-          </div>
-        </div>
-
-        <div class="form-row-2col">
-          <div class="form-group">
-            <label for="editDishPrice">Precio ($) *</label>
-            <div class="input-price-wrapper">
-              <span class="price-symbol">$</span>
-              <input type="number" id="editDishPrice" placeholder="0" required step="100">
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="editPrepTime">Tiempo Estimado</label>
-            <input type="text" id="editPrepTime" placeholder="ej: 15-20 min">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="editShortDesc">Descripción Breve (Línea en Menú) *</label>
-          <input type="text" id="editShortDesc" placeholder="Ingredientes principales y método de cocción" required>
-        </div>
-
-        <div class="form-group">
-          <label for="editFullStory">Notas del Chef / Historia de la Receta</label>
-          <textarea id="editFullStory" rows="2" placeholder="Detalles artesanales, maridaje sugerido o información adicional..."></textarea>
-        </div>
-
-        <!-- COMPONENTES E INGREDIENTES -->
-        <div class="ingredients-section-card">
-          <div class="flex-between-center margin-b-10">
-            <span class="section-sublabel"><i data-lucide="layers"></i> Componentes & Alérgenos</span>
-            <button type="button" id="btnAddIngredientRow" class="btn-secondary-xs">
-              <i data-lucide="plus"></i> Agregar Componente
-            </button>
-          </div>
-          <div id="ingredientsRowsContainer" class="ingredients-stack">
-            <!-- Filas dinámicas -->
-          </div>
-        </div>
-
-      </div>
-
-      <!-- COLUMNA DERECHA: MEDIA & ESTADOS -->
-      <div class="modal-col-sidebar">
-        
-        <!-- FOTO COMPACTA Y ELEGANTE -->
-        <div class="form-group">
-          <label>Fotografía del Producto</label>
-          <div class="compact-media-box" id="dishDropzone">
-            <div class="compact-image-preview">
-              <img id="dishImagePreview" src="assets/images/fresh_salmon.png" alt="Vista previa plato">
-            </div>
-            <div class="compact-upload-info">
-              <button type="button" class="btn-upload-pill" onclick="document.getElementById('dishFileInput').click()">
-                <i data-lucide="camera"></i> Cambiar Foto
-              </button>
-              <input type="file" id="dishFileInput" accept="image/*" style="display:none;">
-              <span class="upload-format-note">JPG, PNG o WEBP</span>
-            </div>
-          </div>
-          <input type="hidden" id="editHeroImage">
-        </div>
-
-        <!-- TOGGLE SWITCHES DE ESTADO -->
-        <div class="switches-container-card">
+        <!-- SECCIÓN IZQUIERDA: CAMPOS AMPLIOS DE INFORMACIÓN -->
+        <div class="modal-main-fields">
           
-          <div class="switch-item-row">
-            <div class="switch-label-group">
-              <span class="switch-title">Disponibilidad en Stock</span>
-              <span class="switch-hint">Visible para los comensales</span>
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label for="editDishName">Nombre del Producto *</label>
+              <input type="text" id="editDishName" placeholder="ej: Salmón a la Limonada" required>
             </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="editIsAvailable" checked>
-              <span class="slider"></span>
-            </label>
+            <div class="form-group">
+              <label for="editDishCategory">Categoría *</label>
+              <select id="editDishCategory" required class="form-select"></select>
+            </div>
           </div>
 
-          <div class="switch-item-row">
-            <div class="switch-label-group">
-              <span class="switch-title">Plato Destacado ⭐</span>
-              <span class="switch-hint">Prioridad en encabezado</span>
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label for="editDishPrice">Precio del Producto ($) *</label>
+              <div class="input-price-wrapper">
+                <span class="price-symbol">$</span>
+                <input type="number" id="editDishPrice" placeholder="0" required step="100">
+              </div>
             </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="editIsFeatured">
-              <span class="slider"></span>
-            </label>
+            <div class="form-group">
+              <label for="editPrepTime">Tiempo Estimado de Cocina</label>
+              <input type="text" id="editPrepTime" placeholder="ej: 15-20 min">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="editShortDesc">Descripción Breve (Visible en la Carta) *</label>
+            <input type="text" id="editShortDesc" placeholder="Ingredientes principales y método de preparación" required>
+          </div>
+
+          <div class="form-group">
+            <label for="editFullStory">Notas del Chef / Historia de la Receta</label>
+            <textarea id="editFullStory" rows="3" placeholder="Detalles de la receta, origen de los insumos o maridaje sugerido..."></textarea>
+          </div>
+
+          <!-- COMPONENTES E INGREDIENTES -->
+          <div class="ingredients-section-card">
+            <div class="flex-between-center margin-b-10">
+              <span class="section-sublabel"><i data-lucide="layers"></i> Componentes & Alérgenos</span>
+              <button type="button" id="btnAddIngredientRow" class="btn-secondary-xs">
+                <i data-lucide="plus"></i> Agregar Componente
+              </button>
+            </div>
+            <div id="ingredientsRowsContainer" class="ingredients-stack">
+              <!-- Filas dinámicas -->
+            </div>
           </div>
 
         </div>
 
-        <!-- ETIQUETAS DIETARIAS CHIPS -->
-        <div class="dietary-chips-card">
-          <span class="section-sublabel">Etiquetas Dietéticas</span>
-          <div class="chips-flex-grid">
-            <label class="chip-label"><input type="checkbox" id="dietGlutenFree"> <span>🌾 Sin TACC</span></label>
-            <label class="chip-label"><input type="checkbox" id="dietVegan"> <span>🌱 Vegano</span></label>
-            <label class="chip-label"><input type="checkbox" id="dietVegetarian"> <span>🥬 Vegetariano</span></label>
-            <label class="chip-label"><input type="checkbox" id="dietDairy"> <span>🥛 Lácteos</span></label>
-            <label class="chip-label"><input type="checkbox" id="dietNuts"> <span>🥜 Frutos Secos</span></label>
+        <!-- SECCIÓN DERECHA: MEDIA, ESTADOS & ETIQUETAS -->
+        <div class="modal-side-controls">
+          
+          <!-- FOTO COMPACTA Y ELEGANTE -->
+          <div class="form-group">
+            <label>Fotografía del Producto</label>
+            <div class="compact-media-uploader-box" id="dishDropzone">
+              <div class="compact-image-thumb">
+                <img id="dishImagePreview" src="assets/images/fresh_salmon.png" alt="Vista previa plato">
+              </div>
+              <div class="compact-upload-actions">
+                <button type="button" class="btn-upload-pill" onclick="document.getElementById('dishFileInput').click()">
+                  <i data-lucide="camera"></i> Cambiar Foto
+                </button>
+                <input type="file" id="dishFileInput" accept="image/*" style="display:none;">
+                <span class="upload-note">Formatos: JPG, PNG, WEBP</span>
+              </div>
+            </div>
+            <input type="hidden" id="editHeroImage">
           </div>
+
+          <!-- SWITCHES DE ESTADO -->
+          <div class="switches-container-card">
+            
+            <div class="switch-item-row">
+              <div class="switch-label-group">
+                <span class="switch-title">Disponibilidad en Stock</span>
+                <span class="switch-hint">Si se apaga, figurará como Agotado</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="editIsAvailable" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="switch-item-row">
+              <div class="switch-label-group">
+                <span class="switch-title">Plato Destacado ⭐</span>
+                <span class="switch-hint">Aparece prioritario en la carta</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="editIsFeatured">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+          </div>
+
+          <!-- ETIQUETAS DIETARIAS CHIPS -->
+          <div class="dietary-chips-card">
+            <span class="section-sublabel">Etiquetas Dietéticas</span>
+            <div class="chips-flex-grid">
+              <label class="chip-label"><input type="checkbox" id="dietGlutenFree"> <span>🌾 Sin TACC</span></label>
+              <label class="chip-label"><input type="checkbox" id="dietVegan"> <span>🌱 Vegano</span></label>
+              <label class="chip-label"><input type="checkbox" id="dietVegetarian"> <span>🥬 Vegetariano</span></label>
+              <label class="chip-label"><input type="checkbox" id="dietDairy"> <span>🥛 Lácteos</span></label>
+              <label class="chip-label"><input type="checkbox" id="dietNuts"> <span>🥜 Frutos Secos</span></label>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -580,7 +592,7 @@
       <!-- FOOTER DEL MODAL -->
       <div class="modal-footer-bar">
         <button type="button" class="btn-admin-cancel" id="btnCancelEdit">Cancelar</button>
-        <button type="submit" class="btn-admin-save"><i data-lucide="check"></i> Guardar Producto</button>
+        <button type="submit" class="btn-admin-save"><i data-lucide="check"></i> Guardar Cambios</button>
       </div>
 
     </form>

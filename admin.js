@@ -139,11 +139,34 @@ function populateCategoryFilter() {
   });
 }
 
+function reloadPhonePreview() {
+  const iframe = document.getElementById('phonePreviewIframe');
+  if (iframe && iframe.contentWindow) {
+    try {
+      iframe.contentWindow.location.reload();
+    } catch (e) {
+      console.log('Error recargando vista previa:', e);
+    }
+  }
+}
+
 function setupNavigation() {
+  document.getElementById('btnReloadPhoneFrame')?.addEventListener('click', () => {
+    reloadPhonePreview();
+    showToast('Vista previa en tiempo real actualizada');
+  });
+
   const profileSelect = document.getElementById('adminProfileSelect');
-  profileSelect.addEventListener('change', (e) => {
+  profileSelect?.addEventListener('change', (e) => {
     adminState.currentProfileId = e.target.value;
     document.documentElement.dataset.theme = adminState.currentProfileId;
+    
+    // Actualizar el iframe de vista previa celular al cambiar de local
+    const iframe = document.getElementById('phonePreviewIframe');
+    if (iframe) {
+      iframe.src = adminState.currentProfileId === 'restaurant' ? 'restaurant.html' : 'cafe.html';
+    }
+
     populateCategoryFilter();
     renderItemsTable();
     renderBannersList();
@@ -256,8 +279,8 @@ function renderItemsTable() {
         </div>
       </td>
       <td style="text-align: center;">
-        <button class="btn-star-featured ${item.isFeatured ? 'featured' : ''}" data-id="${item.id}" title="Destacar en portada">
-          ⭐
+        <button class="btn-star-featured ${item.isFeatured ? 'featured' : ''}" data-id="${item.id}" title="${item.isFeatured ? 'Quitar de destacados' : 'Marcar como destacado'}">
+          <i data-lucide="star"></i>
         </button>
       </td>
       <td style="text-align: right;">
@@ -278,14 +301,16 @@ function renderItemsTable() {
       const isAvailable = db.toggleAvailability(item.id);
       showToast(isAvailable ? 'Producto activado En Stock' : 'Producto Pausado / Agotado');
       renderItemsTable();
+      reloadPhonePreview();
     });
 
+    // Listener para destacar producto (Heurística UX corregida: estrella gris sin destacar, dorada rellena destacada)
     tr.querySelector('.btn-star-featured')?.addEventListener('click', () => {
       const isFeatured = db.toggleFeatured(item.id);
-      showToast(isFeatured ? 'Plato marcado como Destacado' : 'Plato remivido de Destacados');
+      showToast(isFeatured ? 'Plato marcado como Destacado ⭐' : 'Plato removido de Destacados');
       renderItemsTable();
+      reloadPhonePreview();
     });
-
 
     // Edición directa de precio al modificar el input inline
     const priceInput = tr.querySelector('.inline-price-input');
@@ -296,6 +321,7 @@ function renderItemsTable() {
         item.formattedPrice = `$ ${newPrice.toLocaleString('es-AR')}`;
         db.saveItem(item);
         showToast(`Precio de "${item.name}" actualizado a $${newPrice}`);
+        reloadPhonePreview();
       }
     };
 
@@ -316,6 +342,7 @@ function renderItemsTable() {
         db.deleteItem(item.id);
         showToast('Plato eliminado');
         renderItemsTable();
+        reloadPhonePreview();
       }
     });
 
@@ -356,6 +383,7 @@ function setupBulkPriceHandler() {
 
       showToast(`Se actualizaron ${count} platos con un ${percent}%`);
       renderItemsTable();
+      reloadPhonePreview();
     }
   });
 }
@@ -534,6 +562,7 @@ function saveDishData() {
   closeDishModal();
   showToast(adminState.editingDishId ? 'Plato actualizado' : 'Nuevo plato creado');
   renderItemsTable();
+  reloadPhonePreview();
 }
 
 // ==========================================
@@ -620,6 +649,7 @@ function setupPromoManager() {
 
       showToast('Banner promocional guardado');
       renderBannersList();
+      reloadPhonePreview();
     });
   }
 }
@@ -638,8 +668,8 @@ function renderBannersList() {
 
   banners.forEach(b => {
     const card = document.createElement('div');
-    card.style.background = '#1f2937';
-    card.style.border = '1px solid #374151';
+    card.style.background = '#ffffff';
+    card.style.border = '1px solid #e2e8f0';
     card.style.padding = '12px';
     card.style.borderRadius = '10px';
     card.style.display = 'flex';
@@ -649,7 +679,7 @@ function renderBannersList() {
     card.innerHTML = `
       <img src="${b.image}" style="width:80px; height:45px; object-fit:cover; border-radius:6px;">
       <div style="flex-grow:1;">
-        <div style="font-weight:700; font-size:0.88rem;">${b.title || 'Banner Promocional'}</div>
+        <div style="font-weight:700; font-size:0.88rem; color:#0f172a;">${b.title || 'Banner Promocional'}</div>
       </div>
       <button class="btn-delete-banner btn-admin-danger" style="padding:6px 10px; font-size:0.75rem;">
         <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
@@ -660,6 +690,7 @@ function renderBannersList() {
       db.deletePromoBanner(adminState.currentProfileId, b.id);
       showToast('Banner eliminado');
       renderBannersList();
+      reloadPhonePreview();
     });
 
     container.appendChild(card);
@@ -723,6 +754,7 @@ function setupThemeEditor() {
     };
     db.saveThemeConfig(adminState.currentProfileId, config);
     showToast('Configuración de marca guardada');
+    reloadPhonePreview();
   });
 }
 
@@ -825,6 +857,7 @@ function renderQuickStockGrid(query = '') {
       showToast(newStatus ? `Producto "${item.name}" activado` : `Producto "${item.name}" pausado`);
       renderQuickStockGrid(query);
       renderItemsTable();
+      reloadPhonePreview();
     });
 
     grid.appendChild(card);
