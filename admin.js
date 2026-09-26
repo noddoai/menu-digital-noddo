@@ -187,6 +187,7 @@ function setupNavigation() {
 
       if (tabId === 'tabQrCode') renderQrCode();
       if (tabId === 'tabPromos') renderBannersList();
+      if (tabId === 'tabQuickStock') renderQuickStockGrid();
       if (window.lucide) window.lucide.createIcons();
     });
   });

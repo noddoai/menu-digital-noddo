@@ -145,7 +145,7 @@
             <i data-lucide="shopping-bag"></i> Catálogo & Precios
           </button>
           <button class="admin-tab-btn" data-tab="tabQuickStock" id="navTabQuickStock">
-            <i data-lucide="zap"></i> Pausa Rápida
+            <i data-lucide="check-circle"></i> Disponibles
           </button>
           <button class="admin-tab-btn" data-tab="tabPromos" id="navTabPromos">
             <i data-lucide="sparkles"></i> Banners Promocionales
@@ -204,7 +204,27 @@
           </div>
         </div>
 
-        <!-- TAB 2: BANNERS PROMOCIONALES -->
+        <!-- TAB 2: DISPONIBILIDAD DE PRODUCTOS -->
+        <div id="tabQuickStock" class="admin-tab-content">
+          <div class="corporate-card margin-b-20">
+            <div class="flex-between-center flex-wrap gap-16">
+              <div>
+                <h3>Disponibles & Stock</h3>
+                <p class="text-muted">Active o pause la disponibilidad de sus platos en tiempo real</p>
+              </div>
+              <div class="search-input-box width-240">
+                <i data-lucide="search"></i>
+                <input type="text" id="quickStockSearch" placeholder="Filtrar productos...">
+              </div>
+            </div>
+          </div>
+
+          <div id="quickStockGrid" class="quick-stock-grid">
+            <!-- Inyectado dinámicamente -->
+          </div>
+        </div>
+
+        <!-- TAB 3: BANNERS PROMOCIONALES -->
         <div id="tabPromos" class="admin-tab-content">
           <div class="two-column-grid">
             
@@ -339,26 +359,6 @@
                 <i data-lucide="save"></i> Guardar Configuración General
               </button>
             </form>
-          </div>
-        </div>
-
-        <!-- TAB 5: PAUSA RÁPIDA DE STOCK -->
-        <div id="tabQuickStock" class="admin-tab-content">
-          <div class="corporate-card margin-b-20">
-            <div class="flex-between-center flex-wrap gap-16">
-              <div>
-                <h3>Pausa Rápida de Stock</h3>
-                <p class="text-muted">Desactive rápidamente productos agotados durante el servicio</p>
-              </div>
-              <div class="search-input-box width-240">
-                <i data-lucide="search"></i>
-                <input type="text" id="quickStockSearch" placeholder="Filtrar productos...">
-              </div>
-            </div>
-          </div>
-
-          <div id="quickStockGrid" class="quick-stock-grid">
-            <!-- Inyectado dinámicamente -->
           </div>
         </div>
 
