@@ -307,23 +307,11 @@ function renderItemsTable() {
       }
     });
 
-    tr.querySelector('.btn-toggle-stock').addEventListener('click', () => {
-      const isAvailable = db.toggleAvailability(item.id);
-      showToast(isAvailable ? 'Plato En Stock' : 'Plato Agotado');
-      renderItemsTable();
-    });
-
-    tr.querySelector('.btn-toggle-featured').addEventListener('click', () => {
-      const isFeatured = db.toggleFeatured(item.id);
-      showToast(isFeatured ? 'Añadido a Destacados' : 'Quitado de Destacados');
-      renderItemsTable();
-    });
-
-    tr.querySelector('.btn-edit-item').addEventListener('click', () => {
+    tr.querySelector('.btn-edit-item')?.addEventListener('click', () => {
       openDishModal(item);
     });
 
-    tr.querySelector('.btn-delete-item').addEventListener('click', () => {
+    tr.querySelector('.btn-delete-item')?.addEventListener('click', () => {
       if (confirm(`¿Eliminar el plato "${item.name}"?`)) {
         db.deleteItem(item.id);
         showToast('Plato eliminado');
