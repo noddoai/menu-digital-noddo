@@ -423,7 +423,13 @@ function openDishModal(item) {
   });
 
   const ingredientsContainer = document.getElementById('ingredientsRowsContainer');
-  ingredientsContainer.innerHTML = '';
+  if (ingredientsContainer) ingredientsContainer.innerHTML = '';
+
+  const variationsContainer = document.getElementById('variationsRowsContainer');
+  if (variationsContainer) variationsContainer.innerHTML = '';
+
+  const switchHasVar = document.getElementById('editHasVariations');
+  const wrapperVar = document.getElementById('variationsWrapper');
 
   if (item) {
     adminState.editingDishId = item.id;
@@ -455,11 +461,22 @@ function openDishModal(item) {
     if (item.layersOrIngredients && Array.isArray(item.layersOrIngredients)) {
       item.layersOrIngredients.forEach(ing => addIngredientRow(ing));
     }
+
+    if (item.hasVariations && item.variations && Array.isArray(item.variations) && item.variations.length > 0) {
+      if (switchHasVar) switchHasVar.checked = true;
+      if (wrapperVar) wrapperVar.style.display = 'block';
+      item.variations.forEach(v => addVariationRow(v));
+    } else {
+      if (switchHasVar) switchHasVar.checked = false;
+      if (wrapperVar) wrapperVar.style.display = 'none';
+    }
   } else {
     adminState.editingDishId = null;
     document.getElementById('adminModalTitle').textContent = 'Crear Nuevo Producto';
     document.getElementById('dishEditForm').reset();
     document.getElementById('editDishId').value = '';
+    if (switchHasVar) switchHasVar.checked = false;
+    if (wrapperVar) wrapperVar.style.display = 'none';
     const preview = document.getElementById('dishImagePreview');
     if (preview) {
       preview.src = 'assets/images/fresh_salmon.png';
@@ -532,6 +549,80 @@ function collectIngredientRows() {
   return ingredients;
 }
 
+function setupVariationRowsHandler() {
+  const switchHasVariations = document.getElementById('editHasVariations');
+  const wrapper = document.getElementById('variationsWrapper');
+  const btnAdd = document.getElementById('btnAddVariationRow');
+
+  if (switchHasVariations && wrapper) {
+    switchHasVariations.addEventListener('change', () => {
+      wrapper.style.display = switchHasVariations.checked ? 'block' : 'none';
+      if (switchHasVariations.checked) {
+        const container = document.getElementById('variationsRowsContainer');
+        if (container && container.children.length === 0) {
+          const basePrice = parseFloat(document.getElementById('editDishPrice').value) || 0;
+          addVariationRow({ name: 'Simple', price: basePrice || 1000 });
+          addVariationRow({ name: 'Doble', price: Math.round((basePrice || 1000) * 1.35) });
+        }
+      }
+    });
+  }
+
+  if (btnAdd) {
+    btnAdd.addEventListener('click', () => {
+      addVariationRow();
+    });
+  }
+}
+
+function addVariationRow(data = {}) {
+  const container = document.getElementById('variationsRowsContainer');
+  if (!container) return;
+
+  const currSymbol = adminState.currencySymbol || '$';
+  const row = document.createElement('div');
+  row.className = 'variation-row-item';
+  row.style.cssText = 'display: flex; gap: 10px; align-items: center; margin-bottom: 8px; background: #f8fafc; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0;';
+
+  row.innerHTML = `
+    <div style="flex: 1;">
+      <input type="text" class="var-name" placeholder="Nombre (ej: Simple, Doble, 500g)" value="${data.name || ''}" style="width: 100%; padding: 6px 10px; font-size: 0.85rem; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+    </div>
+    <div style="width: 130px; position: relative; display: flex; align-items: center;">
+      <span style="position: absolute; left: 10px; color: #475569; font-weight: 700; font-size: 0.85rem;" class="inline-price-symbol">${currSymbol}</span>
+      <input type="number" class="var-price" placeholder="0" value="${data.price !== undefined ? data.price : ''}" step="100" style="width: 100%; padding: 6px 10px 6px 26px; font-size: 0.85rem; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+    </div>
+    <button type="button" class="btn-remove-variation" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;" title="Eliminar variación">
+      <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+    </button>
+  `;
+
+  row.querySelector('.btn-remove-variation').addEventListener('click', () => row.remove());
+  container.appendChild(row);
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function collectVariationRows() {
+  const switchHasVariations = document.getElementById('editHasVariations');
+  if (!switchHasVariations || !switchHasVariations.checked) return [];
+
+  const container = document.getElementById('variationsRowsContainer');
+  if (!container) return [];
+
+  const rows = container.querySelectorAll('.variation-row-item');
+  const variations = [];
+
+  rows.forEach(row => {
+    const name = row.querySelector('.var-name')?.value.trim();
+    const price = parseFloat(row.querySelector('.var-price')?.value) || 0;
+    if (name) {
+      variations.push({ name, price });
+    }
+  });
+
+  return variations;
+}
+
 function saveDishData() {
   const name = document.getElementById('editDishName').value.trim();
   const price = parseFloat(document.getElementById('editDishPrice').value) || 0;
@@ -541,12 +632,19 @@ function saveDishData() {
   const heroImage = document.getElementById('editHeroImage').value.trim() || 'assets/images/fresh_salmon.png';
   const layersOrIngredients = collectIngredientRows();
 
+  const hasVariations = document.getElementById('editHasVariations')?.checked || false;
+  const variations = collectVariationRows();
+  const finalPrice = (hasVariations && variations.length > 0) ? variations[0].price : price;
+  const currSymbol = adminState.currencySymbol || '$';
+
   const itemData = {
     id: adminState.editingDishId || undefined,
     businessProfile: adminState.currentProfileId,
     name,
-    price,
-    formattedPrice: `$ ${price.toLocaleString('es-AR')}`,
+    price: finalPrice,
+    formattedPrice: `${currSymbol} ${finalPrice.toLocaleString('es-AR')}`,
+    hasVariations,
+    variations,
     category,
     shortDescription,
     fullStory,
