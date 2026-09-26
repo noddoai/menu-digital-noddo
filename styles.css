@@ -1532,14 +1532,14 @@ button.category-pill,
 /* WORKSPACE SPLIT CONTAINER (EDITOR + VISTA PREVIA SMARTPHONE) */
 .workspace-split-container {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 440px;
   gap: 24px;
-  max-width: 1560px;
+  max-width: 1680px;
   margin: 0 auto;
   padding: 24px 28px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1280px) {
   .workspace-split-container {
     grid-template-columns: 1fr;
   }
@@ -1550,7 +1550,7 @@ button.category-pill,
   min-width: 0;
 }
 
-/* MOCKUP DEL IPHONE 15 Y PANEL PREVIEW */
+/* MOCKUP DEL IPHONE 15 Y PANEL PREVIEW (MÁS GRANDE CON ASPECT RATIO 19.5:9 REAL) */
 .admin-preview-sidebar {
   position: relative;
 }
@@ -1560,8 +1560,8 @@ button.category-pill,
   top: 24px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: 24px;
+  padding: 22px;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
   display: flex;
   flex-direction: column;
@@ -1606,53 +1606,54 @@ button.category-pill,
 .btn-reload-preview {
   background: #f1f5f9;
   border: 1px solid #cbd5e1;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #475569;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .btn-reload-preview:hover { background: #e2e8f0; color: #0f172a; }
 
-/* IPHONE 15 HARDWARE FRAME */
+/* IPHONE 15 HARDWARE FRAME (AMPLIADO A 380px x 780px RELACIÓN DE ASPECTO 19.5:9 REAL) */
 .iphone-mockup-frame {
   position: relative;
-  width: 320px;
-  height: 640px;
+  width: 380px;
+  height: 780px;
   background: #0f172a;
-  border-radius: 46px;
-  border: 10px solid #1e293b;
-  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35), 0 0 0 2px rgba(255, 255, 255, 0.15);
+  border-radius: 50px;
+  border: 12px solid #1e293b;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.35), 0 0 0 2px rgba(255, 255, 255, 0.15);
   overflow: hidden;
 }
 
 .iphone-notch {
   position: absolute;
-  top: 10px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
-  width: 95px;
-  height: 22px;
+  width: 110px;
+  height: 25px;
   background: #000000;
   border-radius: 20px;
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px;
+  padding: 0 12px;
 }
 
 .iphone-camera { width: 10px; height: 10px; border-radius: 50%; background: #1e293b; }
-.iphone-speaker { width: 35px; height: 4px; border-radius: 4px; background: #1e293b; }
+.iphone-speaker { width: 40px; height: 4px; border-radius: 4px; background: #1e293b; }
 
 .iphone-screen {
   width: 100%;
   height: 100%;
-  border-radius: 36px;
+  border-radius: 38px;
   overflow: hidden;
   background: #0b0f19;
 }
@@ -1661,6 +1662,32 @@ button.category-pill,
   width: 100%;
   height: 100%;
   border: none;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.iphone-screen iframe::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* OCULTAR BARRA DE SCROLL VERTICAL DENTRO DE VISTAS MÓVILES */
+[data-theme="restaurant"]::-webkit-scrollbar,
+[data-theme="bakery_cafe"]::-webkit-scrollbar,
+[data-theme="restaurant"] body::-webkit-scrollbar,
+[data-theme="bakery_cafe"] body::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+[data-theme="restaurant"],
+[data-theme="bakery_cafe"],
+[data-theme="restaurant"] body,
+[data-theme="bakery_cafe"] body {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .iphone-home-bar {
@@ -1668,7 +1695,7 @@ button.category-pill,
   bottom: 8px;
   left: 50%;
   transform: translateX(-50%);
-  width: 120px;
+  width: 130px;
   height: 4px;
   background: rgba(255, 255, 255, 0.4);
   border-radius: 4px;
