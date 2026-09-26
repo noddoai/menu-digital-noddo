@@ -203,12 +203,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'on_auth_user_created') THEN
-        CREATE TRIGGER on_auth_user_created
-        AFTER INSERT ON auth.users
-        FOR EACH ROW EXECUTE FUNCTION public.handle_new_user_signup();
-    END IF;
-END $$;
+-- =============================================================================
+-- 8. VISTAS DE COMPATIBILIDAD (ALIAS PARA TENANTS E ITEMS)
+-- =============================================================================
+CREATE OR REPLACE VIEW public.tenants AS 
+SELECT id, name, slug, tagline, hero_badge, currency_symbol, accent_color, logo_url, is_active, created_at, updated_at 
+FROM public.restaurants;
+
+CREATE OR REPLACE VIEW public.items AS 
+SELECT id, restaurant_id AS tenant_id, category_id, name, price, short_description, full_story, image_url AS hero_image_url, is_available, is_chef_special, is_featured, prep_time, rating, dietary_flags, display_order, created_at, updated_at 
+FROM public.menu_items;
+
 
