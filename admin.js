@@ -228,34 +228,40 @@ function renderItemsTable() {
 
   items.forEach(item => {
     const tr = document.createElement('tr');
-    const imgUrl = item.media?.heroImage || item.heroImage_url || 'assets/images/fresh_salmon.png';
+    const imgUrl = item.media?.heroImage || item.heroImage_url || item.heroImage || 'assets/images/fresh_salmon.png';
 
     tr.innerHTML = `
       <td>
-        <img src="${imgUrl}" alt="${item.name}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px;">
+        <img src="${imgUrl}" alt="${item.name}" class="table-dish-thumb">
       </td>
       <td>
-        <div style="font-weight: 700;">${item.name}</div>
-        <div style="font-size: 0.75rem; color: #9ca3af;">Cat: ${item.category} | ${item.layersOrIngredients?.length || 0} comp.</div>
+        <div class="table-dish-name">${item.name}</div>
+        <div class="table-dish-meta">Cat: ${item.category} | ${item.layersOrIngredients?.length || 0} comp.</div>
       </td>
       <td>
         <div style="display:flex; align-items:center; gap:6px;">
-          <span style="font-weight:700; color:#38bdf8;">$</span>
+          <span style="font-weight:700; color:#2563eb;">$</span>
           <input type="number" class="inline-price-input" data-id="${item.id}" value="${item.price}" step="100">
         </div>
       </td>
       <td>
-        <button class="btn-toggle-stock ${item.isAvailable ? 'available' : 'out-of-stock'}" data-id="${item.id}">
-          ${item.isAvailable ? '✓ En Stock' : '✗ Agotado'}
+        <div style="display:flex; align-items:center; gap:10px;">
+          <label class="toggle-switch" title="Cambiar stock">
+            <input type="checkbox" class="btn-toggle-stock-checkbox" data-id="${item.id}" ${item.isAvailable ? 'checked' : ''}>
+            <span class="slider"></span>
+          </label>
+          <span class="status-badge-pill ${item.isAvailable ? 'status-active' : 'status-paused'}">
+            ${item.isAvailable ? 'En Stock' : 'Agotado'}
+          </span>
+        </div>
+      </td>
+      <td style="text-align: center;">
+        <button class="btn-star-featured ${item.isFeatured ? 'featured' : ''}" data-id="${item.id}" title="Destacar en portada">
+          ⭐
         </button>
       </td>
-      <td>
-        <button class="btn-toggle-featured" data-id="${item.id}" style="background: transparent; border: none; cursor: pointer; font-size: 1.1rem;">
-          ${item.isFeatured ? '⭐' : '☆'}
-        </button>
-      </td>
-      <td>
-        <div style="display: flex; gap: 6px;">
+      <td style="text-align: right;">
+        <div style="display: flex; gap: 6px; justify-content: flex-end;">
           <button class="btn-edit-item btn-admin-secondary" data-id="${item.id}" style="padding: 5px 10px; font-size: 0.78rem;">
             <i data-lucide="edit-3" style="width:13px;height:13px;"></i> Editar
           </button>
@@ -265,6 +271,21 @@ function renderItemsTable() {
         </div>
       </td>
     `;
+
+    // Listener para el switch toggle de stock
+    const stockCheckbox = tr.querySelector('.btn-toggle-stock-checkbox');
+    stockCheckbox?.addEventListener('change', () => {
+      const isAvailable = db.toggleAvailability(item.id);
+      showToast(isAvailable ? 'Producto activado En Stock' : 'Producto Pausado / Agotado');
+      renderItemsTable();
+    });
+
+    tr.querySelector('.btn-star-featured')?.addEventListener('click', () => {
+      const isFeatured = db.toggleFeatured(item.id);
+      showToast(isFeatured ? 'Plato marcado como Destacado' : 'Plato remivido de Destacados');
+      renderItemsTable();
+    });
+
 
     // Edición directa de precio al modificar el input inline
     const priceInput = tr.querySelector('.inline-price-input');
@@ -400,8 +421,9 @@ function openDishModal(item) {
     document.getElementById('editHeroImage').value = item.media?.heroImage || item.heroImage_url || '';
 
     const preview = document.getElementById('dishImagePreview');
-    if (preview && (item.media?.heroImage || item.heroImage_url)) {
-      preview.src = item.media?.heroImage || item.heroImage_url;
+    const heroImg = item.media?.heroImage || item.heroImage_url || item.heroImage || 'assets/images/fresh_salmon.png';
+    if (preview) {
+      preview.src = heroImg;
       preview.style.display = 'block';
     }
 
@@ -417,11 +439,14 @@ function openDishModal(item) {
     }
   } else {
     adminState.editingDishId = null;
-    document.getElementById('adminModalTitle').textContent = 'Crear Nuevo Plato';
+    document.getElementById('adminModalTitle').textContent = 'Crear Nuevo Producto';
     document.getElementById('dishEditForm').reset();
     document.getElementById('editDishId').value = '';
     const preview = document.getElementById('dishImagePreview');
-    if (preview) preview.style.display = 'none';
+    if (preview) {
+      preview.src = 'assets/images/fresh_salmon.png';
+      preview.style.display = 'block';
+    }
   }
 
   modal.classList.add('active');
@@ -780,43 +805,36 @@ function renderQuickStockGrid(query = '') {
 
   grid.innerHTML = '';
   if (items.length === 0) {
-    grid.innerHTML = `<div style="grid-column: 1/-1; color: #9ca3af; text-align: center; padding: 24px;">No hay platos coincidentes.</div>`;
+    grid.innerHTML = `<div style="grid-column: 1/-1; color: #64748b; text-align: center; padding: 24px;">No hay productos coincidentes con la búsqueda.</div>`;
     return;
   }
 
   items.forEach(item => {
     const card = document.createElement('div');
-    card.style.cssText = `
-      background: #111827;
-      border: 1px solid ${item.isAvailable ? '#1f2937' : '#991b1b'};
-      border-radius: 14px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 12px;
-      transition: all 0.2s ease;
-    `;
+    card.className = 'quick-stock-card';
 
-    const imgUrl = item.media?.heroImage || item.heroImage_url || 'assets/images/fresh_salmon.png';
+    const imgUrl = item.media?.heroImage || item.heroImage_url || item.heroImage || 'assets/images/fresh_salmon.png';
 
     card.innerHTML = `
-      <div style="display: flex; gap: 12px; align-items: center;">
-        <img src="${imgUrl}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
-        <div>
-          <div style="font-weight: 700; color: #fff; font-size: 0.95rem;">${item.name}</div>
-          <div style="font-size: 0.8rem; color: #38bdf8; font-weight: 700;">$ ${item.price}</div>
-        </div>
+      <img src="${imgUrl}" alt="${item.name}">
+      <div class="quick-stock-info">
+        <div class="quick-stock-name">${item.name}</div>
+        <div class="quick-stock-price">$ ${item.price.toLocaleString('es-AR')}</div>
       </div>
-
-      <button class="btn-toggle-stock ${item.isAvailable ? 'available' : 'out-of-stock'}" data-id="${item.id}" style="width: 100%; justify-content: center; padding: 10px; font-size: 0.9rem;">
-        ${item.isAvailable ? '✓ EN STOCK (Tocar para Pausar)' : '🔴 PAUSADO / AGOTADO (Tocar para Activar)'}
-      </button>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+        <label class="toggle-switch" title="Activar/Pausar stock">
+          <input type="checkbox" class="btn-quick-stock-toggle" data-id="${item.id}" ${item.isAvailable ? 'checked' : ''}>
+          <span class="slider"></span>
+        </label>
+        <span class="status-badge-pill ${item.isAvailable ? 'status-active' : 'status-paused'}" style="font-size: 0.7rem;">
+          ${item.isAvailable ? 'En Stock' : 'Agotado'}
+        </span>
+      </div>
     `;
 
-    card.querySelector('.btn-toggle-stock').addEventListener('click', () => {
+    card.querySelector('.btn-quick-stock-toggle').addEventListener('change', () => {
       const newStatus = db.toggleAvailability(item.id);
-      showToast(newStatus ? `Plato "${item.name}" activado` : `Plato "${item.name}" pausado por falta de stock`);
+      showToast(newStatus ? `Producto "${item.name}" activado` : `Producto "${item.name}" pausado`);
       renderQuickStockGrid(query);
       renderItemsTable();
     });
@@ -824,6 +842,7 @@ function renderQuickStockGrid(query = '') {
     grid.appendChild(card);
   });
 }
+
 
 // ==========================================
 // 10. GESTIÓN DE PERSONAL Y EMPLEADOS
