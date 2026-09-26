@@ -2702,6 +2702,96 @@ button.category-pill,
   color: #2563eb !important;
 }
 
+/* BUSCADOR CORPORATIVO UNIFICADO (SaaS LIGHT THEME) */
+.search-input-box {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  height: 42px !important;
+  padding: 0 12px 0 38px !important;
+  transition: all 0.15s ease !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+.search-input-box:focus-within {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12) !important;
+}
+
+.search-input-box i,
+.search-input-box svg {
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #64748b !important;
+  pointer-events: none !important;
+}
+
+.search-input-box input {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  color: #0f172a !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+.search-input-box input::placeholder {
+  color: #94a3b8 !important;
+  font-weight: 400 !important;
+}
+
+/* DIVISOR DE CATEGORÍAS ELEGANTE Y COMPACTO */
+.category-divider-row {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-top: 18px !important;
+  margin-bottom: 6px !important;
+}
+
+.category-divider-row:first-child {
+  margin-top: 4px !important;
+}
+
+.category-divider-title {
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.6px !important;
+  color: #64748b !important;
+  white-space: nowrap !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.category-divider-title i,
+.category-divider-title svg {
+  width: 14px !important;
+  height: 14px !important;
+  color: #2563eb !important;
+}
+
+.category-divider-line {
+  flex: 1 !important;
+  height: 1px !important;
+  background: #e2e8f0 !important;
+}
+
+
 
 
 

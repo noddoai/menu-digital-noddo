@@ -956,7 +956,9 @@ function renderQuickStockGrid(query = '') {
   const grid = document.getElementById('quickStockGrid');
   if (!grid) return;
 
+  const profile = adminState.currentProfileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
   let items = db.getItemsByProfile(adminState.currentProfileId);
+
   if (query) {
     items = items.filter(i => i.name.toLowerCase().includes(query) || (i.shortDescription || '').toLowerCase().includes(query));
   }
@@ -967,39 +969,71 @@ function renderQuickStockGrid(query = '') {
     return;
   }
 
-  items.forEach(item => {
-    const card = document.createElement('div');
-    card.className = 'quick-stock-card';
-
-    const imgUrl = item.media?.heroImage || item.heroImage_url || item.heroImage || 'assets/images/fresh_salmon.png';
-
-    card.innerHTML = `
-      <img src="${imgUrl}" alt="${item.name}">
-      <div class="quick-stock-info">
-        <div class="quick-stock-name">${item.name}</div>
-        <div class="quick-stock-price">${adminState.currencySymbol || '$'} ${item.price.toLocaleString('es-AR')}</div>
-      </div>
-      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-        <label class="toggle-switch" title="Activar/Pausar stock">
-          <input type="checkbox" class="btn-quick-stock-toggle" data-id="${item.id}" ${item.isAvailable ? 'checked' : ''}>
-          <span class="slider"></span>
-        </label>
-        <span class="status-badge-pill ${item.isAvailable ? 'status-active' : 'status-paused'}" style="font-size: 0.7rem;">
-          ${item.isAvailable ? 'En Stock' : 'Agotado'}
-        </span>
-      </div>
-    `;
-
-    card.querySelector('.btn-quick-stock-toggle').addEventListener('change', () => {
-      const newStatus = db.toggleAvailability(item.id);
-      showToast(newStatus ? `Producto "${item.name}" activado` : `Producto "${item.name}" pausado`);
-      renderQuickStockGrid(query);
-      renderItemsTable();
-      reloadPhonePreview();
-    });
-
-    grid.appendChild(card);
+  // Agrupar productos por categoría conservando el orden del perfil
+  const categoriesMap = new Map();
+  profile.categories.filter(c => c.id !== 'all').forEach(cat => {
+    categoriesMap.set(cat.id, { name: cat.name, icon: cat.icon || 'tag', items: [] });
   });
+  categoriesMap.set('otros', { name: 'Otros / Sin Categoría', icon: 'grid', items: [] });
+
+  items.forEach(item => {
+    const catKey = item.category && categoriesMap.has(item.category) ? item.category : 'otros';
+    categoriesMap.get(catKey).items.push(item);
+  });
+
+  const currSymbol = adminState.currencySymbol || '$';
+
+  categoriesMap.forEach((catData) => {
+    if (catData.items.length === 0) return;
+
+    // Divisor fino con nombre de categoría al mismo nivel
+    const divider = document.createElement('div');
+    divider.className = 'category-divider-row';
+    divider.innerHTML = `
+      <span class="category-divider-title">
+        <i data-lucide="${catData.icon}"></i> ${catData.name}
+      </span>
+      <div class="category-divider-line"></div>
+    `;
+    grid.appendChild(divider);
+
+    // Tarjetas de platos de esta categoría
+    catData.items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'quick-stock-card';
+
+      const imgUrl = item.media?.heroImage || item.heroImage_url || item.heroImage || 'assets/images/fresh_salmon.png';
+
+      card.innerHTML = `
+        <img src="${imgUrl}" alt="${item.name}">
+        <div class="quick-stock-info">
+          <div class="quick-stock-name">${item.name}</div>
+          <div class="quick-stock-price">${currSymbol} ${item.price.toLocaleString('es-AR')}</div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+          <label class="toggle-switch" title="Activar/Pausar stock">
+            <input type="checkbox" class="btn-quick-stock-toggle" data-id="${item.id}" ${item.isAvailable ? 'checked' : ''}>
+            <span class="slider"></span>
+          </label>
+          <span class="status-badge-pill ${item.isAvailable ? 'status-active' : 'status-paused'}" style="font-size: 0.7rem;">
+            ${item.isAvailable ? 'En Stock' : 'Agotado'}
+          </span>
+        </div>
+      `;
+
+      card.querySelector('.btn-quick-stock-toggle').addEventListener('change', () => {
+        const newStatus = db.toggleAvailability(item.id);
+        showToast(newStatus ? `Producto "${item.name}" activado` : `Producto "${item.name}" pausado`);
+        renderQuickStockGrid(query);
+        renderItemsTable();
+        reloadPhonePreview();
+      });
+
+      grid.appendChild(card);
+    });
+  });
+
+  if (window.lucide) window.lucide.createIcons();
 }
 
 
