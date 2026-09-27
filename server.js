@@ -22,15 +22,20 @@ let pool = null;
 
 if (process.env.DATABASE_URL) {
   try {
-    pool = new Pool({
+    const testPool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      connectionTimeoutMillis: 5000
+      connectionTimeoutMillis: 2000
     });
-    pool.on('error', (err) => {
-      console.log('💡 Notificación de conexión PG:', err.message);
+    testPool.query('SELECT 1').then(() => {
+      console.log('✅ Base de Datos PostgreSQL Cloud (Supabase) Conectada');
+      pool = testPool;
+    }).catch(err => {
+      console.log('💡 DB Cloud no disponible (usando Modo Local / Memoria):', err.message);
+      pool = null;
     });
   } catch (e) {
     console.log('Fallback a base local de memoria:', e.message);
+    pool = null;
   }
 }
 
@@ -144,6 +149,16 @@ app.post('/api/v1/auth/login', async (req, res) => {
   // Fallback demo local para prototipado
   if ((email === 'admin@gourmetbistro.com' || email === 'admin') && (password === 'admin123' || password === 'admin')) {
     const mockUser = memoryDb.users[0];
+    const token = jwt.sign(
+      { userId: mockUser.id, tenantId: mockUser.tenantId, role: mockUser.role, email: mockUser.email },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+    return res.json({ token, user: mockUser });
+  }
+
+  if (email === 'admin@maisoncafe.com' && (password === 'admin123' || password === 'admin')) {
+    const mockUser = memoryDb.users[1];
     const token = jwt.sign(
       { userId: mockUser.id, tenantId: mockUser.tenantId, role: mockUser.role, email: mockUser.email },
       JWT_SECRET,

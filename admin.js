@@ -24,7 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setupVariationRowsHandler();
   setupPromoManager();
   setupQrModule();
+  setupConfigSubtabs();
+  setupGeneralConfigForm();
   setupThemeEditor();
+  setupCategoriesManagement();
   setupImageDropzones();
   setupQuickStock();
   setupUsersManagement();
@@ -130,9 +133,9 @@ function populateCategoryFilter() {
   const select = document.getElementById('adminCategoryFilter');
   if (!select) return;
 
-  const profile = adminState.currentProfileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
+  const categories = db.getCategories(adminState.currentProfileId);
   select.innerHTML = '<option value="all">Todas las Categorías</option>';
-  profile.categories.filter(c => c.id !== 'all').forEach(cat => {
+  categories.filter(c => c.id !== 'all').forEach(cat => {
     const opt = document.createElement('option');
     opt.value = cat.id;
     opt.textContent = cat.name;
@@ -414,9 +417,9 @@ function openDishModal(item) {
   const backdrop = document.getElementById('adminModalBackdrop');
   const categorySelect = document.getElementById('editDishCategory');
 
-  const profile = adminState.currentProfileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
+  const categories = db.getCategories(adminState.currentProfileId);
   categorySelect.innerHTML = '';
-  profile.categories.filter(c => c.id !== 'all').forEach(cat => {
+  categories.filter(c => c.id !== 'all').forEach(cat => {
     const opt = document.createElement('option');
     opt.value = cat.id;
     opt.textContent = cat.name;
@@ -651,9 +654,7 @@ function saveDishData() {
     fullStory,
     isAvailable: document.getElementById('editIsAvailable').checked,
     isFeatured: document.getElementById('editIsFeatured').checked,
-    isChefSpecial: true,
-    prepTime: '20 min',
-    rating: 4.8,
+    prepTime: '',
     media: { heroImage },
     layersOrIngredients,
     dietaryFlags: {
@@ -893,7 +894,7 @@ function renderBannersList() {
       <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #64748b; background: #ffffff; border-radius: 12px; border: 1px dashed #cbd5e1;">
         <i data-lucide="image" style="width: 40px; height: 40px; margin-bottom: 8px; opacity: 0.5;"></i>
         <h4 style="font-size: 1rem; color: #1e293b; margin-bottom: 4px;">No hay banners promocionales cargados</h4>
-        <p style="font-size: 0.85rem;">Haga clic en "+ Subir Nuevo Banner" para publicar ofertas o eventos.</p>
+        <p style="font-size: 0.85rem;">Haga clic en "+ Subir Nuevo" para publicar ofertas o eventos.</p>
       </div>
     `;
     if (window.lucide) window.lucide.createIcons();
@@ -1006,50 +1007,176 @@ function updateGlobalCurrencySymbol(symbol) {
   });
 }
 
+// ==========================================
+// PALETA DE 20 COLORES PRECONFIGURADOS & SUB-PESTAÑAS DE CONFIGURACIÓN
+// ==========================================
+const PALETTE_20_COLORS = [
+  { hex: '#ffffff', label: 'Blanco Puro' },
+  { hex: '#207567', label: 'Teal Esmeralda' },
+  { hex: '#0284c7', label: 'Azul Celeste' },
+  { hex: '#3b82f6', label: 'Azul Real' },
+  { hex: '#6366f1', label: 'Índigo' },
+  { hex: '#8b5cf6', label: 'Púrpura' },
+  { hex: '#d946ef', label: 'Fucsia' },
+  { hex: '#e11d48', label: 'Rojo Rubí' },
+  { hex: '#ea580c', label: 'Naranja Coral' },
+  { hex: '#f59e0b', label: 'Ámbar Cálido' },
+  { hex: '#10b981', label: 'Verde Esmeralda' },
+  { hex: '#06b6d4', label: 'Cian Eléctrico' },
+  { hex: '#16a34a', label: 'Verde Hoja' },
+  { hex: '#ca8a04', label: 'Dorado Bronce' },
+  { hex: '#9333ea', label: 'Violeta Intenso' },
+  { hex: '#0d9488', label: 'Verde Jade' },
+  { hex: '#ec4899', label: 'Rosa Intenso' },
+  { hex: '#ef4444', label: 'Rojo Carmesí' },
+  { hex: '#84cc16', label: 'Verde Lima' },
+  { hex: '#0f172a', label: 'Negro Azabache' }
+];
+
+function setupConfigSubtabs() {
+  document.querySelectorAll('.config-subtab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.config-subtab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.config-subtab-content').forEach(c => c.classList.remove('active'));
+
+      btn.classList.add('active');
+      const subtabId = btn.dataset.subtab;
+      const targetContent = document.getElementById(subtabId);
+      if (targetContent) {
+        targetContent.classList.add('active');
+        targetContent.style.display = 'block';
+      }
+
+      document.querySelectorAll('.config-subtab-content').forEach(c => {
+        if (c.id !== subtabId) c.style.display = 'none';
+      });
+
+      if (window.lucide) window.lucide.createIcons();
+    });
+  });
+}
+
+function render20ColorSwatches(selectedHex) {
+  const container = document.getElementById('swatchesGrid20');
+  if (!container) return;
+
+  container.innerHTML = '';
+  const activeColor = (selectedHex || '#207567').toLowerCase();
+
+  PALETTE_20_COLORS.forEach(colorItem => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    const isWhite = colorItem.hex.toLowerCase() === '#ffffff';
+    btn.className = `swatch-btn-20 ${colorItem.hex.toLowerCase() === activeColor ? 'active' : ''} ${isWhite ? 'is-white-swatch' : ''}`;
+    btn.style.backgroundColor = colorItem.hex;
+    btn.dataset.color = colorItem.hex;
+    btn.title = colorItem.label;
+
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.swatch-btn-20').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const inputAccent = document.getElementById('inputAccentColor');
+      if (inputAccent) inputAccent.value = colorItem.hex;
+    });
+
+    container.appendChild(btn);
+  });
+}
+
+function setupGeneralConfigForm() {
+  const form = document.getElementById('generalConfigForm');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('inputBrandName').value.trim();
+    const tagline = document.getElementById('inputBrandTagline').value.trim();
+    const menuIsActive = document.getElementById('inputMenuIsActive').checked;
+
+    const currentConfig = db.getThemeConfig(adminState.currentProfileId);
+    const updatedConfig = {
+      ...currentConfig,
+      name,
+      tagline,
+      menuIsActive
+    };
+
+    db.saveThemeConfig(adminState.currentProfileId, updatedConfig);
+    showToast('Datos generales del comercio guardados exitosamente');
+    reloadPhonePreview();
+  });
+}
+
+function setupCategoriesManagement() {
+  const form = document.getElementById('addCategoryForm');
+  if (!form) return;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('newCategoryName');
+    const categoryName = input ? input.value.trim() : '';
+
+    if (!categoryName) return;
+
+    db.addCategory(adminState.currentProfileId, categoryName);
+    showToast(`Categoría "${categoryName}" creada exitosamente`);
+    input.value = '';
+    
+    renderCategoriesList();
+    populateCategoryFilter();
+    reloadPhonePreview();
+  });
+}
+
+function renderCategoriesList() {
+  const stack = document.getElementById('categoriesListStack');
+  if (!stack) return;
+
+  const categories = db.getCategories(adminState.currentProfileId);
+  const dishes = db.getItemsByProfile(adminState.currentProfileId);
+
+  stack.innerHTML = '';
+
+  categories.forEach(cat => {
+    if (cat.id === 'all') return; // no listar 'todas' como categoría a borrar
+
+    const count = dishes.filter(d => d.category === cat.id).length;
+
+    const row = document.createElement('div');
+    row.className = 'category-item-row';
+
+    row.innerHTML = `
+      <div class="category-item-info">
+        <div class="category-item-name">${cat.name}</div>
+        <div class="category-item-count">${count} plato(s) asociado(s)</div>
+      </div>
+      <button type="button" class="btn-admin-danger btn-delete-category" data-cat-id="${cat.id}" style="padding: 5px 10px; font-size: 0.75rem;">
+        <i data-lucide="trash-2" style="width:12px;height:12px;"></i> Eliminar
+      </button>
+    `;
+
+    row.querySelector('.btn-delete-category').addEventListener('click', () => {
+      if (confirm(`¿Está seguro de eliminar la categoría "${cat.name}"?`)) {
+        db.deleteCategory(adminState.currentProfileId, cat.id);
+        showToast(`Categoría "${cat.name}" eliminada`);
+        renderCategoriesList();
+        populateCategoryFilter();
+        reloadPhonePreview();
+      }
+    });
+
+    stack.appendChild(row);
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
 function setupThemeEditor() {
   const form = document.getElementById('themeConfigForm');
   if (!form) return;
 
   const colorInput = document.getElementById('inputAccentColor');
-  const textInput = document.getElementById('inputAccentColorText');
   const currencySelect = document.getElementById('inputCurrency');
-
-  const updateColorPreview = (hex) => {
-    if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
-      document.documentElement.style.setProperty('--accent-gold', hex);
-      document.documentElement.style.setProperty('--accent-text-color', getContrastColor(hex));
-      document.querySelectorAll('.brand-swatch-btn').forEach(btn => {
-        if (btn.dataset.color.toLowerCase() === hex.toLowerCase()) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      });
-    }
-  };
-
-  if (colorInput && textInput) {
-    colorInput.addEventListener('input', (e) => {
-      textInput.value = e.target.value;
-      updateColorPreview(e.target.value);
-    });
-
-    textInput.addEventListener('input', (e) => {
-      let val = e.target.value;
-      if (!val.startsWith('#')) val = '#' + val;
-      colorInput.value = val;
-      updateColorPreview(val);
-    });
-  }
-
-  document.querySelectorAll('.brand-swatch-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const color = btn.dataset.color;
-      if (colorInput) colorInput.value = color;
-      if (textInput) textInput.value = color;
-      updateColorPreview(color);
-    });
-  });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1058,17 +1185,24 @@ function setupThemeEditor() {
       ? currencySelect.options[currencySelect.selectedIndex].dataset.code || 'ARS' 
       : 'ARS';
 
+    const inputShowPrepTime = document.getElementById('inputShowPrepTime');
+    const inputThemeMode = document.getElementById('inputThemeMode');
+
+    const currentConfig = db.getThemeConfig(adminState.currentProfileId);
+
     const config = {
-      name: document.getElementById('inputBrandName').value.trim(),
-      tagline: document.getElementById('inputBrandTagline').value.trim(),
+      ...currentConfig,
       accentColor: colorInput ? colorInput.value : '#207567',
       currencySymbol: symbol,
-      currencyCode: code
+      currencyCode: code,
+      themeMode: inputThemeMode ? inputThemeMode.value : 'dark',
+      showPrepTime: inputShowPrepTime ? inputShowPrepTime.checked : true
     };
+
     db.saveThemeConfig(adminState.currentProfileId, config);
     updateGlobalCurrencySymbol(symbol);
     renderItemsTable();
-    showToast(`Configuración guardada (Moneda: ${code} ${symbol})`);
+    showToast(`Configuración del menú guardada (${code} ${symbol})`);
     reloadPhonePreview();
   });
 }
@@ -1080,21 +1214,29 @@ function loadThemeForm() {
 
   if (document.getElementById('inputBrandName')) {
     document.getElementById('inputBrandName').value = config.name || '';
+  }
+  if (document.getElementById('inputBrandTagline')) {
     document.getElementById('inputBrandTagline').value = config.tagline || '';
-    document.getElementById('inputAccentColor').value = savedAccentColor;
-    document.getElementById('inputAccentColorText').value = savedAccentColor;
+  }
+  if (document.getElementById('inputMenuIsActive')) {
+    document.getElementById('inputMenuIsActive').checked = config.menuIsActive !== false;
   }
 
-  document.documentElement.style.setProperty('--accent-gold', savedAccentColor);
-  document.documentElement.style.setProperty('--accent-text-color', getContrastColor(savedAccentColor));
+  const inputThemeMode = document.getElementById('inputThemeMode');
+  if (inputThemeMode) {
+    inputThemeMode.value = config.themeMode || (adminState.currentProfileId === 'restaurant' ? 'dark' : 'light');
+  }
 
-  document.querySelectorAll('.brand-swatch-btn').forEach(btn => {
-    if (btn.dataset.color.toLowerCase() === savedAccentColor.toLowerCase()) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
-  });
+  const inputShowPrepTime = document.getElementById('inputShowPrepTime');
+  if (inputShowPrepTime) {
+    inputShowPrepTime.checked = config.showPrepTime !== false;
+  }
+
+  if (document.getElementById('inputAccentColor')) {
+    document.getElementById('inputAccentColor').value = savedAccentColor;
+  }
+
+  render20ColorSwatches(savedAccentColor);
 
   const currencySelect = document.getElementById('inputCurrency');
   if (currencySelect) {
@@ -1107,6 +1249,7 @@ function loadThemeForm() {
   }
 
   updateGlobalCurrencySymbol(adminState.currencySymbol);
+  renderCategoriesList();
 }
 
 function showToast(msg) {
@@ -1245,6 +1388,19 @@ function renderQuickStockGrid(query = '') {
 // ==========================================
 const STAFF_STORAGE_KEY = 'aura_staff_users_v1';
 
+// ==========================================
+// 10. GESTIÓN DE PERSONAL, EMPLEADOS Y SEGURIDAD
+// ==========================================
+const STAFF_STORAGE_KEY = 'aura_staff_users_v1';
+const revealedStaffPasswords = new Set();
+
+function maskEmail(email) {
+  if (!email || !email.includes('@')) return email || '';
+  const [local, domain] = email.split('@');
+  if (local.length <= 2) return `${local[0]}***@${domain}`;
+  return `${local.slice(0, 2)}***${local.slice(-1)}@${domain}`;
+}
+
 function getStaffUsers() {
   try {
     const data = localStorage.getItem(STAFF_STORAGE_KEY);
@@ -1253,8 +1409,8 @@ function getStaffUsers() {
     console.error('Error leyendo usuarios de staff:', e);
   }
   return [
-    { id: 'u-staff-1', name: 'Lucas Mozo Barra', email: 'barra@gourmetbistro.com', role: 'staff', createdAt: new Date().toISOString() },
-    { id: 'u-staff-2', name: 'Sofia Encargada', email: 'encargada@gourmetbistro.com', role: 'manager', createdAt: new Date().toISOString() }
+    { id: 'u-staff-1', name: 'Lucas Mozo Barra', email: 'barra@gourmetbistro.com', password: 'barra123password', role: 'staff', createdAt: new Date().toISOString() },
+    { id: 'u-staff-2', name: 'Sofía Encargada', email: 'encargada@gourmetbistro.com', password: 'manager456secret', role: 'manager', createdAt: new Date().toISOString() }
   ];
 }
 
@@ -1268,30 +1424,88 @@ function saveStaffUsers(users) {
 
 function setupUsersManagement() {
   const form = document.getElementById('addUserForm');
-  if (!form) return;
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('newUserName').value.trim();
+      const email = document.getElementById('newUserEmail').value.trim();
+      const password = document.getElementById('newUserPassword').value.trim();
+      const role = document.getElementById('newUserRole').value;
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('newUserName').value.trim();
-    const email = document.getElementById('newUserEmail').value.trim();
-    const role = document.getElementById('newUserRole').value;
+      if (!name || !email || !password) return;
 
-    if (!name || !email) return;
+      const users = getStaffUsers();
+      users.unshift({
+        id: `user-${Date.now()}`,
+        name,
+        email,
+        password,
+        role,
+        createdAt: new Date().toISOString()
+      });
 
-    const users = getStaffUsers();
-    users.unshift({
-      id: `user-${Date.now()}`,
-      name,
-      email,
-      role,
-      createdAt: new Date().toISOString()
+      saveStaffUsers(users);
+      showToast(`Empleado "${name}" registrado correctamente`);
+      form.reset();
+      renderUsersList();
     });
+  }
 
-    saveStaffUsers(users);
-    showToast(`Empleado "${name}" registrado correctamente`);
-    form.reset();
-    renderUsersList();
-  });
+  // Modal de Verificación de Seguridad
+  const modal = document.getElementById('revealPasswordModal');
+  const backdrop = document.getElementById('revealPasswordModalBackdrop');
+  const closeBtn = document.getElementById('btnCloseRevealModal');
+  const cancelBtn = document.getElementById('btnCancelRevealModal');
+  const revealForm = document.getElementById('revealPasswordForm');
+
+  const closeRevealModal = () => {
+    if (modal) modal.style.display = 'none';
+    if (backdrop) backdrop.style.display = 'none';
+    const confirmInput = document.getElementById('adminConfirmPassword');
+    if (confirmInput) confirmInput.value = '';
+    const errDiv = document.getElementById('revealPasswordError');
+    if (errDiv) errDiv.style.display = 'none';
+  };
+
+  if (closeBtn) closeBtn.addEventListener('click', closeRevealModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeRevealModal);
+  if (backdrop) backdrop.addEventListener('click', closeRevealModal);
+
+  if (revealForm) {
+    revealForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const enteredPass = document.getElementById('adminConfirmPassword').value.trim();
+      const targetUserId = document.getElementById('targetStaffUserId').value;
+
+      // Validar contraseña del administrador actual
+      if (enteredPass === 'admin123' || enteredPass === 'admin' || enteredPass === '123456') {
+        revealedStaffPasswords.add(targetUserId);
+        closeRevealModal();
+        showToast('🔓 Contraseña de empleado revelada');
+        renderUsersList();
+      } else {
+        const errorDiv = document.getElementById('revealPasswordError');
+        if (errorDiv) errorDiv.style.display = 'block';
+      }
+    });
+  }
+}
+
+function openRevealPasswordModal(userId) {
+  const modal = document.getElementById('revealPasswordModal');
+  const backdrop = document.getElementById('revealPasswordModalBackdrop');
+  const targetInput = document.getElementById('targetStaffUserId');
+
+  if (targetInput) targetInput.value = userId;
+  if (modal) modal.style.display = 'block';
+  if (backdrop) backdrop.style.display = 'block';
+  const inputPass = document.getElementById('adminConfirmPassword');
+  if (inputPass) {
+    inputPass.value = '';
+    inputPass.focus();
+  }
+  const errorDiv = document.getElementById('revealPasswordError');
+  if (errorDiv) errorDiv.style.display = 'none';
 }
 
 function renderUsersList() {
@@ -1302,46 +1516,90 @@ function renderUsersList() {
   container.innerHTML = '';
 
   if (users.length === 0) {
-    container.innerHTML = `<div style="color: #9ca3af; font-size: 0.88rem;">No hay personal adicional registrado.</div>`;
+    container.innerHTML = `<div style="color: #9ca3af; font-size: 0.88rem; padding: 12px 0;">No hay personal adicional registrado.</div>`;
     return;
   }
 
   users.forEach(user => {
-    const div = document.createElement('div');
-    div.style.cssText = `
-      background: #1f2937;
-      border: 1px solid #374151;
-      padding: 12px 16px;
-      border-radius: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    `;
+    const isRevealed = revealedStaffPasswords.has(user.id);
+    const maskedMail = maskEmail(user.email);
+    const passDisplay = isRevealed ? (user.password || 'Sin clave') : '••••••••';
+
+    const card = document.createElement('div');
+    card.className = 'staff-user-card';
 
     const roleBadge = user.role === 'manager' 
-      ? '<span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight:700;">🛠️ MANAGER</span>'
-      : '<span style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight:700;">🔒 STAFF BARRA</span>';
+      ? '<span style="background: rgba(56, 189, 248, 0.15); color: #0284c7; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight:700;">🛠️ ENCARGADO</span>'
+      : '<span style="background: rgba(251, 191, 36, 0.15); color: #d97706; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight:700;">🔒 STAFF BARRA</span>';
 
-    div.innerHTML = `
-      <div>
-        <div style="font-weight: 700; font-size: 0.9rem; color: #fff;">${user.name} ${roleBadge}</div>
-        <div style="font-size: 0.8rem; color: #9ca3af;">${user.email}</div>
+    card.innerHTML = `
+      <div class="staff-user-header">
+        <div class="staff-user-name">${user.name} ${roleBadge}</div>
+        <button type="button" class="btn-delete-user btn-admin-danger" data-id="${user.id}" style="padding: 5px 10px; font-size: 0.75rem;">
+          <i data-lucide="trash-2" style="width:13px;height:13px;"></i> Eliminar
+        </button>
       </div>
-      <button class="btn-delete-user btn-admin-danger" data-id="${user.id}" style="padding: 4px 8px; font-size: 0.75rem;">
-        <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
-      </button>
+
+      <div class="staff-user-details-grid">
+        <div class="staff-detail-item">
+          <span class="staff-detail-label">Correo Registrado</span>
+          <span class="staff-detail-value">${maskedMail}</span>
+        </div>
+
+        <div class="staff-detail-item">
+          <span class="staff-detail-label">Contraseña</span>
+          <div class="staff-password-box">
+            <span class="staff-password-text">${passDisplay}</span>
+            ${isRevealed ? `
+              <button type="button" class="btn-copy-pass" data-pass="${user.password || ''}" title="Copiar al portapapeles">
+                <i data-lucide="copy" style="width:12px;height:12px;"></i> Copiar
+              </button>
+              <button type="button" class="btn-toggle-eye btn-hide-pass" data-id="${user.id}" title="Ocultar clave">
+                <i data-lucide="eye-off" style="width:12px;height:12px;"></i> Ocultar
+              </button>
+            ` : `
+              <button type="button" class="btn-toggle-eye btn-reveal-pass" data-id="${user.id}" title="Revelar clave">
+                <i data-lucide="eye" style="width:12px;height:12px;"></i> Revelar
+              </button>
+            `}
+          </div>
+        </div>
+      </div>
     `;
 
-    div.querySelector('.btn-delete-user').addEventListener('click', () => {
-      if (confirm(`¿Eliminar acceso a ${user.name}?`)) {
+    // Botón Ojo (Revelar)
+    card.querySelector('.btn-reveal-pass')?.addEventListener('click', () => {
+      openRevealPasswordModal(user.id);
+    });
+
+    // Botón Ojo (Ocultar)
+    card.querySelector('.btn-hide-pass')?.addEventListener('click', () => {
+      revealedStaffPasswords.delete(user.id);
+      renderUsersList();
+    });
+
+    // Botón Copiar
+    card.querySelector('.btn-copy-pass')?.addEventListener('click', (e) => {
+      const pass = e.currentTarget.dataset.pass;
+      if (pass) {
+        navigator.clipboard.writeText(pass).then(() => {
+          showToast('📋 Contraseña copiada al portapapeles');
+        });
+      }
+    });
+
+    // Botón Eliminar
+    card.querySelector('.btn-delete-user')?.addEventListener('click', () => {
+      if (confirm(`¿Está seguro de revocar el acceso a "${user.name}"?`)) {
         const filtered = getStaffUsers().filter(u => u.id !== user.id);
         saveStaffUsers(filtered);
-        showToast('Empleado eliminado');
+        revealedStaffPasswords.delete(user.id);
+        showToast(`Acceso de "${user.name}" eliminado`);
         renderUsersList();
       }
     });
 
-    container.appendChild(div);
+    container.appendChild(card);
   });
 
   if (window.lucide) window.lucide.createIcons();

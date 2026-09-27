@@ -27,7 +27,7 @@
         <p>Acceda al panel de administración de su comercio</p>
       </div>
 
-      <form id="loginForm" class="admin-form">
+      <form id="loginForm" class="admin-form" onsubmit="event.preventDefault();">
         <div class="form-group">
           <label for="loginUser"><i data-lucide="mail"></i> Correo Electrónico</label>
           <input type="email" id="loginUser" value="admin@gourmetbistro.com" required placeholder="ej: contacto@mi-restaurante.com">
@@ -40,7 +40,7 @@
           <i data-lucide="alert-circle"></i> Credenciales de acceso incorrectas
         </div>
 
-        <button type="submit" class="btn-admin-primary btn-block">
+        <button type="submit" id="btnLoginSubmit" class="btn-admin-primary btn-block">
           <i data-lucide="log-in"></i> Ingresar al Sistema
         </button>
       </form>
@@ -156,9 +156,6 @@
           <button class="admin-tab-btn" data-tab="tabStyles" id="navTabStyles">
             <i data-lucide="settings"></i> Configuración
           </button>
-          <button class="admin-tab-btn" data-tab="tabUsers" id="navTabUsers">
-            <i data-lucide="users"></i> Personal
-          </button>
         </div>
 
         <!-- TAB 1: CATÁLOGO DE PRODUCTOS & PRECIOS -->
@@ -206,12 +203,9 @@
 
         <!-- TAB 2: DISPONIBILIDAD DE PRODUCTOS -->
         <div id="tabQuickStock" class="admin-tab-content">
-          <div class="corporate-card margin-b-20">
-            <div class="flex-between-center flex-wrap gap-16">
-              <div>
-                <h3>Disponibles & Stock</h3>
-                <p class="text-muted">Active o pause la disponibilidad de sus platos en tiempo real</p>
-              </div>
+          <div class="admin-toolbar" style="margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #0f172a;">Disponibles & Stock</h3>
               <div class="search-input-box" style="width: 280px;">
                 <i data-lucide="search"></i>
                 <input type="text" id="quickStockSearch" placeholder="Buscar producto por nombre...">
@@ -226,14 +220,11 @@
 
         <!-- TAB 3: BANNERS PROMOCIONALES -->
         <div id="tabPromos" class="admin-tab-content">
-          <div class="corporate-card margin-b-20">
-            <div class="flex-between-center flex-wrap gap-16">
-              <div>
-                <h3>Banners Promocionales</h3>
-                <p class="text-muted">Cargue y gestione los banners gráficos de ofertas, tarjetas o eventos (Formato 16:6)</p>
-              </div>
+          <div class="admin-toolbar" style="margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #0f172a;">Banners Promocionales</h3>
               <button type="button" id="btnOpenBannerModal" class="btn-admin-primary">
-                <i data-lucide="plus"></i> Subir Nuevo Banner
+                <i data-lucide="plus"></i> Subir Nuevo
               </button>
             </div>
           </div>
@@ -281,117 +272,207 @@
           </div>
         </div>
 
-        <!-- TAB 5: CONFIGURACIÓN GENERAL DEL COMERCIO -->
+        <!-- TAB 5: CONFIGURACIÓN GENERAL, VISUAL, CATEGORÍAS Y PERSONAL -->
         <div id="tabStyles" class="admin-tab-content">
-          <div class="corporate-card max-w-600">
-            <div class="card-header-clean">
-              <h3>Configuración General del Comercio</h3>
-              <p>Ajuste la identidad comercial, la moneda de los precios y la paleta de colores</p>
-            </div>
 
-            <form id="themeConfigForm" class="clean-form">
-              <div class="form-group">
-                <label>Nombre del Establecimiento *</label>
-                <input type="text" id="inputBrandName" required placeholder="ej: Gourmet Bistro & Grill">
-              </div>
-
-              <div class="form-group">
-                <label>Slogan o Descripción Corta *</label>
-                <input type="text" id="inputBrandTagline" required placeholder="ej: Cocina Fresca & Sabores de Estación">
-              </div>
-
-              <div class="form-group">
-                <label for="inputCurrency">Moneda del Comercio (Símbolo de Precios) *</label>
-                <select id="inputCurrency" class="form-select">
-                  <option value="$" data-code="ARS">ARS ($) - Peso Argentino</option>
-                  <option value="$" data-code="USD">USD ($) - Dólar Estadounidense</option>
-                  <option value="€" data-code="EUR">EUR (€) - Euro</option>
-                  <option value="R$" data-code="BRL">BRL (R$) - Real Brasileño</option>
-                  <option value="$" data-code="CLP">CLP ($) - Peso Chileno</option>
-                  <option value="$U" data-code="UYU">UYU ($U) - Peso Uruguayo</option>
-                  <option value="$" data-code="MXN">MXN ($) - Peso Mexicano</option>
-                  <option value="Bs" data-code="BOB">BOB (Bs) - Boliviano</option>
-                  <option value="S/" data-code="PEN">PEN (S/) - Sol Peruano</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label style="font-weight:700; font-size:0.85rem; color:#334155;">Color Identitario de Resaltado</label>
-                <div class="color-picker-wrapper">
-                  <input type="color" id="inputAccentColor" class="color-square-input" value="#207567">
-                  <input type="text" id="inputAccentColorText" class="color-text-hex" value="#207567" placeholder="#207567">
-                </div>
-                <div style="font-size: 0.76rem; font-weight: 600; color: #64748b; margin-top: 10px; margin-bottom: 6px;">Paletas Sugeridas (Respetan contraste automático de texto):</div>
-                <div class="brand-swatches-grid">
-                  <button type="button" class="brand-swatch-btn" data-color="#207567" style="background: #207567;" title="Verde Esmeralda"></button>
-                  <button type="button" class="brand-swatch-btn" data-color="#7c4a27" style="background: #7c4a27;" title="Moca Café"></button>
-                  <button type="button" class="brand-swatch-btn" data-color="#d97706" style="background: #d97706;" title="Dorado Calidez"></button>
-                  <button type="button" class="brand-swatch-btn" data-color="#1e3a8a" style="background: #1e3a8a;" title="Azul Real"></button>
-                  <button type="button" class="brand-swatch-btn" data-color="#991b1b" style="background: #991b1b;" title="Rojo Borgoña"></button>
-                  <button type="button" class="brand-swatch-btn" data-color="#0f172a" style="background: #0f172a;" title="Negro Elegante"></button>
-                  <button type="button" class="brand-swatch-btn" data-color="#fbbf24" style="background: #fbbf24;" title="Amarillo Pastel (Ajusta texto a oscuro)"></button>
-                  <button type="button" class="brand-swatch-btn" data-color="#38bdf8" style="background: #38bdf8;" title="Cian Claro (Ajusta texto a oscuro)"></button>
-                </div>
-              </div>
-
-              <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 16px;">
-                <i data-lucide="save"></i> Guardar Configuración General
-              </button>
-            </form>
+          <!-- BARRA DE SUB-PESTAÑAS DE CONFIGURACIÓN -->
+          <div class="config-subtabs-nav">
+            <button type="button" class="config-subtab-btn active" data-subtab="configGeneral" id="subtabNavGeneral">
+              <i data-lucide="sliders"></i> Generales
+            </button>
+            <button type="button" class="config-subtab-btn" data-subtab="configVisual" id="subtabNavVisual">
+              <i data-lucide="palette"></i> Configuración del Menú
+            </button>
+            <button type="button" class="config-subtab-btn" data-subtab="configCategories" id="subtabNavCategories">
+              <i data-lucide="layers"></i> Categorías
+            </button>
+            <button type="button" class="config-subtab-btn" data-subtab="configUsers" id="subtabNavUsers">
+              <i data-lucide="users"></i> Personal & Accesos
+            </button>
           </div>
-        </div>
 
-        <!-- TAB 6: PERSONAL & PERMISOS -->
-        <div id="tabUsers" class="admin-tab-content">
-          <div class="two-column-grid">
-            
-            <div class="corporate-card">
+          <!-- SUB-TAB 1: GENERALES -->
+          <div id="configGeneral" class="config-subtab-content active">
+            <div class="corporate-card max-w-600">
               <div class="card-header-clean">
-                <h3>Crear Acceso de Personal</h3>
-                <p>Asigne cuentas para encargados o mozos</p>
+                <h3>Información General del Comercio</h3>
+                <p>Ajuste el nombre comercial, subtítulo y estado de la carta pública</p>
               </div>
 
-              <form id="addUserForm" class="clean-form">
+              <form id="generalConfigForm" class="clean-form">
                 <div class="form-group">
-                  <label>Nombre del Empleado *</label>
-                  <input type="text" id="newUserName" placeholder="ej: Mateo González" required>
+                  <label>Nombre del Establecimiento *</label>
+                  <input type="text" id="inputBrandName" required placeholder="ej: Gourmet Bistro & Grill">
                 </div>
 
                 <div class="form-group">
-                  <label>Correo Electrónico *</label>
-                  <input type="email" id="newUserEmail" placeholder="ej: mateo@restaurante.com" required>
+                  <label>Slogan o Descripción Corta *</label>
+                  <input type="text" id="inputBrandTagline" required placeholder="ej: Cocina Fresca & Sabores de Estación">
                 </div>
 
-                <div class="form-group">
-                  <label>Contraseña *</label>
-                  <input type="password" id="newUserPassword" placeholder="Mínimo 6 caracteres" required>
+                <div class="form-group" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid #e2e8f0;">
+                  <label style="font-weight:700; font-size:0.86rem; color:#0f172a; margin-bottom: 8px; display: block;">Estado de la Carta Digital</label>
+                  <div class="toggle-control-card">
+                    <div>
+                      <span class="toggle-title">Menú Activo en Línea</span>
+                      <span class="toggle-desc" id="menuActiveStatusText">Los clientes pueden visualizar y explorar la carta digital</span>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="inputMenuIsActive" checked>
+                      <span class="slider"></span>
+                    </label>
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label>Nivel de Permisos *</label>
-                  <select id="newUserRole" class="form-select">
-                    <option value="staff">🔒 Staff (Solo control de stock)</option>
-                    <option value="manager">🛠️ Encargado (Edición completa)</option>
-                  </select>
-                </div>
-
-                <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 10px;">
-                  <i data-lucide="user-plus"></i> Crear Cuenta
+                <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 20px;">
+                  <i data-lucide="save"></i> Guardar Datos Generales
                 </button>
               </form>
             </div>
+          </div>
 
-            <div class="corporate-card">
+          <!-- SUB-TAB 2: CONFIGURACIÓN DEL MENÚ (VISUAL & PALETA) -->
+          <div id="configVisual" class="config-subtab-content" style="display: none;">
+            <div class="corporate-card max-w-600">
               <div class="card-header-clean">
-                <h3>Usuarios Autorizados</h3>
-                <p>Personal registrado en este local</p>
+                <h3>Configuración del Menú</h3>
+                <p>Personalice moneda, paleta de colores probados, modo visual y detalles</p>
               </div>
-              <div id="usersListContainer" class="users-list-stack">
-                <!-- Lista de Usuarios -->
+
+              <form id="themeConfigForm" class="clean-form">
+                <div class="form-group">
+                  <label for="inputCurrency">Moneda del Comercio (Símbolo de Precios) *</label>
+                  <select id="inputCurrency" class="form-select">
+                    <option value="$" data-code="ARS">ARS ($) - Peso Argentino</option>
+                    <option value="$" data-code="USD">USD ($) - Dólar Estadounidense</option>
+                    <option value="€" data-code="EUR">EUR (€) - Euro</option>
+                    <option value="R$" data-code="BRL">BRL (R$) - Real Brasileño</option>
+                    <option value="$" data-code="CLP">CLP ($) - Peso Chileno</option>
+                    <option value="$U" data-code="UYU">UYU ($U) - Peso Uruguayo</option>
+                    <option value="$" data-code="MXN">MXN ($) - Peso Mexicano</option>
+                    <option value="Bs" data-code="BOB">BOB (Bs) - Boliviano</option>
+                    <option value="S/" data-code="PEN">PEN (S/) - Sol Peruano</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="inputThemeMode">Modo Visual Predeterminado de la Carta *</label>
+                  <select id="inputThemeMode" class="form-select">
+                    <option value="dark">Modo Oscuro</option>
+                    <option value="light">Modo Claro</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label style="font-weight:700; font-size:0.86rem; color:#0f172a;">Color Identitario para Resaltar (Paleta de 20 Colores)</label>
+                  <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 4px; margin-bottom: 10px;">20 colores probados para garantizar legibilidad y alto contraste:</div>
+                  
+                  <div class="brand-swatches-grid-20" id="swatchesGrid20">
+                    <!-- 20 colores inyectados por admin.js -->
+                  </div>
+                  <input type="hidden" id="inputAccentColor" value="#207567">
+                </div>
+
+                <div class="form-group" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid #e2e8f0;">
+                  <label style="font-weight:700; font-size:0.86rem; color:#0f172a; margin-bottom: 8px; display: block;">Opciones de Visualización en los Platos</label>
+                  <div class="toggle-control-card">
+                    <div>
+                      <span class="toggle-title">Mostrar tiempo de preparación</span>
+                      <span class="toggle-desc">Muestra la insignia con el tiempo de preparación estimado</span>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="inputShowPrepTime" checked>
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 20px;">
+                  <i data-lucide="save"></i> Guardar Configuración del Menú
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- SUB-TAB 3: CATEGORÍAS DEL MENÚ -->
+          <div id="configCategories" class="config-subtab-content" style="display: none;">
+            <div class="corporate-card max-w-700">
+              <div class="card-header-clean">
+                <h3>Categorías de los Platos</h3>
+                <p>Cree rápidamente categorías a medida para organizar el menú de su local</p>
+              </div>
+
+              <!-- FORMULARIO EN UN SOLO RENGLÓN (INLINE) -->
+              <form id="addCategoryForm" class="inline-add-category-form">
+                <input type="text" id="newCategoryName" placeholder="Escriba una nueva categoría (ej: Pizzas a la Leña, Entradas, Postres...)" required>
+                <button type="submit" class="btn-admin-primary">
+                  <i data-lucide="plus-circle"></i> Agregar Categoría
+                </button>
+              </form>
+
+              <div style="margin-top: 24px; margin-bottom: 12px; font-weight:700; font-size:0.88rem; color:#0f172a;">
+                Categorías Activas
+              </div>
+
+              <div id="categoriesListStack" class="categories-list-stack">
+                <!-- Lista inyectada dinámicamente por admin.js -->
               </div>
             </div>
-
           </div>
+
+          <!-- SUB-TAB 4: PERSONAL & ACCESOS -->
+          <div id="configUsers" class="config-subtab-content" style="display: none;">
+            <div class="two-column-grid">
+              
+              <div class="corporate-card">
+                <div class="card-header-clean">
+                  <h3>Crear Acceso de Personal</h3>
+                  <p>Asigne cuentas de usuario para encargados o mozos</p>
+                </div>
+
+                <form id="addUserForm" class="clean-form">
+                  <div class="form-group">
+                    <label>Nombre del Empleado *</label>
+                    <input type="text" id="newUserName" placeholder="ej: Mateo González" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Correo Electrónico *</label>
+                    <input type="email" id="newUserEmail" placeholder="ej: mateo@restaurante.com" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Contraseña *</label>
+                    <input type="password" id="newUserPassword" placeholder="Mínimo 6 caracteres" required>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Nivel de Permisos *</label>
+                    <select id="newUserRole" class="form-select">
+                      <option value="staff">🔒 Staff (Solo control de stock)</option>
+                      <option value="manager">🛠️ Encargado (Edición completa)</option>
+                    </select>
+                  </div>
+
+                  <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 10px;">
+                    <i data-lucide="user-plus"></i> Crear Cuenta
+                  </button>
+                </form>
+              </div>
+
+              <div class="corporate-card">
+                <div class="card-header-clean">
+                  <h3>Usuarios Autorizados</h3>
+                  <p>Personal registrado en este local</p>
+                </div>
+                <div id="usersListContainer" class="users-list-stack">
+                  <!-- Lista de Usuarios -->
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
 
       </main>
@@ -659,6 +740,42 @@
         <i data-lucide="check"></i> Guardar y Publicar Banner
       </button>
     </div>
+  </div>
+
+  <!-- MODAL SEGURIDAD DE REVELACIÓN DE CONTRASEÑA DE EMPLEADO -->
+  <div class="modal-backdrop" id="revealPasswordModalBackdrop" style="display: none;"></div>
+  <div class="dish-editor-modal" id="revealPasswordModal" style="display: none; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 440px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+    <div class="modal-header-clean">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="width:36px; height:36px; border-radius:10px; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <i data-lucide="shield-alert" style="width:20px;height:20px;"></i>
+        </div>
+        <div>
+          <h3 style="margin:0; font-size:1.02rem; font-weight:700; color:#0f172a;">Verificación de Seguridad</h3>
+          <p style="margin:2px 0 0 0; font-size:0.78rem; color:#64748b;">Ingrese su clave de administrador para revelar la clave</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close-modal" id="btnCloseRevealModal">&times;</button>
+    </div>
+
+    <form id="revealPasswordForm" style="padding: 20px 24px;">
+      <input type="hidden" id="targetStaffUserId">
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label style="font-weight:700; font-size:0.85rem; color:#0f172a;">Contraseña del Administrador / Dueño *</label>
+        <input type="password" id="adminConfirmPassword" required placeholder="ej: admin123" class="form-select" style="padding: 10px 14px; margin-top:6px; font-size:0.9rem;">
+      </div>
+
+      <div id="revealPasswordError" style="display:none; color:#ef4444; font-size:0.8rem; font-weight:700; margin-bottom:12px; background:#fef2f2; padding:8px 12px; border-radius:6px; border:1px solid #fecaca;">
+        Contraseña de administrador incorrecta.
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+        <button type="button" class="btn-admin-secondary" id="btnCancelRevealModal">Cancelar</button>
+        <button type="submit" class="btn-admin-primary">
+          <i data-lucide="key-round"></i> Confirmar & Revelar
+        </button>
+      </div>
+    </form>
   </div>
 
   <!-- NOTIFICACIÓN TOAST -->

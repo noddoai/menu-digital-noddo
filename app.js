@@ -121,10 +121,33 @@ function renderApp() {
   const defaultProfile = state.profileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
   const themeConfig = db.getThemeConfig(state.profileId);
 
+  // Apply theme mode (dark / light)
+  const defaultThemeMode = state.profileId === 'restaurant' ? 'dark' : 'light';
+  const themeMode = themeConfig.themeMode || defaultThemeMode;
+  document.documentElement.setAttribute('data-theme-mode', themeMode);
+  document.body.setAttribute('data-theme-mode', themeMode);
+
   // Apply custom accent color if saved
   if (themeConfig.accentColor) {
     document.documentElement.style.setProperty('--accent-gold', themeConfig.accentColor);
     document.documentElement.style.setProperty('--accent-text-color', getContrastColor(themeConfig.accentColor));
+  }
+
+  // Check Menu Active Status
+  const isMenuActive = themeConfig.menuIsActive !== false;
+  let offlineBanner = document.getElementById('menuOfflineBanner');
+  const mainHeader = document.querySelector('.brand-header');
+
+  if (!isMenuActive) {
+    if (!offlineBanner && mainHeader) {
+      offlineBanner = document.createElement('div');
+      offlineBanner.id = 'menuOfflineBanner';
+      offlineBanner.className = 'menu-offline-banner';
+      offlineBanner.innerHTML = '<i data-lucide="eye-off" style="width:18px;height:18px;"></i> Menú pausado por el establecimiento (Modo Fuera de Línea)';
+      mainHeader.after(offlineBanner);
+    }
+  } else if (offlineBanner) {
+    offlineBanner.remove();
   }
 
   // 1. Render Header Brand Info
@@ -145,8 +168,9 @@ function renderApp() {
   // 3. Render "Los Más Elegidos" Horizontal Carousel
   renderFeaturedCarousel();
 
-  // 4. Render Categories Navigation
-  renderCategoriesNav(defaultProfile.categories);
+  // 4. Render Categories Navigation dynamically from DB
+  const categories = db.getCategories(state.profileId);
+  renderCategoriesNav(categories);
 
   // 5. Render Dishes List
   renderDishesList();
@@ -254,26 +278,27 @@ function renderFeaturedCarousel() {
 
   const currSymbol = getGlobalCurrencySymbol();
 
+  const themeConfig = db.getThemeConfig(state.profileId);
+  const showPrepTime = themeConfig ? (themeConfig.showPrepTime !== false) : true;
+
   featuredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'featured-card';
 
     const formattedPrice = formatPrice(item.price, currSymbol);
-    const rating = item.rating || 4.8;
 
-    const prepTime = item.prepTime || "20 min";
+    const hasPrepTime = Boolean(item.prepTime && item.prepTime.trim());
+    const timeBadgeHTML = (showPrepTime && hasPrepTime) ? `
+      <div class="card-meta-badges">
+        <div class="time-badge">
+          <i data-lucide="clock" style="width:11px;height:11px;"></i> ${item.prepTime.trim()}
+        </div>
+      </div>` : '';
 
     card.innerHTML = `
       <div class="featured-card-media">
         <img src="${item.media?.heroImage || 'assets/images/fresh_salmon.png'}" alt="${item.name}" loading="lazy">
-        <div class="card-meta-badges">
-          <div class="time-badge">
-            <i data-lucide="clock" style="width:11px;height:11px;"></i> ${prepTime}
-          </div>
-          <div class="rating-badge">
-            <i data-lucide="star" style="width:11px;height:11px;fill:#d97706;color:#d97706;"></i> ${rating}
-          </div>
-        </div>
+        ${timeBadgeHTML}
       </div>
       <div class="featured-card-body">
         <h4>${item.name}</h4>
@@ -304,7 +329,6 @@ function renderCategoriesNav(categories) {
     button.dataset.catId = cat.id;
 
     button.innerHTML = `
-      <i data-lucide="${cat.icon || 'sparkles'}"></i>
       <span>${cat.name}</span>
     `;
 
@@ -436,17 +460,17 @@ function createVisualCard(dish) {
     </div>
   ` : '';
 
-  const prepTime = dish.prepTime || "20 min";
-  const ratingHTML = `
+  const themeConfig = db.getThemeConfig(state.profileId);
+  const showPrepTime = themeConfig ? (themeConfig.showPrepTime !== false) : true;
+
+  const hasPrepTime = Boolean(dish.prepTime && dish.prepTime.trim());
+  const timeBadgeHTML = (showPrepTime && hasPrepTime) ? `
     <div class="card-meta-badges">
       <div class="time-badge">
-        <i data-lucide="clock" style="width:11px;height:11px;"></i> ${prepTime}
-      </div>
-      <div class="rating-badge">
-        <i data-lucide="star" style="width:11px;height:11px;fill:#d97706;color:#d97706;"></i> ${dish.rating || 4.8}
+        <i data-lucide="clock" style="width:11px;height:11px;"></i> ${dish.prepTime.trim()}
       </div>
     </div>
-  `;
+  ` : '';
 
   let variationsHTML = '';
   if (dish.hasVariations && dish.variations && dish.variations.length > 0) {
@@ -467,7 +491,7 @@ function createVisualCard(dish) {
     <div class="card-media-box">
       ${badgesHTML}
       ${mediaHTML}
-      ${ratingHTML}
+      ${timeBadgeHTML}
     </div>
     <div class="card-body">
       <div class="card-title-row">

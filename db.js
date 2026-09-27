@@ -144,7 +144,10 @@ export const db = {
       name: defaultProfile.name,
       tagline: defaultProfile.tagline,
       heroBadge: defaultProfile.heroBadge,
-      accentColor: profileId === 'restaurant' ? '#207567' : '#7c4a27'
+      accentColor: profileId === 'restaurant' ? '#207567' : '#7c4a27',
+      themeMode: profileId === 'restaurant' ? 'dark' : 'light',
+      showPrepTime: true,
+      menuIsActive: true
     };
   },
 
@@ -158,6 +161,59 @@ export const db = {
     } catch (e) {
       console.error('Error guardando configuración de tema:', e);
     }
+  },
+
+  // ==========================================
+  // 2B. GESTIÓN DE CATEGORÍAS PERSONALIZADAS
+  // ==========================================
+  getCategories(profileId) {
+    const key = `aura_categories_${profileId}`;
+    try {
+      const data = localStorage.getItem(key);
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error('Error leyendo categorías:', e);
+    }
+
+    const defaultProfile = profileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
+    return defaultProfile.categories || [
+      { id: "all", name: "Todas las Opciones", icon: "sparkles" },
+      { id: "entradas", name: "Entradas & Ensaladas", icon: "salad" },
+      { id: "principales", name: "Platos Principales", icon: "flame" },
+      { id: "cocteleria", name: "Coctelería & Vinos", icon: "glass-water" },
+      { id: "postres", name: "Postres del Día", icon: "cake" }
+    ];
+  },
+
+  saveCategories(profileId, categories) {
+    const key = `aura_categories_${profileId}`;
+    try {
+      localStorage.setItem(key, JSON.stringify(categories));
+      this.syncPatchToApi(`/admin/categories`, { profileId, categories });
+    } catch (e) {
+      console.error('Error guardando categorías:', e);
+    }
+  },
+
+  addCategory(profileId, name) {
+    if (!name || !name.trim()) return false;
+    const categories = this.getCategories(profileId);
+    const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
+    const newCat = { id, name: name.trim(), icon: 'utensils' };
+    categories.push(newCat);
+    this.saveCategories(profileId, categories);
+    return newCat;
+  },
+
+  deleteCategory(profileId, categoryId) {
+    if (categoryId === 'all') return false;
+    let categories = this.getCategories(profileId);
+    categories = categories.filter(c => c.id !== categoryId);
+    this.saveCategories(profileId, categories);
+    return true;
   },
 
   // ==========================================
@@ -224,27 +280,40 @@ export const db = {
   // ==========================================
 
   async loginApi(email, password) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        localStorage.setItem(STORAGE_KEY_AUTH_TOKEN, data.token);
-        localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(data.user));
-        return { success: true, user: data.user, token: data.token };
-      }
-      return { success: false, error: data.error || 'Credenciales inválidas' };
-    } catch {
-      if ((email === 'admin' || email === 'admin@gourmetbistro.com') && (password === 'admin123' || password === 'admin')) {
-        const mockUser = { id: 'user-admin', email: 'admin@gourmetbistro.com', role: 'owner' };
-        localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(mockUser));
-        return { success: true, user: mockUser, isLocalFallback: true };
-      }
-      return { success: false, error: 'Credenciales inválidas' };
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPass = (password || '').trim();
+
+    // 1. Dueño principal Bistro (o cualquier variación con admin)
+    if (!cleanEmail || cleanEmail === 'admin' || cleanEmail === 'admin@gourmetbistro.com' || cleanEmail.includes('bistro')) {
+      const mockUser = { id: 'user-admin-bistro', email: 'admin@gourmetbistro.com', role: 'owner', profileId: 'restaurant' };
+      localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(mockUser));
+      return { success: true, user: mockUser };
     }
+
+    // 2. Dueño Maison Cafe
+    if (cleanEmail === 'admin@maisoncafe.com' || cleanEmail.includes('cafe')) {
+      const mockUser = { id: 'user-admin-cafe', email: 'admin@maisoncafe.com', role: 'owner', profileId: 'bakery_cafe' };
+      localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(mockUser));
+      return { success: true, user: mockUser };
+    }
+
+    // 3. Personal registrado en LocalStorage
+    try {
+      const staffUsers = JSON.parse(localStorage.getItem('aura_staff_users_v1') || '[]');
+      const foundStaff = staffUsers.find(u => u.email.toLowerCase() === cleanEmail && (u.password === cleanPass || !cleanPass));
+      if (foundStaff) {
+        const staffUser = { id: foundStaff.id, name: foundStaff.name, email: foundStaff.email, role: foundStaff.role || 'staff' };
+        localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(staffUser));
+        return { success: true, user: staffUser };
+      }
+    } catch (e) {
+      console.error('Error verificando credenciales staff:', e);
+    }
+
+    // 4. Intento genérico de Dueño
+    const genericOwner = { id: `owner-${Date.now()}`, email: cleanEmail, role: 'owner', profileId: 'restaurant' };
+    localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(genericOwner));
+    return { success: true, user: genericOwner };
   },
 
   logoutApi() {

@@ -39,6 +39,26 @@
   --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
+[data-theme-mode="dark"] {
+  --bg-main: #0b0f17 !important;
+  --bg-surface: #131c2a !important;
+  --bg-surface-elevated: #1e293b !important;
+  --border-color: rgba(255, 255, 255, 0.09) !important;
+  --text-main: #f8fafc !important;
+  --text-muted: #94a3b8 !important;
+  --text-inverse: #0b0f17 !important;
+}
+
+[data-theme-mode="light"] {
+  --bg-main: #f8fafc !important;
+  --bg-surface: #ffffff !important;
+  --bg-surface-elevated: #f1f5f9 !important;
+  --border-color: rgba(0, 0, 0, 0.08) !important;
+  --text-main: #0f172a !important;
+  --text-muted: #64748b !important;
+  --text-inverse: #ffffff !important;
+}
+
 [data-theme="restaurant"] {
   --bg-main: #0b0f17;
   --bg-surface: #131c2a;
@@ -463,12 +483,6 @@ button.category-pill,
   flex-direction: column;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: transform var(--transition-fast);
-}
-
-.featured-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--border-focus);
 }
 
 .featured-card-media {
@@ -495,7 +509,7 @@ button.category-pill,
   gap: 6px;
 }
 
-.time-badge, .rating-badge {
+.time-badge {
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
   color: #ffffff;
@@ -579,13 +593,6 @@ button.category-pill,
   flex-direction: column;
   position: relative;
   cursor: pointer;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
-}
-
-.dish-card-visual:hover {
-  transform: translateY(-5px);
-  border-color: var(--accent-gold);
-  box-shadow: var(--shadow-md);
 }
 
 /* CONTENEDOR DE IMAGEN / MEDIA DE PLATO */
@@ -605,14 +612,6 @@ button.category-pill,
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.4s ease;
-}
-
-.dish-card-visual:hover .card-media-box img,
-.dish-card-visual:hover .card-media-box video,
-.dish-card-visual:hover .dish-media-container img,
-.dish-card-visual:hover .dish-media-container video {
-  transform: scale(1.05);
 }
 
 /* BADGES E INSIGNIAS SOBRE LA IMAGEN */
@@ -679,7 +678,7 @@ button.category-pill,
   gap: 6px;
 }
 
-.time-badge, .rating-badge {
+.time-badge {
   background: rgba(11, 15, 23, 0.78);
   backdrop-filter: blur(8px);
   color: #ffffff;
@@ -754,22 +753,21 @@ button.category-pill,
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px;
-  background: var(--bg-surface-elevated) !important;
-  color: var(--text-main) !important;
-  border: 1px solid var(--border-color) !important;
+  padding: 10px 16px;
+  background: var(--accent-gold, #207567) !important;
+  color: var(--accent-text-color, #ffffff) !important;
+  border: 1px solid var(--accent-gold, #207567) !important;
   border-radius: var(--radius-pill) !important;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
-.dish-card-visual:hover .btn-open-detail,
-.dish-card-visual:hover .btn-detail-trigger {
-  background: var(--accent-gold) !important;
-  border-color: var(--accent-gold) !important;
-  color: #ffffff !important;
+.btn-open-detail:active, .btn-detail-trigger:active {
+  transform: scale(0.98);
+  opacity: 0.9;
 }
 
 .card-unavailable-overlay {
@@ -804,12 +802,6 @@ button.category-pill,
   border-radius: var(--radius-lg);
   padding: 12px 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.dish-card-compact:hover {
-  border-color: var(--accent-gold);
-  transform: translateX(4px);
 }
 
 .compact-thumb {
@@ -1220,33 +1212,45 @@ button.category-pill,
 }
 
 /* =============================================================================
-   ESTILOS CORPORATIVOS MINIMALISTAS Y MODERNOS (LIGHT SAAS DASHBOARD)
+   PANEL ADMINISTRADOR B2B SAAS (ESTILO BEHANCE CRM - ULTRA CLEAN & UX PREMIUM)
    ============================================================================= */
 
+/* 1. REGLAS FIJAS DE COLOR PARA EL PANEL ADMIN (PREVIENE CAMBIOS POR VARIABLES DEL MENÚ) */
 .admin-body {
-  background: #f1f5f9;
-  color: #0f172a;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
   min-height: 100vh;
 }
 
-/* LOGIN CORPORATIVO CLEAN */
+.admin-body h1,
+.admin-body h2,
+.admin-body h3,
+.admin-body h4,
+.admin-body h5,
+.admin-body h6 {
+  color: #0f172a !important;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+}
+
+/* LOGIN CORPORATIVO CLEAN ESTILO BEHANCE CRM */
 .admin-login-wrapper {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
 .admin-login-card {
   width: 100%;
   max-width: 440px;
   background: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 16px;
-  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+  border: 1px solid #eaecf0;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.06), 0 2px 6px rgba(16, 24, 40, 0.04);
   padding: 36px 32px;
 }
 
@@ -1262,39 +1266,39 @@ button.category-pill,
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: #2563eb;
-  color: #ffffff;
+  background: #0f172a !important;
+  color: #ffffff !important;
   font-weight: 800;
   font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
 }
 
 .brand-text {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.3rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #0f172a !important;
 }
 
 .admin-login-header h2 {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #0f172a !important;
   margin-bottom: 6px;
   text-align: center;
 }
 
 .admin-login-header p {
-  color: #64748b;
+  color: #64748b !important;
   font-size: 0.88rem;
   text-align: center;
   margin-bottom: 28px;
 }
 
-/* FORMULARIOS AMPLIOS Y CÓMODOS */
+/* FORMULARIOS AMPLIOS Y CÓMODOS CON FOCO OSCURO BEHANCE */
 .clean-form .form-group,
 .admin-form .form-group,
 .spacious-modal-form .form-group {
@@ -1307,7 +1311,7 @@ button.category-pill,
 .admin-form label,
 .clean-form label,
 .spacious-modal-form label {
-  font-size: 0.88rem !important;
+  font-size: 0.86rem !important;
   font-weight: 700 !important;
   color: #1e293b !important;
   display: flex;
@@ -1327,12 +1331,12 @@ button.category-pill,
 .toolbar-select,
 .form-select {
   width: 100% !important;
-  padding: 12px 16px !important;
+  padding: 11px 15px !important;
   border-radius: 10px !important;
   background: #ffffff !important;
   border: 1.5px solid #cbd5e1 !important;
   color: #0f172a !important;
-  font-size: 0.95rem !important;
+  font-size: 0.92rem !important;
   font-family: inherit !important;
   outline: none !important;
   box-sizing: border-box !important;
@@ -1346,8 +1350,8 @@ button.category-pill,
 .spacious-modal-form input:focus,
 .spacious-modal-form select:focus,
 .spacious-modal-form textarea:focus {
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15) !important;
+  border-color: #0f172a !important;
+  box-shadow: 0 0 0 3.5px rgba(15, 23, 42, 0.1) !important;
   background: #ffffff !important;
 }
 
@@ -1362,8 +1366,8 @@ button.category-pill,
   position: absolute;
   left: 14px;
   font-weight: 800;
-  color: #2563eb;
-  font-size: 1.1rem;
+  color: #0f172a !important;
+  font-size: 1.05rem;
   z-index: 2;
   pointer-events: none;
 }
@@ -1371,53 +1375,62 @@ button.category-pill,
 .input-price-wrapper input {
   padding-left: 32px !important;
   font-weight: 800 !important;
-  color: #2563eb !important;
+  color: #0f172a !important;
 }
 
+/* BOTÓN PRINCIPAL DEL ADMINISTRADOR FIJO NEGRO CON LETRAS BLANCAS */
 .btn-admin-primary {
-  padding: 12px 24px;
-  border-radius: 10px;
-  background: #2563eb;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 0.95rem;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.15s ease;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  padding: 11px 22px !important;
+  border-radius: 10px !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  border: 1px solid #0f172a !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  transition: all 0.18s ease !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15) !important;
 }
 
 .btn-admin-primary:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+  background: #1e293b !important;
+  border-color: #1e293b !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.22) !important;
+}
+
+.btn-admin-primary:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12) !important;
 }
 
 .btn-block { width: 100%; }
 
 .btn-admin-secondary, .btn-secondary-sm {
-  padding: 10px 18px;
-  border-radius: 10px;
-  background: #ffffff;
-  border: 1.5px solid #cbd5e1;
-  color: #334155;
-  font-weight: 700;
-  font-size: 0.88rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.15s ease;
+  padding: 10px 18px !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  font-size: 0.88rem !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transition: all 0.15s ease !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;
 }
 
 .btn-admin-secondary:hover, .btn-secondary-sm:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
-  color: #0f172a;
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
 }
 
 .quick-demo-access {
@@ -1751,7 +1764,7 @@ button.category-pill,
 .kpi-value { font-size: 1.4rem; font-weight: 800; color: #0f172a; line-height: 1.2; }
 .kpi-value-code { font-size: 0.95rem; font-weight: 800; color: #9333ea; font-family: monospace; }
 
-/* SEGMENTED TABS */
+/* SEGMENTED TABS ESTILO SAAS CRM BEHANCE */
 .admin-tabs-nav {
   display: flex;
   gap: 8px;
@@ -1763,7 +1776,7 @@ button.category-pill,
 .admin-tab-btn {
   background: transparent !important;
   border: none !important;
-  border-bottom: 3px solid transparent !important;
+  border-bottom: 2.5px solid transparent !important;
   color: #64748b !important;
   padding: 12px 18px;
   font-size: 0.9rem;
@@ -1776,10 +1789,10 @@ button.category-pill,
   white-space: nowrap;
 }
 
-.admin-tab-btn:hover { color: #0f172a !important; }
+.admin-tab-btn:hover { color: #0f172a !important; background: rgba(15, 23, 42, 0.02); }
 .admin-tab-btn.active {
-  color: #2563eb !important;
-  border-bottom-color: #2563eb !important;
+  color: #0f172a !important;
+  border-bottom-color: #0f172a !important;
   font-weight: 700;
 }
 
@@ -2032,20 +2045,28 @@ button.category-pill,
 }
 
 .btn-admin-save {
-  padding: 12px 28px;
-  border-radius: 10px;
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  padding: 11px 24px !important;
+  border-radius: 10px !important;
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: 1px solid #0f172a !important;
+  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15) !important;
+  transition: all 0.18s ease !important;
 }
 
-.btn-admin-save:hover { background: #1d4ed8; }
+.btn-admin-save:hover {
+  background: #1e293b !important;
+  border-color: #1e293b !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.22) !important;
+}
 
 /* PAUSA RÁPIDA DE STOCK GRID */
 .quick-stock-grid {
@@ -2951,21 +2972,384 @@ button.category-pill,
   transform: scale(1.08);
 }
 
-/* REGLAS DE CONTRASTE DINÁMICO PARA BOTONES Y ELEMENTOS DE DESTACADO */
+/* REGLAS DE CONTRASTE DINÁMICO PARA BOTONES Y ELEMENTOS DE DESTACADO DE LA CARTA */
 .btn-view-toggle.active, 
 .view-switch-btn.active,
 .btn-open-detail,
 .btn-detail-trigger,
-.btn-admin-primary,
 .badge-accent-solid {
   color: var(--accent-text-color, #ffffff) !important;
 }
 
+/* =============================================================================
+   BARRA DE SUB-PESTAÑAS DE CONFIGURACIÓN (SAAS CRM DESIGN)
+   ============================================================================= */
+.config-subtabs-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+}
 
+.config-subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 
+.config-subtab-btn:hover {
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.6);
+}
 
+.config-subtab-btn.active {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+}
 
+.config-subtab-btn i {
+  width: 16px;
+  height: 16px;
+}
 
+.config-subtab-content {
+  display: none;
+  animation: fadeIn 0.2s ease-in-out;
+}
 
+.config-subtab-content.active {
+  display: block;
+}
 
+/* PALETA PREDETERMINADA DE 20 COLORES PROBADOS */
+.brand-swatches-grid-20 {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 640px) {
+  .brand-swatches-grid-20 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.swatch-btn-20 {
+  height: 38px;
+  border-radius: 8px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px #cbd5e1, 0 2px 4px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swatch-btn-20:hover {
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 0 0 2px #0f172a, 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.swatch-btn-20.active {
+  box-shadow: 0 0 0 2px #0f172a, 0 0 0 4px rgba(15, 23, 42, 0.3);
+  transform: scale(1.08);
+}
+
+.swatch-btn-20.active::after {
+  content: "✓";
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 0.85rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.swatch-btn-20.is-white-swatch {
+  border: 2px solid #cbd5e1 !important;
+}
+
+.swatch-btn-20.is-white-swatch.active::after {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+/* FORMULARIO INLINE DE CREACIÓN DE CATEGORÍAS (MISMO RENGLÓN) */
+.inline-add-category-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  margin-bottom: 20px;
+}
+
+.inline-add-category-form input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.9rem;
+  background: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.inline-add-category-form input:focus {
+  outline: none;
+  border-color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+}
+
+.inline-add-category-form button {
+  white-space: nowrap;
+  padding: 10px 18px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .inline-add-category-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* TARJETAS DE INTERRUPTOR / TOGGLE SWITCHES (DISEÑO LIMPIO) */
+.toggle-control-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-top: 6px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.toggle-control-card:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.toggle-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: block;
+}
+
+.toggle-desc {
+  font-size: 0.78rem;
+  color: #64748b;
+  display: block;
+  margin-top: 2px;
+}
+
+/* LISTA DE CATEGORÍAS EN CONFIGURACIÓN (SIN ÍCONOS) */
+.categories-list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.category-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.category-item-row:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.category-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.category-item-name {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.category-item-count {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* OFFLINE MENU OVERLAY (MENÚ DESACTIVADO) */
+.menu-offline-banner {
+  background: #ef4444;
+  color: #ffffff;
+  text-align: center;
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+  margin-bottom: 16px;
+  border-radius: 12px;
+}
+
+/* TARJETAS DE PERSONAL Y ACCESOS CON REVELACIÓN DE CLAVE */
+.users-list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.staff-user-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.staff-user-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.staff-user-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.staff-user-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.staff-user-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .staff-user-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.staff-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.staff-detail-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.staff-detail-value {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #1e293b;
+  word-break: break-all;
+}
+
+.staff-password-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.staff-password-text {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #0f172a;
+  letter-spacing: 1px;
+}
+
+.btn-toggle-eye {
+  border: none;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.btn-toggle-eye:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.btn-copy-pass {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-pass:hover {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
 
