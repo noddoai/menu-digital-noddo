@@ -82,6 +82,21 @@
   --accent-gold-gradient: linear-gradient(135deg, #8c532b 0%, #683d1e 100%);
 }
 
+[data-theme="warm_wine"],
+[data-theme="le-passport-nice"] {
+  --bg-main: #fdfaf7;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f7ede8;
+  --border-color: rgba(128, 20, 43, 0.12);
+  --text-main: #2b1117;
+  --text-muted: #7d4d57;
+  --text-inverse: #ffffff;
+  --accent-gold: #80142B;
+  --accent-gold-hover: #5e0d1f;
+  --accent-gold-light: rgba(128, 20, 43, 0.12);
+  --accent-gold-gradient: linear-gradient(135deg, #80142B 0%, #5e0d1f 100%);
+}
+
 * {
   margin: 0;
   padding: 0;

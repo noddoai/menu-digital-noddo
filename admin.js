@@ -67,6 +67,19 @@ function setupLogin() {
     }
   });
 
+  document.getElementById('btnQuickDemoPassport')?.addEventListener('click', async () => {
+    document.getElementById('loginUser').value = 'admin@lepassportnice.com';
+    document.getElementById('loginPass').value = 'admin123';
+    adminState.currentProfileId = 'le-passport-nice';
+    const res = await db.loginApi('admin@lepassportnice.com', 'admin123');
+    if (res.success) {
+      adminState.isLoggedIn = true;
+      sessionStorage.setItem('aura_admin_logged', 'true');
+      showDashboard();
+      showToast("Sesión iniciada como Le Pass'Port Nice");
+    }
+  });
+
   if (sessionStorage.getItem('aura_admin_logged') === 'true') {
     adminState.isLoggedIn = true;
     showDashboard();
@@ -81,6 +94,9 @@ function setupLogin() {
     if (res.success) {
       adminState.isLoggedIn = true;
       adminState.currentUser = res.user || { role: user === 'staff' ? 'staff' : 'owner' };
+      if (res.user?.profileId) {
+        adminState.currentProfileId = res.user.profileId;
+      }
       sessionStorage.setItem('aura_admin_logged', 'true');
       sessionStorage.setItem('aura_user_role', adminState.currentUser.role || 'owner');
       loginError.style.display = 'none';
@@ -116,6 +132,23 @@ function showDashboard() {
   const userRole = sessionStorage.getItem('aura_user_role') || 'owner';
   applyRolePermissions(userRole);
 
+  const profileSelect = document.getElementById('adminProfileSelect');
+  if (profileSelect && adminState.currentProfileId) {
+    profileSelect.value = adminState.currentProfileId;
+  }
+
+  const themeConfig = db.getThemeConfig(adminState.currentProfileId);
+  adminState.currencySymbol = themeConfig.currencySymbol || (adminState.currentProfileId === 'le-passport-nice' ? '€' : '$');
+  updateGlobalCurrencySymbol(adminState.currencySymbol);
+
+  const brandTitleEl = document.getElementById('adminBrandTitle');
+  if (brandTitleEl) brandTitleEl.textContent = themeConfig.name || "Le Pass'Port Nice";
+
+  const slugEl = document.getElementById('kpiSlugName');
+  if (slugEl) slugEl.textContent = adminState.currentProfileId;
+
+  reloadPhonePreview();
+
   populateCategoryFilter();
   renderItemsTable();
   renderQuickStockGrid();
@@ -145,11 +178,16 @@ function populateCategoryFilter() {
 
 function reloadPhonePreview() {
   const iframe = document.getElementById('phonePreviewIframe');
-  if (iframe && iframe.contentWindow) {
-    try {
-      iframe.contentWindow.location.reload();
-    } catch (e) {
-      console.log('Error recargando vista previa:', e);
+  if (iframe) {
+    const targetSrc = adminState.currentProfileId === 'le-passport-nice' ? 'passport.html' : (adminState.currentProfileId === 'bakery_cafe' ? 'cafe.html' : 'restaurant.html');
+    if (!iframe.src || iframe.src.indexOf(targetSrc) === -1) {
+      iframe.src = targetSrc;
+    } else if (iframe.contentWindow) {
+      try {
+        iframe.contentWindow.location.reload();
+      } catch (e) {
+        console.log('Error recargando vista previa:', e);
+      }
     }
   }
 }
@@ -166,10 +204,17 @@ function setupNavigation() {
     document.documentElement.dataset.theme = adminState.currentProfileId;
     
     // Actualizar el iframe de vista previa celular al cambiar de local
-    const iframe = document.getElementById('phonePreviewIframe');
-    if (iframe) {
-      iframe.src = adminState.currentProfileId === 'restaurant' ? 'restaurant.html' : 'cafe.html';
-    }
+    reloadPhonePreview();
+
+    const themeConfig = db.getThemeConfig(adminState.currentProfileId);
+    adminState.currencySymbol = themeConfig.currencySymbol || (adminState.currentProfileId === 'le-passport-nice' ? '€' : '$');
+    updateGlobalCurrencySymbol(adminState.currencySymbol);
+
+    const brandTitleEl = document.getElementById('adminBrandTitle');
+    if (brandTitleEl) brandTitleEl.textContent = themeConfig.name || e.target.options[e.target.selectedIndex].text;
+
+    const slugEl = document.getElementById('kpiSlugName');
+    if (slugEl) slugEl.textContent = adminState.currentProfileId;
 
     populateCategoryFilter();
     renderItemsTable();
@@ -270,7 +315,7 @@ function renderItemsTable() {
       <td>
         <div style="display:flex; align-items:center; gap:6px;">
           <span class="inline-price-symbol" style="font-weight:700; color:#475569;">${currSymbol}</span>
-          <input type="number" class="inline-price-input" data-id="${item.id}" value="${item.price}" step="100">
+          <input type="number" class="inline-price-input" data-id="${item.id}" value="${item.price}" step="any">
         </div>
       </td>
       <td>

@@ -43,12 +43,24 @@
         </span>
       </a>
 
-      <!-- CARD 3: PANEL ADMIN -->
+      <!-- CARD 3: LE PASS'PORT NICE (NUEVA PRUEBA REAL) -->
+      <a href="passport.html" class="portal-card" style="border-top: 4px solid #80142B; background: var(--bg-surface);">
+        <div class="portal-card-badge" style="background: rgba(128, 20, 43, 0.15); color: #80142B; border: 1px solid rgba(128, 20, 43, 0.3);">NICE • CUISINE FAMILIALE</div>
+        <div class="portal-card-icon" style="color: #80142B;"><i data-lucide="croissant"></i></div>
+        <h2>Le Pass'Port Nice</h2>
+        <p>Cuisine familiale à Nice. Galettes de sarrasin bretonnes, crêpes sucrées, petits-déjeuners, plats du jour et cocktails en Euros (€).</p>
+
+        <span class="portal-card-btn" style="background: #80142B; color: #fff;">
+          Voir le Menu Nice <i data-lucide="arrow-right"></i>
+        </span>
+      </a>
+
+      <!-- CARD 4: PANEL ADMIN -->
       <a href="admin.html" class="portal-card admin-portal-card">
         <div class="portal-card-badge" style="background: rgba(255,255,255,0.2);">ACCESO RESTRINGIDO</div>
         <div class="portal-card-icon"><i data-lucide="settings"></i></div>
         <h2>Panel de Administración</h2>
-        <p>Gestione en tiempo real la disponibilidad de stock (isAvailable), cambie precios ($), edite platos y personalice colores.</p>
+        <p>Gestione en tiempo real stock (isAvailable), precios (€ y $), edición de platos, promociones y códigos QR.</p>
 
         <span class="portal-card-btn">
           Ingresar al Panel Admin <i data-lucide="lock"></i>
@@ -58,7 +70,7 @@
     </div>
 
     <footer style="margin-top: 40px; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
-      &copy; 2026 AURA & MAISON Digital Menu Platform &bull; Mobile-First WebAR 60 FPS Engine
+      &copy; 2026 Noddo Digital Menu Platform &bull; Mobile-First WebAR 60 FPS Engine
     </footer>
   </main>
 
@@ -66,7 +78,10 @@
     document.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
       const tenant = params.get('tenant') || params.get('profile');
-      if (tenant === 'gourmet-bistro' || tenant === 'restaurant') {
+      if (tenant === 'le-passport-nice' || tenant === 'passport') {
+        window.location.replace('passport.html');
+        return;
+      } else if (tenant === 'gourmet-bistro' || tenant === 'restaurant') {
         window.location.replace('restaurant.html');
         return;
       } else if (tenant === 'maison-cafe' || tenant === 'cafe' || tenant === 'bakery_cafe') {

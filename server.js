@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import pg from 'pg';
+import { MENU_ITEMS } from './menuData.js';
 
 dotenv.config();
 
@@ -39,10 +40,19 @@ if (process.env.DATABASE_URL) {
   }
 }
 
-
 app.use(cors({ origin: '*' }));
 app.use(express.json());
-app.use(express.static('.'));
+
+// Servir archivos estáticos sin caché durante desarrollo
+app.use(express.static('.', {
+  etag: false,
+  maxAge: 0,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+}));
 
 // ==========================================
 // MOCK MEMORY DB (Fallback cuando no hay Postgres activo)
@@ -50,42 +60,15 @@ app.use(express.static('.'));
 const memoryDb = {
   tenants: [
     { id: 'tenant-rest-01', name: 'Gourmet Bistro & Grill', slug: 'gourmet-bistro', accentColor: '#207567', currencySymbol: '$' },
-    { id: 'tenant-cafe-02', name: 'Maison Cafe & Bakery', slug: 'maison-cafe', accentColor: '#7c4a27', currencySymbol: '$' }
+    { id: 'tenant-cafe-02', name: 'Maison Cafe & Bakery', slug: 'maison-cafe', accentColor: '#7c4a27', currencySymbol: '$' },
+    { id: 'tenant-passport-03', name: "Le Pass'Port Nice", slug: 'le-passport-nice', accentColor: '#80142B', currencySymbol: '€' }
   ],
   users: [
     { id: 'u-1', tenantId: 'tenant-rest-01', email: 'admin@gourmetbistro.com', role: 'owner' },
-    { id: 'u-2', tenantId: 'tenant-cafe-02', email: 'admin@maisoncafe.com', role: 'owner' }
+    { id: 'u-2', tenantId: 'tenant-cafe-02', email: 'admin@maisoncafe.com', role: 'owner' },
+    { id: 'u-3', tenantId: 'tenant-passport-03', email: 'admin@lepassportnice.com', role: 'owner' }
   ],
-  items: [
-    {
-      id: 'rest-01',
-      tenantId: 'tenant-rest-01',
-      businessProfile: 'restaurant',
-      category: 'principales',
-      name: 'Salmón a la Manteca de Limón',
-      price: 25000,
-      formattedPrice: '$ 25.00',
-      shortDescription: 'Filete de salmón fresco a la plancha con salsa emulsionada de limón.',
-      isAvailable: true,
-      isChefSpecial: true,
-      isFeatured: true,
-      heroImage: 'assets/images/fresh_salmon.png'
-    },
-    {
-      id: 'cafe-01',
-      tenantId: 'tenant-cafe-02',
-      businessProfile: 'bakery_cafe',
-      category: 'pasteleria',
-      name: 'Pancakes Dulces con Arándanos & Naranja',
-      price: 25000,
-      formattedPrice: '$ 25.00',
-      shortDescription: 'Torre de pancakes esponjosos servidos con rodajas de naranja y miel.',
-      isAvailable: true,
-      isChefSpecial: true,
-      isFeatured: true,
-      heroImage: 'assets/images/berry_pancakes.png'
-    }
-  ]
+  items: [...MENU_ITEMS]
 };
 
 // ==========================================
@@ -167,6 +150,16 @@ app.post('/api/v1/auth/login', async (req, res) => {
     return res.json({ token, user: mockUser });
   }
 
+  if ((email === 'admin@lepassportnice.com' || email.includes('passport')) && (password === 'admin123' || password === 'admin')) {
+    const mockUser = memoryDb.users[2];
+    const token = jwt.sign(
+      { userId: mockUser.id, tenantId: mockUser.tenantId, role: mockUser.role, email: mockUser.email },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+    return res.json({ token, user: mockUser });
+  }
+
   return res.status(401).json({ error: 'Credenciales inválidas' });
 });
 
@@ -213,7 +206,8 @@ app.get('/api/v1/public/menus/:slug', async (req, res) => {
 
   // Memory fallback
   const tenant = memoryDb.tenants.find(t => t.slug === slug || t.slug.includes(slug)) || memoryDb.tenants[0];
-  const items = memoryDb.items.filter(i => i.tenantId === tenant.id || i.businessProfile === (slug.includes('cafe') ? 'bakery_cafe' : 'restaurant'));
+  const profileKey = slug.includes('passport') ? 'le-passport-nice' : (slug.includes('cafe') ? 'bakery_cafe' : 'restaurant');
+  const items = memoryDb.items.filter(i => i.tenantId === tenant.id || i.businessProfile === profileKey);
 
   res.setHeader('Cache-Control', 'public, max-age=30');
   res.json({ tenant, items, promotion: null });

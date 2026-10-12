@@ -10,7 +10,9 @@ import { db } from './db.js';
 // ==========================================
 // 1. ESTADO GLOBAL DE LA VISTA
 // ==========================================
-const profileId = document.documentElement.dataset.profile || 'restaurant';
+const urlParams = new URLSearchParams(window.location.search);
+const profileFromUrl = urlParams.get('tenant') || urlParams.get('profile');
+const profileId = profileFromUrl || document.documentElement.dataset.profile || 'restaurant';
 
 const state = {
   profileId: profileId,
@@ -21,6 +23,31 @@ const state = {
   selectedDishForModal: null,
   videoObserver: null
 };
+
+function getProfileDef(pId) {
+  if (!pId) return BUSINESS_PROFILES.RESTAURANT;
+  const key = Object.keys(BUSINESS_PROFILES).find(k => BUSINESS_PROFILES[k].id === pId);
+  if (key && BUSINESS_PROFILES[key]) return BUSINESS_PROFILES[key];
+  if (pId === 'bakery_cafe' || pId.includes('cafe')) return BUSINESS_PROFILES.BAKERY_CAFE;
+  if (pId === 'le-passport-nice' || pId.includes('passport')) return BUSINESS_PROFILES.LE_PASSPORT_NICE;
+  return BUSINESS_PROFILES.RESTAURANT;
+}
+
+export function getDishImageUrl(dish) {
+  if (dish.media?.heroImage) return dish.media.heroImage;
+  if (dish.heroImage_url) return dish.heroImage_url;
+  if (dish.heroImage) return dish.heroImage;
+
+  if (dish.businessProfile === 'le-passport-nice') {
+    if (dish.category === 'galettes') return 'assets/images/le-passport-nice/galettes.png';
+    if (dish.category === 'crepes') return 'assets/images/le-passport-nice/crepes.png';
+    if (dish.category === 'petit_dejeuner') return 'assets/images/le-passport-nice/Viennoiserie.png';
+    if (dish.category === 'plats_du_jour') return 'assets/images/le-passport-nice/entrecote.png';
+    if (dish.category === 'cocktails') return 'assets/images/signature_cocktail.png';
+    if (dish.category === 'bieres_cidre' || dish.category === 'boissons_froides') return 'assets/images/specialty_coffee.png';
+  }
+  return 'assets/images/fresh_salmon.png';
+}
 
 // ==========================================
 // 2. INICIALIZACIÓN
@@ -118,11 +145,11 @@ function getContrastColor(hexColor) {
 // 3. RENDERIZADO DE INTERFAZ
 // ==========================================
 function renderApp() {
-  const defaultProfile = state.profileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
+  const defaultProfile = getProfileDef(state.profileId);
   const themeConfig = db.getThemeConfig(state.profileId);
 
   // Apply theme mode (dark / light)
-  const defaultThemeMode = state.profileId === 'restaurant' ? 'dark' : 'light';
+  const defaultThemeMode = defaultProfile.themeMode || (state.profileId === 'restaurant' ? 'dark' : 'light');
   const themeMode = themeConfig.themeMode || defaultThemeMode;
   document.documentElement.setAttribute('data-theme-mode', themeMode);
   document.body.setAttribute('data-theme-mode', themeMode);
@@ -256,7 +283,18 @@ function getGlobalCurrencySymbol() {
 function formatPrice(amount, symbol) {
   if (amount === undefined || amount === null || isNaN(amount)) return '';
   const currSymbol = symbol || getGlobalCurrencySymbol();
-  return `${currSymbol} ${Number(amount).toLocaleString('es-AR')}`;
+  const num = Number(amount);
+  
+  if (currSymbol === '€') {
+    const formatted = num.toLocaleString('fr-FR', {
+      minimumFractionDigits: num % 1 !== 0 ? 2 : 2,
+      maximumFractionDigits: 2
+    });
+    return `${formatted} €`;
+  }
+  
+  const formatted = num % 1 !== 0 ? num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : num.toLocaleString('es-AR');
+  return `${currSymbol} ${formatted}`;
 }
 
 /**
@@ -297,7 +335,7 @@ function renderFeaturedCarousel() {
 
     card.innerHTML = `
       <div class="featured-card-media">
-        <img src="${item.media?.heroImage || 'assets/images/fresh_salmon.png'}" alt="${item.name}" loading="lazy">
+        <img src="${getDishImageUrl(item)}" alt="${item.name}" loading="lazy">
         ${timeBadgeHTML}
       </div>
       <div class="featured-card-body">
@@ -431,32 +469,33 @@ function createVisualCard(dish) {
   const hasVideo = !!dish.media?.videoLoopUrl;
   const hasAR = !!dish.media?.model3dUrl;
 
+  const isFrench = state.profileId === 'le-passport-nice' || document.documentElement.lang === 'fr';
   const mediaHTML = hasVideo ? `
-    <video data-lazy-video src="${dish.media.videoLoopUrl}" poster="${dish.media.heroImage || ''}" loop muted playsinline aria-label="${dish.name} video"></video>
+    <video data-lazy-video src="${dish.media.videoLoopUrl}" poster="${getDishImageUrl(dish)}" loop muted playsinline aria-label="${dish.name} video"></video>
     <div class="badge-video" title="Micro-video de cocción"><i data-lucide="play" style="width:12px;height:12px;"></i></div>
   ` : `
-    <img src="${dish.media?.heroImage || 'assets/images/wagyu_ribeye.png'}" alt="${dish.name}" loading="lazy">
+    <img src="${getDishImageUrl(dish)}" alt="${dish.name}" loading="lazy">
   `;
 
   const badgesHTML = `
     <div class="badge-container">
-      ${dish.isChefSpecial ? `<span class="badge badge-chef">Sugerencia Chef</span>` : ''}
+      ${dish.isChefSpecial ? `<span class="badge badge-chef">${isFrench ? 'Spécialité du Chef' : 'Sugerencia Chef'}</span>` : ''}
       ${hasAR ? `<span class="badge badge-ar"><i data-lucide="box" style="width:12px;height:12px;"></i> 3D AR</span>` : ''}
     </div>
   `;
 
   const dietaryTags = [];
-  if (dish.dietaryFlags?.isGlutenFree) dietaryTags.push('Sin TACC');
-  if (dish.dietaryFlags?.isVegan) dietaryTags.push('Vegano');
-  if (dish.dietaryFlags?.isVegetarian) dietaryTags.push('Vegetariano');
-  if (dish.dietaryFlags && !dish.dietaryFlags.containsDairy) dietaryTags.push('Sin Lactosa');
+  if (dish.dietaryFlags?.isGlutenFree) dietaryTags.push(isFrench ? 'Sans gluten' : 'Sin TACC');
+  if (dish.dietaryFlags?.isVegan) dietaryTags.push(isFrench ? 'Végan' : 'Vegano');
+  if (dish.dietaryFlags?.isVegetarian) dietaryTags.push(isFrench ? 'Végétarien' : 'Vegetariano');
+  if (dish.dietaryFlags && !dish.dietaryFlags.containsDairy) dietaryTags.push(isFrench ? 'Sans lactose' : 'Sin Lactosa');
 
   const tagsHTML = dietaryTags.map(t => `<span class="tag-diet">${t}</span>`).join('');
 
   const unavailableOverlay = !dish.isAvailable ? `
     <div class="card-unavailable-overlay">
-      <span>Agotado Temporalmente</span>
-      <p style="font-size: 0.75rem; margin-top: 6px;">Consulte con su mozo disponibilidad próxima</p>
+      <span>${isFrench ? 'Épuisé temporairement' : 'Agotado Temporalmente'}</span>
+      <p style="font-size: 0.75rem; margin-top: 6px;">${isFrench ? 'Consultez votre serveur' : 'Consulte con su mozo disponibilidad próxima'}</p>
     </div>
   ` : '';
 
@@ -508,7 +547,7 @@ function createVisualCard(dish) {
 
       <div class="card-footer-actions" style="justify-content: flex-end;">
         <button class="btn-detail btn-open-detail" style="width: 100%; justify-content: center; padding: 10px; background: var(--bg-surface-elevated); border-radius: var(--radius-pill); border: 1px solid var(--border-color);">
-          <i data-lucide="eye" style="width:16px;height:16px;"></i> Ver Detalles e Ingredientes
+          <i data-lucide="eye" style="width:16px;height:16px;"></i> ${isFrench ? 'Détails & Ingrédients' : 'Ver Detalles e Ingredientes'}
         </button>
       </div>
     </div>
@@ -548,18 +587,19 @@ function createCompactCard(dish) {
   const card = document.createElement('article');
   card.className = 'dish-card-compact';
 
+  const isFrench = state.profileId === 'le-passport-nice' || document.documentElement.lang === 'fr';
   const currSymbol = getGlobalCurrencySymbol();
   const formattedPrice = formatPrice(dish.price, currSymbol);
 
   card.innerHTML = `
-    <img src="${dish.media?.heroImage || 'assets/images/wagyu_ribeye.png'}" alt="${dish.name}" class="compact-thumb" loading="lazy">
+    <img src="${getDishImageUrl(dish)}" alt="${dish.name}" class="compact-thumb" loading="lazy">
     <div class="compact-info">
       <h4>${dish.name}</h4>
       <p>${dish.shortDescription || ''}</p>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
       <span class="compact-price">${formattedPrice}</span>
-      ${!dish.isAvailable ? `<span style="font-size:0.7rem;color:var(--status-out-text);font-weight:700;">Agotado</span>` : ''}
+      ${!dish.isAvailable ? `<span style="font-size:0.7rem;color:var(--status-out-text);font-weight:700;">${isFrench ? 'Épuisé' : 'Agotado'}</span>` : ''}
     </div>
   `;
 
@@ -626,7 +666,7 @@ function openDishModal(dish) {
   if (dish.media?.videoLoopUrl) {
     const video = document.createElement('video');
     video.src = dish.media.videoLoopUrl;
-    video.poster = dish.media.heroImage || '';
+    video.poster = getDishImageUrl(dish);
     video.autoplay = true;
     video.loop = true;
     video.muted = true;
@@ -634,7 +674,7 @@ function openDishModal(dish) {
     mediaContainer.appendChild(video);
   } else {
     const img = document.createElement('img');
-    img.src = dish.media?.heroImage || 'assets/images/wagyu_ribeye.png';
+    img.src = getDishImageUrl(dish);
     img.alt = dish.name;
     mediaContainer.appendChild(img);
   }

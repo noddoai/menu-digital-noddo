@@ -6,13 +6,22 @@
 
 import { BUSINESS_PROFILES, MENU_ITEMS } from './menuData.js';
 
-const STORAGE_KEY_ITEMS = 'aura_menu_items_v6';
-const STORAGE_KEY_THEMES = 'aura_menu_themes_v6';
-const STORAGE_KEY_BANNERS = 'aura_menu_banners_v7';
+const STORAGE_KEY_ITEMS = 'aura_menu_items_v7';
+const STORAGE_KEY_THEMES = 'aura_menu_themes_v7';
+const STORAGE_KEY_BANNERS = 'aura_menu_banners_v8';
 const STORAGE_KEY_AUTH_TOKEN = 'aura_auth_token_v1';
 const STORAGE_KEY_AUTH_USER = 'aura_auth_user_v1';
 
 const API_BASE_URL = window.LOCATION_API_URL || 'http://localhost:3000/api/v1';
+
+function getProfileDef(profileId) {
+  if (!profileId) return BUSINESS_PROFILES.RESTAURANT;
+  const key = Object.keys(BUSINESS_PROFILES).find(k => BUSINESS_PROFILES[k].id === profileId);
+  if (key && BUSINESS_PROFILES[key]) return BUSINESS_PROFILES[key];
+  if (profileId === 'bakery_cafe' || profileId.includes('cafe')) return BUSINESS_PROFILES.BAKERY_CAFE;
+  if (profileId === 'le-passport-nice' || profileId.includes('passport')) return BUSINESS_PROFILES.LE_PASSPORT_NICE;
+  return BUSINESS_PROFILES.RESTAURANT;
+}
 
 export const db = {
   apiAvailable: null,
@@ -43,7 +52,18 @@ export const db = {
     try {
       const data = localStorage.getItem(STORAGE_KEY_ITEMS);
       if (data) {
-        return JSON.parse(data);
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Si el catálogo en LocalStorage no tiene los platos del nuevo perfil, los mezclamos
+          const existingIds = new Set(parsed.map(i => i.id));
+          const missingItems = MENU_ITEMS.filter(i => !existingIds.has(i.id));
+          if (missingItems.length > 0) {
+            const merged = [...parsed, ...missingItems];
+            this.saveAllItems(merged);
+            return merged;
+          }
+          return parsed;
+        }
       }
     } catch (e) {
       console.error('Error leyendo LocalStorage:', e);
@@ -139,13 +159,15 @@ export const db = {
       console.error('Error leyendo tema:', e);
     }
 
-    const defaultProfile = profileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
+    const defaultProfile = getProfileDef(profileId);
     return {
       name: defaultProfile.name,
       tagline: defaultProfile.tagline,
       heroBadge: defaultProfile.heroBadge,
-      accentColor: profileId === 'restaurant' ? '#207567' : '#7c4a27',
-      themeMode: profileId === 'restaurant' ? 'dark' : 'light',
+      currencySymbol: defaultProfile.currencySymbol || '$',
+      currencyCode: defaultProfile.currencyCode || (defaultProfile.currencySymbol === '€' ? 'EUR' : 'USD'),
+      accentColor: defaultProfile.accentColor || (profileId === 'restaurant' ? '#207567' : (profileId === 'le-passport-nice' ? '#80142B' : '#7c4a27')),
+      themeMode: defaultProfile.themeMode || (profileId === 'restaurant' ? 'dark' : 'light'),
       showPrepTime: true,
       menuIsActive: true
     };
@@ -178,13 +200,9 @@ export const db = {
       console.error('Error leyendo categorías:', e);
     }
 
-    const defaultProfile = profileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
+    const defaultProfile = getProfileDef(profileId);
     return defaultProfile.categories || [
-      { id: "all", name: "Todas las Opciones", icon: "sparkles" },
-      { id: "entradas", name: "Entradas & Ensaladas", icon: "salad" },
-      { id: "principales", name: "Platos Principales", icon: "flame" },
-      { id: "cocteleria", name: "Coctelería & Vinos", icon: "glass-water" },
-      { id: "postres", name: "Postres del Día", icon: "cake" }
+      { id: "all", name: "Toute la Carte", icon: "sparkles" }
     ];
   },
 
@@ -233,7 +251,7 @@ export const db = {
       console.error('Error leyendo banners promocionales:', e);
     }
 
-    const defaultProfile = profileId === 'restaurant' ? BUSINESS_PROFILES.RESTAURANT : BUSINESS_PROFILES.BAKERY_CAFE;
+    const defaultProfile = getProfileDef(profileId);
     const defaultBanners = defaultProfile.promoBanners || [];
     this.savePromoBanners(profileId, defaultBanners);
     return defaultBanners;
@@ -283,7 +301,7 @@ export const db = {
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanPass = (password || '').trim();
 
-    // 1. Dueño principal Bistro (o cualquier variación con admin)
+    // 1. Dueño principal Bistro
     if (!cleanEmail || cleanEmail === 'admin' || cleanEmail === 'admin@gourmetbistro.com' || cleanEmail.includes('bistro')) {
       const mockUser = { id: 'user-admin-bistro', email: 'admin@gourmetbistro.com', role: 'owner', profileId: 'restaurant' };
       localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(mockUser));
@@ -297,7 +315,14 @@ export const db = {
       return { success: true, user: mockUser };
     }
 
-    // 3. Personal registrado en LocalStorage
+    // 3. Dueño Le Pass'Port Nice
+    if (cleanEmail === 'admin@lepassportnice.com' || cleanEmail.includes('passport') || cleanEmail.includes('le-passport')) {
+      const mockUser = { id: 'user-admin-passport', email: 'admin@lepassportnice.com', role: 'owner', profileId: 'le-passport-nice' };
+      localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(mockUser));
+      return { success: true, user: mockUser };
+    }
+
+    // 4. Personal registrado en LocalStorage
     try {
       const staffUsers = JSON.parse(localStorage.getItem('aura_staff_users_v1') || '[]');
       const foundStaff = staffUsers.find(u => u.email.toLowerCase() === cleanEmail && (u.password === cleanPass || !cleanPass));
@@ -310,8 +335,8 @@ export const db = {
       console.error('Error verificando credenciales staff:', e);
     }
 
-    // 4. Intento genérico de Dueño
-    const genericOwner = { id: `owner-${Date.now()}`, email: cleanEmail, role: 'owner', profileId: 'restaurant' };
+    // 5. Intento genérico de Dueño
+    const genericOwner = { id: `owner-${Date.now()}`, email: cleanEmail, role: 'owner', profileId: 'le-passport-nice' };
     localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(genericOwner));
     return { success: true, user: genericOwner };
   },
@@ -352,5 +377,6 @@ export const db = {
     this.saveAllItems(MENU_ITEMS);
     this.getPromoBanners('restaurant');
     this.getPromoBanners('bakery_cafe');
+    this.getPromoBanners('le-passport-nice');
   }
 };
