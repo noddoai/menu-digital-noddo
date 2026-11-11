@@ -184,6 +184,21 @@ CREATE TABLE IF NOT EXISTS qr_codes (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 10. TABLA B2B_LEADS (Solicitudes de Demo Gratuita de 1 Mes desde la Landing Page)
+CREATE TABLE IF NOT EXISTS b2b_leads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    full_name VARCHAR(150) NOT NULL,
+    business_name VARCHAR(150) NOT NULL,
+    phone_whatsapp VARCHAR(80) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    business_type VARCHAR(100) DEFAULT 'Restaurante / Bistro',
+    offer_claimed VARCHAR(100) DEFAULT 'Demo 1 mes 100% gratuita',
+    status VARCHAR(30) NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'trial_active', 'converted', 'archived')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_b2b_leads_created ON b2b_leads(created_at DESC);
+
 -- =============================================================================
 -- POLÍTICAS DE ROW LEVEL SECURITY (RLS) PARA MULTITENANCY NATIVO
 -- =============================================================================

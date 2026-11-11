@@ -9,6 +9,8 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import pg from 'pg';
+import fs from 'fs';
+import path from 'path';
 import { MENU_ITEMS } from './menuData.js';
 
 dotenv.config();
@@ -57,6 +59,31 @@ app.use(express.static('.', {
 // ==========================================
 // MOCK MEMORY DB (Fallback cuando no hay Postgres activo)
 // ==========================================
+const LEADS_FILE_PATH = path.join(process.cwd(), 'db', 'leads.json');
+
+function loadLocalLeads() {
+  try {
+    if (fs.existsSync(LEADS_FILE_PATH)) {
+      const raw = fs.readFileSync(LEADS_FILE_PATH, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (err) {
+    console.error('Error leyendo db/leads.json:', err.message);
+  }
+  return [];
+}
+
+function saveLocalLeads(leadsArray) {
+  try {
+    const dir = path.dirname(LEADS_FILE_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(LEADS_FILE_PATH, JSON.stringify(leadsArray, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error guardando db/leads.json:', err.message);
+  }
+}
+
 const memoryDb = {
   tenants: [
     { id: 'tenant-rest-01', name: 'Gourmet Bistro & Grill', slug: 'gourmet-bistro', accentColor: '#207567', currencySymbol: '$' },
@@ -68,7 +95,8 @@ const memoryDb = {
     { id: 'u-2', tenantId: 'tenant-cafe-02', email: 'admin@maisoncafe.com', role: 'owner' },
     { id: 'u-3', tenantId: 'tenant-passport-03', email: 'admin@lepassportnice.com', role: 'owner' }
   ],
-  items: [...MENU_ITEMS]
+  items: [...MENU_ITEMS],
+  leads: loadLocalLeads()
 };
 
 // ==========================================
@@ -369,6 +397,90 @@ app.get('/api/v1/admin/qr-code', authenticateToken, async (req, res) => {
       png: `https://api.qrserver.com/v1/create-qr-code/?size=1024x1024&data=${encodeURIComponent(targetUrl)}&format=png`
     }
   });
+});
+
+// ==========================================
+// 5. CAPTURA DE LEADS B2B DESDE LANDING PAGE (DEMO 1 MES 100% GRATUITA)
+// ==========================================
+app.post('/api/v1/public/leads', async (req, res) => {
+  const { name, business, contact, email, type, offer } = req.body || {};
+
+  if (!name || !business || !contact || !email) {
+    return res.status(400).json({
+      error: 'Por favor complete nombre, nombre del local, teléfono/WhatsApp y correo electrónico.'
+    });
+  }
+
+  const cleanLead = {
+    id: `lead-${Date.now()}`,
+    fullName: String(name).trim(),
+    businessName: String(business).trim(),
+    phoneWhatsapp: String(contact).trim(),
+    email: String(email).trim(),
+    businessType: String(type || 'Restaurante / Bistro').trim(),
+    offerClaimed: String(offer || 'Demo de 1 mes 100% gratuita').trim(),
+    status: 'new',
+    createdAt: new Date().toISOString()
+  };
+
+  // Guardar en PostgreSQL si está conectado
+  if (pool) {
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS b2b_leads (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          full_name VARCHAR(150) NOT NULL,
+          business_name VARCHAR(150) NOT NULL,
+          phone_whatsapp VARCHAR(80) NOT NULL,
+          email VARCHAR(255) NOT NULL,
+          business_type VARCHAR(100) DEFAULT 'Restaurante / Bistro',
+          offer_claimed VARCHAR(100) DEFAULT 'Demo de 1 mes 100% gratuita',
+          status VARCHAR(30) NOT NULL DEFAULT 'new',
+          created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      const dbRes = await pool.query(
+        `INSERT INTO b2b_leads (full_name, business_name, phone_whatsapp, email, business_type, offer_claimed)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [
+          cleanLead.fullName,
+          cleanLead.businessName,
+          cleanLead.phoneWhatsapp,
+          cleanLead.email,
+          cleanLead.businessType,
+          cleanLead.offerClaimed
+        ]
+      );
+
+      cleanLead.dbId = dbRes.rows[0]?.id;
+    } catch (err) {
+      console.error('Error guardando lead en PostgreSQL (usando respaldo en disco):', err.message);
+    }
+  }
+
+  // Persistir siempre en memoria y archivo JSON del servidor (db/leads.json)
+  memoryDb.leads.unshift(cleanLead);
+  saveLocalLeads(memoryDb.leads);
+
+  return res.status(201).json({
+    success: true,
+    message: 'Solicitud de demo de 1 mes 100% gratuita registrada exitosamente',
+    lead: cleanLead
+  });
+});
+
+app.get('/api/v1/admin/leads', authenticateToken, async (req, res) => {
+  if (pool) {
+    try {
+      const dbRes = await pool.query('SELECT * FROM b2b_leads ORDER BY created_at DESC LIMIT 200');
+      return res.json({ leads: dbRes.rows });
+    } catch (err) {
+      console.error('Error consultando leads en DB:', err.message);
+    }
+  }
+  return res.json({ leads: memoryDb.leads });
 });
 
 app.listen(PORT, () => {
