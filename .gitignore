@@ -13,6 +13,12 @@ yarn-debug.log*
 yarn-error.log*
 *.log
 
+# Build & Deploy
+dist/
+dist-ssr/
+build/
+.netlify/
+
 # Archives
 *.rar
 *.zip

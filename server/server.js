@@ -11,7 +11,7 @@ import dotenv from 'dotenv';
 import pg from 'pg';
 import fs from 'fs';
 import path from 'path';
-import { MENU_ITEMS } from './menuData.js';
+import { MENU_ITEMS } from '../app/menuData.js';
 
 dotenv.config();
 
@@ -45,8 +45,11 @@ if (process.env.DATABASE_URL) {
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-// Servir archivos estáticos sin caché durante desarrollo
-app.use(express.static('.', {
+const ROOT_DIR = process.cwd().endsWith('server') ? path.join(process.cwd(), '..') : process.cwd();
+const APP_DIR = path.join(ROOT_DIR, 'app');
+
+// Servir archivos estáticos del frontend desde la carpeta 'app' sin caché durante desarrollo
+app.use(express.static(APP_DIR, {
   etag: false,
   maxAge: 0,
   setHeaders: (res) => {
@@ -59,7 +62,7 @@ app.use(express.static('.', {
 // ==========================================
 // MOCK MEMORY DB (Fallback cuando no hay Postgres activo)
 // ==========================================
-const LEADS_FILE_PATH = path.join(process.cwd(), 'db', 'leads.json');
+const LEADS_FILE_PATH = path.join(ROOT_DIR, 'db', 'leads.json');
 
 function loadLocalLeads() {
   try {

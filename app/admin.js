@@ -1429,11 +1429,6 @@ function renderQuickStockGrid(query = '') {
 
 
 // ==========================================
-// 10. GESTIÓN DE PERSONAL Y EMPLEADOS
-// ==========================================
-const STAFF_STORAGE_KEY = 'aura_staff_users_v1';
-
-// ==========================================
 // 10. GESTIÓN DE PERSONAL, EMPLEADOS Y SEGURIDAD
 // ==========================================
 const STAFF_STORAGE_KEY = 'aura_staff_users_v1';

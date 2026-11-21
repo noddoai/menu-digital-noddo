@@ -2,11 +2,11 @@
   "name": "menu-app-saas-backend",
   "version": "1.0.0",
   "description": "Backend API REST Multitenant para Plataforma SaaS de Menú Digital",
-  "main": "server.js",
+  "main": "server/server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js"
   },
   "dependencies": {
     "express": "^4.19.2",
