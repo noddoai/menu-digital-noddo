@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupBulkPriceHandler();
   setupIngredientRowsHandler();
   setupVariationRowsHandler();
+  setupComboBuilderHandler();
   setupPromoManager();
   setupQrModule();
   setupConfigSubtabs();
@@ -31,10 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setupImageDropzones();
   setupQuickStock();
   setupUsersManagement();
+  setupUserMenuAndProfile();
 });
 
 // ==========================================
-// 1. AUTENTICACIÓN
+// 1. AUTENTICACIÓN & GESTIÓN DE CUENTA
 // ==========================================
 function setupLogin() {
   const loginForm = document.getElementById('loginForm');
@@ -45,10 +47,12 @@ function setupLogin() {
     document.getElementById('loginUser').value = 'admin@gourmetbistro.com';
     document.getElementById('loginPass').value = 'admin123';
     adminState.currentProfileId = 'restaurant';
+    sessionStorage.setItem('aura_active_profile', 'restaurant');
     const res = await db.loginApi('admin@gourmetbistro.com', 'admin123');
     if (res.success) {
       adminState.isLoggedIn = true;
       sessionStorage.setItem('aura_admin_logged', 'true');
+      sessionStorage.setItem('aura_user_role', 'owner');
       showDashboard();
       showToast('Sesión iniciada como Gourmet Bistro & Grill');
     }
@@ -58,10 +62,12 @@ function setupLogin() {
     document.getElementById('loginUser').value = 'admin@maisoncafe.com';
     document.getElementById('loginPass').value = 'admin123';
     adminState.currentProfileId = 'bakery_cafe';
+    sessionStorage.setItem('aura_active_profile', 'bakery_cafe');
     const res = await db.loginApi('admin@maisoncafe.com', 'admin123');
     if (res.success) {
       adminState.isLoggedIn = true;
       sessionStorage.setItem('aura_admin_logged', 'true');
+      sessionStorage.setItem('aura_user_role', 'owner');
       showDashboard();
       showToast('Sesión iniciada como Maison Cafe & Bakery');
     }
@@ -82,6 +88,10 @@ function setupLogin() {
 
   if (sessionStorage.getItem('aura_admin_logged') === 'true') {
     adminState.isLoggedIn = true;
+    const savedProfile = sessionStorage.getItem('aura_active_profile');
+    if (savedProfile) {
+      adminState.currentProfileId = savedProfile;
+    }
     showDashboard();
   }
 
@@ -98,6 +108,7 @@ function setupLogin() {
         adminState.currentProfileId = res.user.profileId;
       }
       sessionStorage.setItem('aura_admin_logged', 'true');
+      sessionStorage.setItem('aura_active_profile', adminState.currentProfileId);
       sessionStorage.setItem('aura_user_role', adminState.currentUser.role || 'owner');
       loginError.style.display = 'none';
       showDashboard();
@@ -105,24 +116,194 @@ function setupLogin() {
       loginError.style.display = 'block';
     }
   });
+}
 
-  document.getElementById('btnLogout').addEventListener('click', () => {
+function renderUserTopBar() {
+  const user = db.getCurrentUser();
+  const userName = user.name || (user.email ? user.email.split('@')[0] : 'Administrador');
+  const userEmail = user.email || 'admin@comercio.com';
+  const roleName = user.role === 'manager' ? 'Encargado' : (user.role === 'staff' ? 'Staff Barra' : 'Propietario');
+  const initial = (userName.trim()[0] || 'A').toUpperCase();
+
+  const elAvatar = document.getElementById('topbarUserAvatar');
+  const elName = document.getElementById('topbarUserName');
+  const elRole = document.getElementById('topbarUserRole');
+  const elDropAvatar = document.getElementById('dropdownUserAvatar');
+  const elDropName = document.getElementById('dropdownUserName');
+  const elDropEmail = document.getElementById('dropdownUserEmail');
+  const elModalAvatar = document.getElementById('modalUserAvatarPreview');
+
+  if (elAvatar) elAvatar.textContent = initial;
+  if (elName) elName.textContent = userName;
+  if (elRole) elRole.textContent = roleName;
+  if (elDropAvatar) elDropAvatar.textContent = initial;
+  if (elDropName) elDropName.textContent = userName;
+  if (elDropEmail) elDropEmail.textContent = userEmail;
+  if (elModalAvatar) elModalAvatar.textContent = initial;
+}
+
+function setupUserMenuAndProfile() {
+  const toggleBtn = document.getElementById('btnUserMenuToggle');
+  const dropdown = document.getElementById('userDropdownMenu');
+  const wrapper = document.getElementById('userMenuWrapper');
+
+  if (toggleBtn && dropdown) {
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = dropdown.style.display === 'block';
+      dropdown.style.display = isVisible ? 'none' : 'block';
+      toggleBtn.setAttribute('aria-expanded', isVisible ? 'false' : 'true');
+    });
+
+    // Cerrar al hacer clic fuera del dropdown
+    document.addEventListener('click', (e) => {
+      if (wrapper && !wrapper.contains(e.target)) {
+        dropdown.style.display = 'none';
+        toggleBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        dropdown.style.display = 'none';
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        closeUserProfileModal();
+      }
+    });
+  }
+
+  // Opción "Configuración del Local"
+  document.getElementById('btnGoToStoreConfig')?.addEventListener('click', () => {
+    if (dropdown) dropdown.style.display = 'none';
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+    
+    // Activar pestaña de Configuración
+    document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+    const tabStylesBtn = document.getElementById('navTabStyles');
+    const tabStylesContent = document.getElementById('tabStyles');
+    if (tabStylesBtn) tabStylesBtn.classList.add('active');
+    if (tabStylesContent) tabStylesContent.classList.add('active');
+    if (window.lucide) window.lucide.createIcons();
+  });
+
+  // Opción "Cerrar Sesión"
+  document.getElementById('btnLogout')?.addEventListener('click', () => {
+    if (dropdown) dropdown.style.display = 'none';
     db.logoutApi();
     adminState.isLoggedIn = false;
-    sessionStorage.removeItem('aura_user_role');
     document.getElementById('adminDashboardSection').style.display = 'none';
     document.getElementById('loginSection').style.display = 'flex';
+    showToast('Sesión cerrada correctamente');
   });
 
-  document.getElementById('btnResetDefaults').addEventListener('click', () => {
-    if (confirm('¿Restablecer los platos y promociones por defecto?')) {
-      db.resetToDefaults();
-      showToast('Base de datos restablecida a los valores iniciales');
-      renderItemsTable();
-      renderBannersList();
-      renderQuickStockGrid();
+  // Modal de Mi Perfil & Contraseña
+  const openModalBtn = document.getElementById('btnOpenUserProfileModal');
+  const modal = document.getElementById('userProfileModal');
+  const backdrop = document.getElementById('userProfileModalBackdrop');
+  const closeBtn = document.getElementById('btnCloseUserProfileModal');
+  const cancelBtn = document.getElementById('btnCancelUserProfileModal');
+  const form = document.getElementById('userProfileForm');
+  const errorDiv = document.getElementById('userProfileError');
+
+  function openUserProfileModal() {
+    if (dropdown) dropdown.style.display = 'none';
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+
+    const user = db.getCurrentUser();
+    const nameInput = document.getElementById('inputUserProfileName');
+    const emailInput = document.getElementById('inputUserProfileEmail');
+    const passInput = document.getElementById('inputUserNewPassword');
+    const confirmInput = document.getElementById('inputUserConfirmPassword');
+
+    if (nameInput) nameInput.value = user.name || 'Administrador Principal';
+    if (emailInput) emailInput.value = user.email || 'admin@gourmetbistro.com';
+    if (passInput) passInput.value = '';
+    if (confirmInput) confirmInput.value = '';
+    if (errorDiv) errorDiv.style.display = 'none';
+
+    if (modal) modal.style.display = 'block';
+    if (backdrop) backdrop.style.display = 'block';
+    renderUserTopBar();
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function closeUserProfileModal() {
+    if (modal) modal.style.display = 'none';
+    if (backdrop) backdrop.style.display = 'none';
+    if (errorDiv) errorDiv.style.display = 'none';
+  }
+
+  openModalBtn?.addEventListener('click', openUserProfileModal);
+  closeBtn?.addEventListener('click', closeUserProfileModal);
+  cancelBtn?.addEventListener('click', closeUserProfileModal);
+  backdrop?.addEventListener('click', closeUserProfileModal);
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('inputUserProfileName').value.trim();
+    const email = document.getElementById('inputUserProfileEmail').value.trim();
+    const newPass = document.getElementById('inputUserNewPassword').value.trim();
+    const confirmPass = document.getElementById('inputUserConfirmPassword').value.trim();
+
+    if (!name || !email) {
+      if (errorDiv) {
+        errorDiv.textContent = 'El nombre y correo electrónico son obligatorios.';
+        errorDiv.style.display = 'block';
+      }
+      return;
     }
+
+    if (newPass) {
+      if (newPass.length < 6) {
+        if (errorDiv) {
+          errorDiv.textContent = 'La nueva contraseña debe tener al menos 6 caracteres.';
+          errorDiv.style.display = 'block';
+        }
+        return;
+      }
+      if (newPass !== confirmPass) {
+        if (errorDiv) {
+          errorDiv.textContent = 'Las contraseñas no coinciden.';
+          errorDiv.style.display = 'block';
+        }
+        return;
+      }
+    }
+
+    const updates = { name, email };
+    if (newPass) {
+      updates.password = newPass;
+    }
+
+    db.updateCurrentUser(updates);
+    renderUserTopBar();
+    closeUserProfileModal();
+    showToast('✅ Perfil de usuario actualizado con éxito');
   });
+}
+
+function updateProfileUI() {
+  document.documentElement.dataset.theme = adminState.currentProfileId;
+  const isBistro = adminState.currentProfileId === 'restaurant';
+
+  const profileSelect = document.getElementById('adminProfileSelect');
+  if (profileSelect && profileSelect.value !== adminState.currentProfileId) {
+    profileSelect.value = adminState.currentProfileId;
+  }
+
+  const brandTitle = document.getElementById('adminBrandTitle');
+  if (brandTitle) {
+    brandTitle.textContent = isBistro ? 'Gourmet Bistro & Grill' : 'Maison Cafe & Bakery';
+  }
+
+  const iframe = document.getElementById('phonePreviewIframe');
+  if (iframe) {
+    const targetSrc = isBistro ? 'restaurant.html' : 'cafe.html';
+    if (!iframe.src.endsWith(targetSrc)) {
+      iframe.src = targetSrc;
+    }
+  }
 }
 
 function showDashboard() {
@@ -131,6 +312,8 @@ function showDashboard() {
 
   const userRole = sessionStorage.getItem('aura_user_role') || 'owner';
   applyRolePermissions(userRole);
+  updateProfileUI();
+  renderUserTopBar();
 
   const profileSelect = document.getElementById('adminProfileSelect');
   if (profileSelect && adminState.currentProfileId) {
@@ -201,7 +384,7 @@ function setupNavigation() {
   const profileSelect = document.getElementById('adminProfileSelect');
   profileSelect?.addEventListener('change', (e) => {
     adminState.currentProfileId = e.target.value;
-    document.documentElement.dataset.theme = adminState.currentProfileId;
+    sessionStorage.setItem('aura_active_profile', adminState.currentProfileId);
     
     // Actualizar el iframe de vista previa celular al cambiar de local
     reloadPhonePreview();
@@ -215,12 +398,14 @@ function setupNavigation() {
 
     const slugEl = document.getElementById('kpiSlugName');
     if (slugEl) slugEl.textContent = adminState.currentProfileId;
-
     populateCategoryFilter();
     renderItemsTable();
+    renderQuickStockGrid();
     renderBannersList();
     renderQrCode();
+    renderUsersList();
     loadThemeForm();
+    showToast(`Comercio activo: ${e.target.options[e.target.selectedIndex].text}`);
   });
 
   document.querySelectorAll('.admin-tab-btn').forEach(btn => {
@@ -302,15 +487,18 @@ function renderItemsTable() {
   const currSymbol = adminState.currencySymbol || '$';
   items.forEach(item => {
     const tr = document.createElement('tr');
-    const imgUrl = item.media?.heroImage || item.heroImage_url || item.heroImage || 'assets/images/fresh_salmon.png';
+    const imgUrl = (item.media?.heroImage || item.heroImage_url || item.heroImage || '').trim();
+    const thumbHTML = imgUrl
+      ? `<img src="${imgUrl}" alt="${item.name}" class="table-dish-thumb">`
+      : `<div class="table-dish-thumb" style="display:flex;align-items:center;justify-content:center;background:#f1f5f9;color:#94a3b8;font-size:0.65rem;border:1px dashed #cbd5e1;" title="Sin foto"><i data-lucide="image-off" style="width:14px;height:14px;"></i></div>`;
 
     tr.innerHTML = `
       <td>
-        <img src="${imgUrl}" alt="${item.name}" class="table-dish-thumb">
+        ${thumbHTML}
       </td>
       <td>
-        <div class="table-dish-name">${item.name}</div>
-        <div class="table-dish-meta">Cat: ${item.category} | ${item.layersOrIngredients?.length || 0} comp.</div>
+        <div class="table-dish-name">${item.name} ${item.isCombo ? '<span style="background:#d97706;color:#fff;font-size:0.65rem;font-weight:800;padding:2px 6px;border-radius:999px;margin-left:6px;vertical-align:middle;">COMBO</span>' : ''}</div>
+        <div class="table-dish-meta">Cat: ${item.category} | ${item.isCombo ? `${item.comboItems?.length || 0} productos` : `${item.layersOrIngredients?.length || 0} comp.`}</div>
       </td>
       <td>
         <div style="display:flex; align-items:center; gap:6px;">
@@ -480,6 +668,16 @@ function openDishModal(item) {
   const switchHasVar = document.getElementById('editHasVariations');
   const wrapperVar = document.getElementById('variationsWrapper');
 
+  const switchIsCombo = document.getElementById('editIsCombo');
+  const wrapperCombo = document.getElementById('comboBuilderWrapper');
+  populateComboProductSelect(item ? item.id : null);
+  adminState.editingComboItems = (item && item.isCombo && Array.isArray(item.comboItems))
+    ? JSON.parse(JSON.stringify(item.comboItems))
+    : [];
+  if (switchIsCombo) switchIsCombo.checked = Boolean(item && item.isCombo);
+  if (wrapperCombo) wrapperCombo.style.display = (item && item.isCombo) ? 'block' : 'none';
+  renderComboBuilderItems();
+
   if (item) {
     adminState.editingDishId = item.id;
     document.getElementById('adminModalTitle').textContent = 'Editar Plato';
@@ -494,10 +692,15 @@ function openDishModal(item) {
     document.getElementById('editHeroImage').value = item.media?.heroImage || item.heroImage_url || '';
 
     const preview = document.getElementById('dishImagePreview');
-    const heroImg = item.media?.heroImage || item.heroImage_url || item.heroImage || 'assets/images/fresh_salmon.png';
+    const heroImg = (item.media?.heroImage || item.heroImage_url || item.heroImage || '').trim();
     if (preview) {
-      preview.src = heroImg;
-      preview.style.display = 'block';
+      if (heroImg) {
+        preview.src = heroImg;
+        preview.style.display = 'block';
+      } else {
+        preview.src = '';
+        preview.style.display = 'none';
+      }
     }
 
     const flags = item.dietaryFlags || {};
@@ -672,17 +875,148 @@ function collectVariationRows() {
   return variations;
 }
 
+function setupComboBuilderHandler() {
+  const switchEl = document.getElementById('editIsCombo');
+  const wrapperEl = document.getElementById('comboBuilderWrapper');
+  const btnAdd = document.getElementById('btnAddComboItem');
+  const priceInput = document.getElementById('editDishPrice');
+
+  if (switchEl && wrapperEl) {
+    switchEl.addEventListener('change', (e) => {
+      wrapperEl.style.display = e.target.checked ? 'block' : 'none';
+      if (e.target.checked) renderComboBuilderItems();
+    });
+  }
+
+  if (btnAdd) {
+    btnAdd.addEventListener('click', () => {
+      const select = document.getElementById('comboProductSelect');
+      const qtyInput = document.getElementById('comboProductQty');
+      const itemId = select?.value;
+      const qty = Math.max(1, parseInt(qtyInput?.value, 10) || 1);
+      if (!itemId) return;
+
+      if (!Array.isArray(adminState.editingComboItems)) adminState.editingComboItems = [];
+      const existing = adminState.editingComboItems.find(ci => ci.itemId === itemId);
+      if (existing) {
+        existing.qty += qty;
+      } else {
+        adminState.editingComboItems.push({ itemId, qty });
+      }
+      if (qtyInput) qtyInput.value = 1;
+      if (select) select.value = '';
+      renderComboBuilderItems();
+    });
+  }
+
+  if (priceInput) {
+    priceInput.addEventListener('input', () => {
+      if (document.getElementById('editIsCombo')?.checked) {
+        updateComboSavingsSummary();
+      }
+    });
+  }
+}
+
+function populateComboProductSelect(excludeId) {
+  const select = document.getElementById('comboProductSelect');
+  if (!select) return;
+  const items = db.getItemsByProfile(adminState.currentProfileId)
+    .filter(i => i.id !== excludeId && !i.isCombo);
+  const currSymbol = adminState.currencySymbol || '$';
+
+  select.innerHTML = `<option value="">Seleccionar producto de la carta...</option>`;
+  items.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item.id;
+    opt.textContent = `${item.name} (${currSymbol} ${(Number(item.price) || 0).toLocaleString('es-AR')})${item.isAvailable === false ? ' [Agotado]' : ''}`;
+    select.appendChild(opt);
+  });
+}
+
+function renderComboBuilderItems() {
+  const container = document.getElementById('comboItemsContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const comboItems = adminState.editingComboItems || [];
+  const allItems = db.getItemsByProfile(adminState.currentProfileId);
+  const currSymbol = adminState.currencySymbol || '$';
+
+  if (comboItems.length === 0) {
+    container.innerHTML = `<div style="font-size:0.8rem; color:#94a3b8; padding:6px 0;">Aún no agregaste productos a este combo.</div>`;
+    updateComboSavingsSummary();
+    return;
+  }
+
+  comboItems.forEach((ci, idx) => {
+    const product = allItems.find(i => i.id === ci.itemId);
+    const name = product ? product.name : 'Producto no encontrado';
+    const unitPrice = product ? (Number(product.price) || 0) : 0;
+
+    const row = document.createElement('div');
+    row.className = 'variation-row-item';
+    row.innerHTML = `
+      <span style="font-weight:700; color:#d97706; min-width:34px;">${ci.qty}×</span>
+      <span style="flex:1; font-size:0.86rem; font-weight:600;">${name}</span>
+      <span style="font-size:0.8rem; color:#64748b;">${currSymbol} ${(unitPrice * ci.qty).toLocaleString('es-AR')}</span>
+      <button type="button" class="btn-remove-layer" title="Quitar del combo">
+        <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+      </button>
+    `;
+    row.querySelector('.btn-remove-layer').addEventListener('click', () => {
+      adminState.editingComboItems.splice(idx, 1);
+      renderComboBuilderItems();
+    });
+    container.appendChild(row);
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+  updateComboSavingsSummary();
+}
+
+function updateComboSavingsSummary() {
+  const summaryEl = document.getElementById('comboSavingsSummary');
+  if (!summaryEl) return;
+
+  const comboItems = adminState.editingComboItems || [];
+  if (comboItems.length === 0) {
+    summaryEl.style.display = 'none';
+    return;
+  }
+
+  const allItems = db.getItemsByProfile(adminState.currentProfileId);
+  const currSymbol = adminState.currencySymbol || '$';
+  const regularTotal = comboItems.reduce((sum, ci) => {
+    const product = allItems.find(i => i.id === ci.itemId);
+    return sum + ((product ? (Number(product.price) || 0) : 0) * (ci.qty || 1));
+  }, 0);
+
+  const comboPrice = parseFloat(document.getElementById('editDishPrice')?.value) || 0;
+  const savings = regularTotal - comboPrice;
+  const pct = regularTotal > 0 && savings > 0 ? Math.round((savings / regularTotal) * 100) : 0;
+
+  summaryEl.style.display = 'block';
+  if (savings > 0) {
+    summaryEl.innerHTML = `Valor por separado: <strong>${currSymbol} ${regularTotal.toLocaleString('es-AR')}</strong> · El cliente ahorra <strong>${currSymbol} ${savings.toLocaleString('es-AR')} (${pct}% OFF)</strong>`;
+  } else {
+    summaryEl.innerHTML = `Valor por separado: <strong>${currSymbol} ${regularTotal.toLocaleString('es-AR')}</strong> · Ajustá el precio del combo para generar ahorro.`;
+  }
+}
+
 function saveDishData() {
   const name = document.getElementById('editDishName').value.trim();
   const price = parseFloat(document.getElementById('editDishPrice').value) || 0;
   const category = document.getElementById('editDishCategory').value;
   const shortDescription = document.getElementById('editShortDesc').value.trim();
   const fullStory = document.getElementById('editFullStory').value.trim();
-  const heroImage = document.getElementById('editHeroImage').value.trim() || 'assets/images/fresh_salmon.png';
+  const heroImage = document.getElementById('editHeroImage').value.trim() || null;
   const layersOrIngredients = collectIngredientRows();
 
   const hasVariations = document.getElementById('editHasVariations')?.checked || false;
   const variations = collectVariationRows();
+  const isCombo = document.getElementById('editIsCombo')?.checked || false;
+  const comboItems = isCombo ? (adminState.editingComboItems || []) : [];
   const finalPrice = (hasVariations && variations.length > 0) ? variations[0].price : price;
   const currSymbol = adminState.currencySymbol || '$';
 
@@ -694,6 +1028,8 @@ function saveDishData() {
     formattedPrice: `${currSymbol} ${finalPrice.toLocaleString('es-AR')}`,
     hasVariations,
     variations,
+    isCombo,
+    comboItems,
     category,
     shortDescription,
     fullStory,
@@ -797,6 +1133,14 @@ function setupPromoManager() {
   const valOffsetY = document.getElementById('valOffsetY');
   const valZoom = document.getElementById('valZoom');
   const btnSave = document.getElementById('btnSaveCroppedBanner');
+  const overlayToggle = document.getElementById('bannerShowTextOverlay');
+  const overlayFields = document.getElementById('bannerTextOverlayFields');
+
+  if (overlayToggle && overlayFields) {
+    overlayToggle.addEventListener('change', (e) => {
+      overlayFields.style.display = e.target.checked ? 'flex' : 'none';
+    });
+  }
 
   function openCropModal() {
     modal.style.opacity = '1';
@@ -805,6 +1149,8 @@ function setupPromoManager() {
     backdrop.classList.add('active');
     if (fileInput) fileInput.value = '';
     if (cropArea) cropArea.style.display = 'none';
+    if (overlayToggle) overlayToggle.checked = false;
+    if (overlayFields) overlayFields.style.display = 'none';
     if (btnSave) {
       btnSave.disabled = true;
       btnSave.style.opacity = '0.5';
@@ -909,10 +1255,19 @@ function setupPromoManager() {
       if (!currentCropImage || !canvas) return;
       const croppedBase64 = canvas.toDataURL('image/jpeg', 0.88);
 
+      const showTextOverlay = document.getElementById('bannerShowTextOverlay')?.checked || false;
+      const badge = document.getElementById('bannerOverlayBadge')?.value.trim() || '';
+      const title = document.getElementById('bannerOverlayTitle')?.value.trim() || '';
+      const subtitle = document.getElementById('bannerOverlaySubtitle')?.value.trim() || '';
+
       const banners = db.getPromoBanners(adminState.currentProfileId) || [];
       const newBanner = {
         id: `banner-${Date.now()}`,
         enabled: true,
+        showTextOverlay,
+        badge,
+        title,
+        subtitle,
         image: croppedBase64
       };
 
@@ -1000,29 +1355,57 @@ function renderBannersList() {
 function setupQrModule() {
   const btnPng = document.getElementById('btnDownloadQrPng');
   const btnSvg = document.getElementById('btnDownloadQrSvg');
+  const btnCopy = document.getElementById('btnCopyQrUrl');
 
   if (btnPng) btnPng.addEventListener('click', () => downloadQr('png'));
   if (btnSvg) btnSvg.addEventListener('click', () => downloadQr('svg'));
+
+  if (btnCopy) {
+    btnCopy.addEventListener('click', async () => {
+      const targetPage = adminState.currentProfileId === 'restaurant' ? 'restaurant.html' : 'cafe.html';
+      const fullUrl = `${window.location.origin}/${targetPage}`;
+      try {
+        await navigator.clipboard.writeText(fullUrl);
+        showToast('📋 Enlace copiado al portapapeles');
+        const originalHtml = btnCopy.innerHTML;
+        btnCopy.innerHTML = '<i data-lucide="check"></i> Copiado!';
+        if (window.lucide) window.lucide.createIcons();
+        setTimeout(() => {
+          btnCopy.innerHTML = originalHtml;
+          if (window.lucide) window.lucide.createIcons();
+        }, 2000);
+      } catch (err) {
+        showToast('Enlace listo para copiar');
+      }
+    });
+  }
 }
 
 function renderQrCode() {
   const qrImg = document.getElementById('qrCodeImage');
-  const urlText = document.getElementById('qrTargetUrlText');
+  const urlInput = document.getElementById('qrTargetUrlText');
+  const storeNameEl = document.getElementById('qrCurrentStoreName');
+  const btnOpen = document.getElementById('btnOpenQrUrl');
   if (!qrImg) return;
 
-  const targetPage = adminState.currentProfileId === 'restaurant' ? 'restaurant.html' : 'cafe.html';
+  const isBistro = adminState.currentProfileId === 'restaurant';
+  const targetPage = isBistro ? 'restaurant.html' : 'cafe.html';
   const fullUrl = `${window.location.origin}/${targetPage}`;
 
-  if (urlText) urlText.textContent = fullUrl;
+  if (urlInput) urlInput.value = fullUrl;
+  if (storeNameEl) storeNameEl.textContent = isBistro ? 'Gourmet Bistro & Grill' : 'Maison Cafe & Bakery';
+  if (btnOpen) btnOpen.href = fullUrl;
 
-  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1024x1024&data=${encodeURIComponent(fullUrl)}&format=png&color=20-117-103`;
+  // Código QR en blanco y negro puro (#000000 sobre #ffffff con margen nítido)
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1024x1024&data=${encodeURIComponent(fullUrl)}&format=png&color=0-0-0&bgcolor=255-255-255&margin=10`;
   qrImg.src = qrApiUrl;
 }
 
 function downloadQr(format) {
   const targetPage = adminState.currentProfileId === 'restaurant' ? 'restaurant.html' : 'cafe.html';
   const fullUrl = `${window.location.origin}/${targetPage}`;
-  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1024x1024&data=${encodeURIComponent(fullUrl)}&format=${format}&color=20-117-103`;
+  // Descarga en blanco y negro de máxima definición
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1024x1024&data=${encodeURIComponent(fullUrl)}&format=${format}&color=0-0-0&bgcolor=255-255-255&margin=10`;
 
   const a = document.createElement('a');
   a.href = qrApiUrl;
@@ -1056,8 +1439,8 @@ function updateGlobalCurrencySymbol(symbol) {
 // PALETA DE 20 COLORES PRECONFIGURADOS & SUB-PESTAÑAS DE CONFIGURACIÓN
 // ==========================================
 const PALETTE_20_COLORS = [
-  { hex: '#ffffff', label: 'Blanco Puro' },
   { hex: '#207567', label: 'Teal Esmeralda' },
+  { hex: '#7c4a27', label: 'Café & Moka' },
   { hex: '#0284c7', label: 'Azul Celeste' },
   { hex: '#3b82f6', label: 'Azul Real' },
   { hex: '#6366f1', label: 'Índigo' },
@@ -1132,17 +1515,44 @@ function setupGeneralConfigForm() {
   const form = document.getElementById('generalConfigForm');
   if (!form) return;
 
+  const logoInput = document.getElementById('inputLogoFile');
+  const logoHidden = document.getElementById('inputBrandLogoUrl');
+  const btnRemoveLogo = document.getElementById('btnRemoveConfigLogo');
+
+  if (logoInput) {
+    logoInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        if (logoHidden) logoHidden.value = evt.target.result;
+        updateConfigLogoPreview(evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (btnRemoveLogo) {
+    btnRemoveLogo.addEventListener('click', () => {
+      if (logoHidden) logoHidden.value = '';
+      if (logoInput) logoInput.value = '';
+      updateConfigLogoPreview('');
+    });
+  }
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('inputBrandName').value.trim();
     const tagline = document.getElementById('inputBrandTagline').value.trim();
     const menuIsActive = document.getElementById('inputMenuIsActive').checked;
+    const logoUrl = document.getElementById('inputBrandLogoUrl')?.value.trim() || '';
 
     const currentConfig = db.getThemeConfig(adminState.currentProfileId);
     const updatedConfig = {
       ...currentConfig,
       name,
       tagline,
+      logoUrl,
       menuIsActive
     };
 
@@ -1150,6 +1560,21 @@ function setupGeneralConfigForm() {
     showToast('Datos generales del comercio guardados exitosamente');
     reloadPhonePreview();
   });
+}
+
+function updateConfigLogoPreview(url) {
+  const img = document.getElementById('configLogoPreviewImg');
+  const fallback = document.getElementById('configLogoFallback');
+  const btnRemove = document.getElementById('btnRemoveConfigLogo');
+  if (url) {
+    if (img) { img.src = url; img.style.display = 'block'; }
+    if (fallback) fallback.style.display = 'none';
+    if (btnRemove) btnRemove.style.display = 'inline-flex';
+  } else {
+    if (img) { img.src = ''; img.style.display = 'none'; }
+    if (fallback) fallback.style.display = 'block';
+    if (btnRemove) btnRemove.style.display = 'none';
+  }
 }
 
 function setupCategoriesManagement() {
@@ -1254,11 +1679,18 @@ function setupThemeEditor() {
 
 function loadThemeForm() {
   const config = db.getThemeConfig(adminState.currentProfileId);
-  adminState.currencySymbol = config.currencySymbol || '$';
-  const savedAccentColor = config.accentColor || '#207567';
+  const defaultAccent = adminState.currentProfileId === 'restaurant' ? '#207567' : '#7c4a27';
+  let savedAccentColor = config.accentColor;
+  if (!savedAccentColor || savedAccentColor.toLowerCase() === '#ffffff') {
+    savedAccentColor = defaultAccent;
+  }
 
   if (document.getElementById('inputBrandName')) {
     document.getElementById('inputBrandName').value = config.name || '';
+  }
+  if (document.getElementById('inputBrandLogoUrl')) {
+    document.getElementById('inputBrandLogoUrl').value = config.logoUrl || '';
+    updateConfigLogoPreview(config.logoUrl || '');
   }
   if (document.getElementById('inputBrandTagline')) {
     document.getElementById('inputBrandTagline').value = config.tagline || '';
@@ -1393,10 +1825,13 @@ function renderQuickStockGrid(query = '') {
       const card = document.createElement('div');
       card.className = 'quick-stock-card';
 
-      const imgUrl = item.media?.heroImage || item.heroImage_url || item.heroImage || 'assets/images/fresh_salmon.png';
+      const imgUrl = (item.media?.heroImage || item.heroImage_url || item.heroImage || '').trim();
+      const thumbHTML = imgUrl
+        ? `<img src="${imgUrl}" alt="${item.name}">`
+        : `<div style="width:50px;height:50px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#94a3b8;flex-shrink:0;border:1px dashed #cbd5e1;" title="Sin foto"><i data-lucide="image-off" style="width:16px;height:16px;"></i></div>`;
 
       card.innerHTML = `
-        <img src="${imgUrl}" alt="${item.name}">
+        ${thumbHTML}
         <div class="quick-stock-info">
           <div class="quick-stock-name">${item.name}</div>
           <div class="quick-stock-price">${currSymbol} ${item.price.toLocaleString('es-AR')}</div>
@@ -1517,8 +1952,11 @@ function setupUsersManagement() {
       const enteredPass = document.getElementById('adminConfirmPassword').value.trim();
       const targetUserId = document.getElementById('targetStaffUserId').value;
 
+      const currentUser = db.getCurrentUser();
+      const userCustomPass = currentUser?.password;
+
       // Validar contraseña del administrador actual
-      if (enteredPass === 'admin123' || enteredPass === 'admin' || enteredPass === '123456') {
+      if (enteredPass === 'admin123' || enteredPass === 'admin' || enteredPass === '123456' || (userCustomPass && enteredPass === userCustomPass)) {
         revealedStaffPasswords.add(targetUserId);
         closeRevealModal();
         showToast('🔓 Contraseña de empleado revelada');

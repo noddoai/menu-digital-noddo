@@ -72,24 +72,38 @@ export const BUSINESS_PROFILES = {
       {
         id: "banner-cafe-01",
         enabled: true,
+        showTextOverlay: true,
         type: "bancaria",
         badge: "MERIENDA 3X2",
         title: "3x2 en Café de Especialidad & Croissants",
         subtitle: "Válido de Lunes a Viernes de 16:00 a 19:00 hs.",
-        image: "assets/images/specialty_coffee.png",
+        image: "assets/images/promo_cafe_merienda.jpg",
         buttonText: "Ver Cafetería",
         targetCategory: "cafe_especialidad"
       },
       {
         id: "banner-cafe-02",
         enabled: true,
+        showTextOverlay: true,
+        type: "happy_hour",
+        badge: "VERANO & COLD BREW",
+        title: "20% OFF en Cold Brew & Espresso Tonic",
+        subtitle: "Refrescantes extracciones en frío todos los días de 14:00 a 18:00 hs.",
+        image: "assets/images/promo_cafe_coldbrew.jpg",
+        buttonText: "Ver Bebidas Frías",
+        targetCategory: "bebidas_frias"
+      },
+      {
+        id: "banner-cafe-03",
+        enabled: true,
+        showTextOverlay: true,
         type: "especial",
-        badge: "BRUNCH SPECIAL",
-        title: "Pancakes Dulces con Arándanos & Naranja",
-        subtitle: "Pancakes esponjosos servidos con miel de azahar y crema batida.",
-        image: "assets/images/berry_pancakes.png",
-        buttonText: "Pedir Brunch",
-        targetItem: "cafe-01"
+        badge: "COMBO DESAYUNO",
+        title: "Flat White + Pain au Chocolat Artesanal",
+        subtitle: "Disfrutá nuestras mañanas parisinas con pastelería horneada en el día.",
+        image: "assets/images/promo_cafe_desayuno.jpg",
+        buttonText: "Ver Pastelería",
+        targetCategory: "pasteleria"
       }
     ]
   },
@@ -315,7 +329,7 @@ export const MENU_ITEMS = [
       containsNuts: false
     },
     media: {
-      heroImage: "assets/images/specialty_coffee.png",
+      heroImage: null,
       videoLoopUrl: null,
       model3dUrl: null
     },
@@ -460,6 +474,96 @@ export const MENU_ITEMS = [
     },
     media: {
       heroImage: "assets/images/specialty_coffee.png",
+      videoLoopUrl: null,
+      model3dUrl: null
+    },
+    layersOrIngredients: []
+  },
+  {
+    id: "cafe-05",
+    businessProfile: "bakery_cafe",
+    category: "pasteleria",
+    name: "Medialuna de Manteca Artesanal",
+    price: 1800,
+    formattedPrice: "$ 1.800",
+    shortDescription: "Hojaldre fermentado en frío 24hs con manteca pura y almíbar suave de naranja.",
+    fullStory: "Horneadas cada mañana en tandas pequeñas para servir siempre tibias y crujientes.",
+    isAvailable: true,
+    isChefSpecial: false,
+    isFeatured: false,
+    prepTime: "5 min",
+    rating: 4.9,
+    dietaryFlags: {
+      isGlutenFree: false,
+      isVegan: false,
+      isVegetarian: true,
+      containsDairy: true,
+      containsNuts: false
+    },
+    media: {
+      heroImage: null,
+      videoLoopUrl: null,
+      model3dUrl: null
+    },
+    layersOrIngredients: []
+  },
+  {
+    id: "cafe-06",
+    businessProfile: "bakery_cafe",
+    category: "bebidas_frias",
+    name: "Jugo de Naranja Exprimido",
+    price: 3800,
+    formattedPrice: "$ 3.800",
+    shortDescription: "Vaso de 250ml de naranjas frescas de estación recién exprimidas, sin azúcar agregada.",
+    fullStory: "100% fruta natural exprimida en el momento del pedido.",
+    isAvailable: true,
+    isChefSpecial: false,
+    isFeatured: false,
+    prepTime: "5 min",
+    rating: 4.8,
+    dietaryFlags: {
+      isGlutenFree: true,
+      isVegan: true,
+      isVegetarian: true,
+      containsDairy: false,
+      containsNuts: false
+    },
+    media: {
+      heroImage: null,
+      videoLoopUrl: null,
+      model3dUrl: null
+    },
+    layersOrIngredients: []
+  },
+  {
+    id: "cafe-combo-01",
+    businessProfile: "bakery_cafe",
+    category: "brunch",
+    name: "Combo Desayuno Clásico",
+    price: 9500,
+    formattedPrice: "$ 9.500",
+    shortDescription: "La dupla perfecta de la mañana: Café de especialidad con dos medialunas tibias y jugo natural.",
+    fullStory: "Armado con nuestros clásicos de la carta a un precio especial. Si alguno de los componentes se agota, el combo se pausa automáticamente.",
+    isAvailable: true,
+    isChefSpecial: true,
+    isFeatured: true,
+    isCombo: true,
+    comboItems: [
+      { itemId: "cafe-04", qty: 1 },
+      { itemId: "cafe-05", qty: 2 },
+      { itemId: "cafe-06", qty: 1 }
+    ],
+    prepTime: "10 min",
+    rating: 5.0,
+    dietaryFlags: {
+      isGlutenFree: false,
+      isVegan: false,
+      isVegetarian: true,
+      containsDairy: true,
+      containsNuts: false
+    },
+    media: {
+      heroImage: "assets/images/promo_cafe_desayuno.jpg",
       videoLoopUrl: null,
       model3dUrl: null
     },

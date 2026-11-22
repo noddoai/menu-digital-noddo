@@ -36,7 +36,7 @@ VALUES
   ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a32', 'Pancakes & Tartas', 'pasteleria', 'cake', 1),
   ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a45', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a32', 'Café & Bebidas', 'cafe_especialidad', 'coffee', 2),
   ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a46', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a32', 'Brunch & Toast', 'brunch', 'sandwich', 3)
-ON CONFLICT (menu_id, slug) DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 -- 5. INSERTAR ITEMS (PLATOS)
 INSERT INTO items (id, tenant_id, category_id, name, price, formatted_price_override, short_description, full_story, is_available, is_chef_special, is_featured, prep_time, rating, hero_image_url, dietary_flags)

@@ -8,11 +8,11 @@ import { BUSINESS_PROFILES, MENU_ITEMS } from './menuData.js';
 
 const STORAGE_KEY_ITEMS = 'aura_menu_items_v7';
 const STORAGE_KEY_THEMES = 'aura_menu_themes_v7';
-const STORAGE_KEY_BANNERS = 'aura_menu_banners_v8';
+const STORAGE_KEY_BANNERS = 'aura_menu_banners_v9';
 const STORAGE_KEY_AUTH_TOKEN = 'aura_auth_token_v1';
 const STORAGE_KEY_AUTH_USER = 'aura_auth_user_v1';
 
-const API_BASE_URL = window.LOCATION_API_URL || 'http://localhost:3000/api/v1';
+const API_BASE_URL = window.LOCATION_API_URL || `${window.location.origin}/api/v1`;
 
 function getProfileDef(profileId) {
   if (!profileId) return BUSINESS_PROFILES.RESTAURANT;
@@ -54,7 +54,7 @@ export const db = {
       if (data) {
         const parsed = JSON.parse(data);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Si el catálogo en LocalStorage no tiene los platos del nuevo perfil, los mezclamos
+          // Si el catálogo en LocalStorage no tiene los platos nuevos, los mezclamos
           const existingIds = new Set(parsed.map(i => i.id));
           const missingItems = MENU_ITEMS.filter(i => !existingIds.has(i.id));
           if (missingItems.length > 0) {
@@ -93,6 +93,56 @@ export const db = {
   getItemById(id) {
     const all = this.getAllItems();
     return all.find(item => item.id === id) || null;
+  },
+
+  resolveCombo(dish) {
+    if (!dish || !dish.isCombo || !Array.isArray(dish.comboItems) || dish.comboItems.length === 0) {
+      return null;
+    }
+    const allItems = this.getAllItems();
+    const resolvedItems = dish.comboItems.map(ci => {
+      const found = allItems.find(i => i.id === ci.itemId);
+      const qty = Math.max(1, parseInt(ci.qty, 10) || 1);
+      if (!found) {
+        return {
+          itemId: ci.itemId,
+          name: ci.name || 'Producto no encontrado',
+          qty,
+          unitPrice: 0,
+          subtotal: 0,
+          isAvailable: false,
+          missing: true
+        };
+      }
+      const unitPrice = Number(found.price) || 0;
+      return {
+        itemId: found.id,
+        name: found.name,
+        qty,
+        unitPrice,
+        subtotal: unitPrice * qty,
+        isAvailable: found.isAvailable !== false,
+        missing: false
+      };
+    });
+
+    const regularTotal = resolvedItems.reduce((sum, item) => sum + item.subtotal, 0);
+    const comboPrice = Number(dish.price) || 0;
+    const savingsAmount = regularTotal > comboPrice ? (regularTotal - comboPrice) : 0;
+    const savingsPercent = regularTotal > 0 && savingsAmount > 0
+      ? Math.round((savingsAmount / regularTotal) * 100)
+      : 0;
+    const unavailableComponents = resolvedItems.filter(i => !i.isAvailable);
+
+    return {
+      items: resolvedItems,
+      regularTotal,
+      comboPrice,
+      savingsAmount,
+      savingsPercent,
+      allComponentsAvailable: unavailableComponents.length === 0,
+      unavailableNames: unavailableComponents.map(i => i.name)
+    };
   },
 
   saveItem(itemData) {
@@ -153,7 +203,12 @@ export const db = {
       const data = localStorage.getItem(STORAGE_KEY_THEMES);
       if (data) {
         const parsed = JSON.parse(data);
-        if (parsed[profileId]) return parsed[profileId];
+        if (parsed[profileId]) {
+          if (parsed[profileId].accentColor && parsed[profileId].accentColor.toLowerCase() === '#ffffff') {
+            parsed[profileId].accentColor = profileId === 'restaurant' ? '#207567' : '#7c4a27';
+          }
+          return parsed[profileId];
+        }
       }
     } catch (e) {
       console.error('Error leyendo tema:', e);
@@ -322,9 +377,13 @@ export const db = {
       return { success: true, user: mockUser };
     }
 
-    // 4. Personal registrado en LocalStorage
+    // 4. Personal registrado en LocalStorage o usuarios demo por defecto
     try {
-      const staffUsers = JSON.parse(localStorage.getItem('aura_staff_users_v1') || '[]');
+      const rawStaff = localStorage.getItem('aura_staff_users_v1');
+      const staffUsers = rawStaff ? JSON.parse(rawStaff) : [
+        { id: 'u-staff-1', name: 'Lucas Mozo Barra', email: 'barra@gourmetbistro.com', password: 'barra123password', role: 'staff' },
+        { id: 'u-staff-2', name: 'Sofía Encargada', email: 'encargada@gourmetbistro.com', password: 'manager456secret', role: 'manager' }
+      ];
       const foundStaff = staffUsers.find(u => u.email.toLowerCase() === cleanEmail && (u.password === cleanPass || !cleanPass));
       if (foundStaff) {
         const staffUser = { id: foundStaff.id, name: foundStaff.name, email: foundStaff.email, role: foundStaff.role || 'staff' };
@@ -341,10 +400,34 @@ export const db = {
     return { success: true, user: genericOwner };
   },
 
+  getCurrentUser() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY_AUTH_USER);
+      if (data) return JSON.parse(data);
+    } catch (e) {
+      console.error('Error leyendo usuario:', e);
+    }
+    return {
+      id: 'user-admin-bistro',
+      name: 'Administrador Principal',
+      email: 'admin@gourmetbistro.com',
+      role: 'owner',
+      profileId: 'restaurant'
+    };
+  },
+
+  updateCurrentUser(updates) {
+    const current = this.getCurrentUser();
+    const updated = { ...current, ...updates };
+    localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(updated));
+    return updated;
+  },
+
   logoutApi() {
     localStorage.removeItem(STORAGE_KEY_AUTH_TOKEN);
     localStorage.removeItem(STORAGE_KEY_AUTH_USER);
     sessionStorage.removeItem('aura_admin_logged');
+    sessionStorage.removeItem('aura_user_role');
   },
 
   async syncItemToApi(itemData) {

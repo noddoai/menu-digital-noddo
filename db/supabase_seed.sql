@@ -13,7 +13,7 @@ INSERT INTO public.restaurants (id, user_id, name, slug, tagline, hero_badge, ac
 VALUES 
   (
     'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 
-    '<USER_ID_GOURMET>'::uuid, 
+    'ea8783f1-d93f-485e-8767-9aaaf7432aa9'::uuid, 
     'Gourmet Bistro & Grill', 
     'gourmet-bistro', 
     'Cocina Fresca, Natural & Sabores de Estación', 
@@ -24,7 +24,7 @@ VALUES
   ),
   (
     'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 
-    '<USER_ID_MAISON>'::uuid, 
+    'c57742e6-c91f-4605-8e11-9e80feeb7257'::uuid, 
     'Maison Cafe & Bakery', 
     'maison-cafe', 
     'Café de Especialidad, Brunchs & Pastelería Fresca', 

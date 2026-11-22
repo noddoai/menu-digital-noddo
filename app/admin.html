@@ -95,13 +95,50 @@
           </select>
         </div>
 
-        <button id="btnResetDefaults" class="btn-header-secondary" title="Restablecer datos de prueba">
-          <i data-lucide="rotate-ccw"></i> Restablecer
-        </button>
+        <!-- Menú de Usuario y Configuración de Cuenta -->
+        <div class="user-menu-wrapper" id="userMenuWrapper">
+          <button type="button" class="user-profile-btn" id="btnUserMenuToggle" aria-haspopup="true" aria-expanded="false">
+            <div class="user-avatar-badge" id="topbarUserAvatar">A</div>
+            <div class="user-profile-info">
+              <span class="user-name" id="topbarUserName">Administrador</span>
+              <span class="user-role-badge" id="topbarUserRole">Propietario</span>
+            </div>
+            <i data-lucide="chevron-down" class="user-chevron"></i>
+          </button>
 
-        <button id="btnLogout" class="btn-header-logout">
-          <i data-lucide="log-out"></i> Salir
-        </button>
+          <!-- Menú Flotante Desplegable -->
+          <div class="user-dropdown-menu" id="userDropdownMenu" style="display: none;">
+            <div class="dropdown-user-header">
+              <div class="dropdown-avatar" id="dropdownUserAvatar">A</div>
+              <div class="dropdown-user-meta">
+                <strong id="dropdownUserName">Administrador</strong>
+                <span id="dropdownUserEmail">admin@gourmetbistro.com</span>
+              </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <ul class="dropdown-actions-list">
+              <li>
+                <button type="button" class="dropdown-action-item" id="btnOpenUserProfileModal">
+                  <i data-lucide="user-cog"></i>
+                  <span>Mi Perfil & Contraseña</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" class="dropdown-action-item" id="btnGoToStoreConfig">
+                  <i data-lucide="sliders"></i>
+                  <span>Configuración del Menú</span>
+                </button>
+              </li>
+            </ul>
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-footer">
+              <button type="button" class="dropdown-action-item logout-action" id="btnLogout">
+                <i data-lucide="log-out"></i>
+                <span>Cerrar Sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -238,39 +275,107 @@
           </div>
         </div>
 
-        <!-- TAB 3: CÓDIGO QR PARA MESAS -->
+        <!-- TAB 4: CÓDIGO QR PARA MESAS Y CARTELERÍA -->
         <div id="tabQrCode" class="admin-tab-content">
-          <div class="two-column-grid">
+          <div class="qr-showcase-container">
             
-            <div class="corporate-card text-center">
-              <h3>Código QR del Menú Digital</h3>
-              <p class="text-muted">Imprima este código para colocar en mesas, barra o folletos</p>
-
-              <div class="qr-preview-box">
-                <img id="qrCodeImage" src="" alt="Código QR del Menú">
+            <!-- COLUMNA IZQUIERDA: DISPLAY DEL CÓDIGO QR EN BLANCO Y NEGRO -->
+            <div class="qr-display-card">
+              <div class="qr-status-badge">
+                <span class="live-dot-pulse"></span>
+                <span>QR Activo & Listo para Escanear</span>
               </div>
 
-              <div class="url-display-pill" id="qrTargetUrlText">
-                https://miapp.com/menu/gourmet-bistro
+              <!-- MARCO BLANCO DEL QR (ALTO CONTRASTE) -->
+              <div class="qr-frame-box">
+                <img id="qrCodeImage" src="" alt="Código QR en blanco y negro del Menú Digital">
+                <div class="qr-frame-footer">
+                  <i data-lucide="smartphone"></i>
+                  <span>Escanee con la cámara de su teléfono</span>
+                </div>
               </div>
 
-              <div class="qr-action-buttons">
-                <button id="btnDownloadQrPng" class="btn-admin-primary flex-1">
+              <!-- BOTONES DE DESCARGA DIRECTA -->
+              <div class="qr-download-actions">
+                <button type="button" id="btnDownloadQrPng" class="btn-admin-primary flex-1">
                   <i data-lucide="download"></i> Descargar PNG
                 </button>
-                <button id="btnDownloadQrSvg" class="btn-admin-secondary flex-1">
+                <button type="button" id="btnDownloadQrSvg" class="btn-admin-secondary flex-1">
                   <i data-lucide="file-code"></i> Vector SVG
                 </button>
               </div>
             </div>
 
-            <div class="corporate-card">
-              <h3>Recomendaciones de Uso</h3>
-              <ul class="guide-list">
-                <li><strong>Tamaño Recomendado:</strong> 10x10 cm para soportes sobre mesa.</li>
-                <li><strong>Vectorial:</strong> Formato SVG listo para imprenta profesional.</li>
-                <li><strong>Directo:</strong> Escaneo con cámara nativa iOS y Android.</li>
-              </ul>
+            <!-- COLUMNA DERECHA: INFORMACIÓN, ENLACE Y GUÍA DE IMPRENTA -->
+            <div class="qr-info-column">
+              
+              <div class="qr-header-info">
+                <h2>Código QR del Menú Digital</h2>
+                <p class="qr-lead-desc">
+                  Este código dirige de forma instantánea a la carta digital de <strong id="qrCurrentStoreName">Gourmet Bistro & Grill</strong>. Los comensales acceden al menú sin descargar aplicaciones ni registrarse.
+                </p>
+              </div>
+
+              <!-- CAJA INTERACTIVA DEL ENLACE -->
+              <div class="qr-url-interactive-card">
+                <div class="qr-url-label">
+                  <i data-lucide="link"></i>
+                  <span>Enlace Web Público:</span>
+                </div>
+                <div class="qr-url-bar">
+                  <input type="text" id="qrTargetUrlText" readonly class="qr-url-input">
+                  <div class="qr-url-buttons">
+                    <button type="button" id="btnCopyQrUrl" class="btn-url-action" title="Copiar enlace al portapapeles">
+                      <i data-lucide="copy"></i> Copiar
+                    </button>
+                    <a id="btnOpenQrUrl" href="#" target="_blank" class="btn-url-action btn-url-open" title="Abrir en pestaña nueva">
+                      <i data-lucide="external-link"></i> Abrir
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- GUÍA PRÁCTICA DE IMPRENTA & SOPORTES (3 CARDS) -->
+              <div class="qr-guide-grid">
+                <div class="qr-guide-card">
+                  <div class="qr-guide-icon icon-blue">
+                    <i data-lucide="maximize-2"></i>
+                  </div>
+                  <div class="qr-guide-body">
+                    <h4>Medida Recomendada</h4>
+                    <p>8×8 cm a 10×10 cm para soportes acrílicos sobre mesa, servilleteros o cartas físicas.</p>
+                  </div>
+                </div>
+
+                <div class="qr-guide-card">
+                  <div class="qr-guide-icon icon-purple">
+                    <i data-lucide="layers"></i>
+                  </div>
+                  <div class="qr-guide-body">
+                    <h4>Vector SVG para Imprenta</h4>
+                    <p>Resolución infinita sin pixelado. El formato perfecto para enviar directamente a su diseñador o imprenta.</p>
+                  </div>
+                </div>
+
+                <div class="qr-guide-card">
+                  <div class="qr-guide-icon icon-emerald">
+                    <i data-lucide="zap"></i>
+                  </div>
+                  <div class="qr-guide-body">
+                    <h4>Lectura Ultrarrápida</h4>
+                    <p>Generado en blanco y negro puro para garantizar máxima legibilidad bajo luces tenues o reflejos de mesa.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NOTA DE ACTUALIZACIÓN EN TIEMPO REAL -->
+              <div class="qr-sync-notice">
+                <i data-lucide="refresh-cw"></i>
+                <div>
+                  <strong>Código Permanente & Dinámico:</strong> Todos los cambios de precios, productos o fotos que realice en este panel se actualizan al instante. Nunca necesitará volver a imprimir el código QR tras una modificación de la carta.
+                </div>
+              </div>
+
             </div>
 
           </div>
@@ -305,13 +410,36 @@
 
               <form id="generalConfigForm" class="clean-form">
                 <div class="form-group">
+                  <label>Logo del Local (PNG / SVG / JPG)</label>
+                  <div style="display: flex; align-items: center; gap: 14px; padding: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
+                    <div id="configLogoPreviewBox" style="width: 56px; height: 56px; border-radius: 10px; background: #0f172a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid #e2e8f0;">
+                      <img id="configLogoPreviewImg" src="" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; display: none; padding: 4px;">
+                      <span id="configLogoFallback" style="color: #94a3b8; font-size: 0.72rem; font-weight: 700;">SIN LOGO</span>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <input type="file" id="inputLogoFile" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display: none;">
+                        <button type="button" class="btn-secondary-xs" onclick="document.getElementById('inputLogoFile').click()">
+                          <i data-lucide="upload"></i> Subir Logo PNG
+                        </button>
+                        <button type="button" id="btnRemoveConfigLogo" class="btn-secondary-xs" style="color: #ef4444; display: none;">
+                          <i data-lucide="trash-2"></i> Quitar
+                        </button>
+                      </div>
+                      <input type="hidden" id="inputBrandLogoUrl" value="">
+                      <span style="font-size: 0.74rem; color: #64748b;">Se mostrará arriba a la izquierda en la carta del cliente.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
                   <label>Nombre del Establecimiento *</label>
                   <input type="text" id="inputBrandName" required placeholder="ej: Gourmet Bistro & Grill">
                 </div>
 
                 <div class="form-group">
-                  <label>Slogan o Descripción Corta *</label>
-                  <input type="text" id="inputBrandTagline" required placeholder="ej: Cocina Fresca & Sabores de Estación">
+                  <label>Slogan o Descripción Corta (Opcional)</label>
+                  <input type="text" id="inputBrandTagline" placeholder="ej: Cocina Fresca & Sabores de Estación">
                 </div>
 
                 <div class="form-group" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid #e2e8f0;">
@@ -591,6 +719,34 @@
             </div>
           </div>
 
+          <!-- CONSTRUCTOR DE COMBO (VINCULAR PLATOS EXISTENTES) -->
+          <div class="variations-section-card" style="margin-top: 14px;">
+            <div class="switch-item-row">
+              <div class="switch-label-group">
+                <span class="switch-title"><i data-lucide="package"></i> Es un Combo (Agrupa productos existentes)</span>
+                <span class="switch-hint">Vinculá platos de la carta con cantidad y precio promocional. Si falta un producto, el combo se pausa solo.</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="editIsCombo">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div id="comboBuilderWrapper" style="display: none; margin-top: 14px;">
+              <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+                <select id="comboProductSelect" class="form-select" style="flex: 1; min-width: 180px;">
+                  <option value="">Seleccionar producto de la carta...</option>
+                </select>
+                <input type="number" id="comboProductQty" value="1" min="1" max="20" style="width: 68px; text-align: center;" title="Cantidad">
+                <button type="button" id="btnAddComboItem" class="btn-secondary-xs">
+                  <i data-lucide="plus"></i> Sumar
+                </button>
+              </div>
+              <div id="comboItemsContainer" class="variations-stack"></div>
+              <div id="comboSavingsSummary" style="margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.28); font-size: 0.82rem; color: #b45309; display: none;"></div>
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="editShortDesc">Descripción Breve (Visible en la Carta) *</label>
             <input type="text" id="editShortDesc" placeholder="Ingredientes principales y método de preparación" required>
@@ -736,6 +892,18 @@
           </div>
         </div>
       </div>
+
+      <div class="form-group" style="margin-top: 14px; margin-bottom: 0; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
+        <label style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin: 0;">
+          <span style="font-weight: 700; font-size: 0.84rem; color: #0f172a;">Agregar texto superpuesto sobre la foto</span>
+          <input type="checkbox" id="bannerShowTextOverlay">
+        </label>
+        <div id="bannerTextOverlayFields" style="display: none; margin-top: 10px; flex-direction: column; gap: 8px;">
+          <input type="text" id="bannerOverlayBadge" placeholder="Etiqueta (ej: MERIENDA 3X2)" style="padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.82rem;">
+          <input type="text" id="bannerOverlayTitle" placeholder="Título principal de la promo" style="padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.82rem;">
+          <input type="text" id="bannerOverlaySubtitle" placeholder="Subtítulo o vigencia (ej: Lun a Vie 16 a 19hs)" style="padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.82rem;">
+        </div>
+      </div>
     </div>
 
     <div style="display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 16px 16px;">
@@ -748,7 +916,7 @@
 
   <!-- MODAL SEGURIDAD DE REVELACIÓN DE CONTRASEÑA DE EMPLEADO -->
   <div class="modal-backdrop" id="revealPasswordModalBackdrop" style="display: none;"></div>
-  <div class="dish-editor-modal" id="revealPasswordModal" style="display: none; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 440px; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.25);">
+  <div id="revealPasswordModal" style="display: none;">
     <div class="modal-header-clean">
       <div style="display:flex; align-items:center; gap:10px;">
         <div style="width:36px; height:36px; border-radius:10px; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
@@ -777,6 +945,58 @@
         <button type="button" class="btn-admin-secondary" id="btnCancelRevealModal">Cancelar</button>
         <button type="submit" class="btn-admin-primary">
           <i data-lucide="key-round"></i> Confirmar & Revelar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- MODAL DE CONFIGURACIÓN DEL PERFIL DE USUARIO -->
+  <div class="modal-backdrop" id="userProfileModalBackdrop" style="display: none;"></div>
+  <div id="userProfileModal" style="display: none;">
+    <div class="modal-header-clean">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="user-avatar-modal" id="modalUserAvatarPreview">A</div>
+        <div>
+          <h3 style="margin:0; font-size:1.08rem; font-weight:700; color:#0f172a;">Configuración de Usuario</h3>
+          <p style="margin:2px 0 0 0; font-size:0.78rem; color:#64748b;">Administre su nombre de usuario, correo y contraseña</p>
+        </div>
+      </div>
+      <button type="button" class="btn-close-modal" id="btnCloseUserProfileModal">&times;</button>
+    </div>
+
+    <form id="userProfileForm" style="padding: 20px 24px;">
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label style="font-weight:700; font-size:0.85rem; color:#0f172a;">Nombre Completo *</label>
+        <input type="text" id="inputUserProfileName" required placeholder="ej: Administrador Principal" class="form-select" style="padding: 10px 14px; margin-top:6px; font-size:0.9rem;">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label style="font-weight:700; font-size:0.85rem; color:#0f172a;">Correo Electrónico *</label>
+        <input type="email" id="inputUserProfileEmail" required placeholder="ej: admin@gourmetbistro.com" class="form-select" style="padding: 10px 14px; margin-top:6px; font-size:0.9rem;">
+      </div>
+
+      <div style="border-top: 1px solid #e2e8f0; padding-top: 14px; margin-top: 14px;">
+        <span style="display:block; font-weight:700; font-size:0.88rem; color:#0f172a; margin-bottom: 4px;">Seguridad & Cambio de Contraseña</span>
+        <span style="display:block; font-size:0.78rem; color:#64748b; margin-bottom: 12px;">Deje los campos de contraseña vacíos si no desea cambiar su clave</span>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size:0.82rem; font-weight:600; color:#475569;">Nueva Contraseña</label>
+          <input type="password" id="inputUserNewPassword" placeholder="Mínimo 6 caracteres" class="form-select" style="padding: 9px 12px; margin-top:4px; font-size:0.88rem;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label style="font-size:0.82rem; font-weight:600; color:#475569;">Confirmar Nueva Contraseña</label>
+          <input type="password" id="inputUserConfirmPassword" placeholder="Repita la nueva contraseña" class="form-select" style="padding: 9px 12px; margin-top:4px; font-size:0.88rem;">
+        </div>
+      </div>
+
+      <div id="userProfileError" style="display:none; color:#ef4444; font-size:0.82rem; font-weight:700; margin-bottom:12px; background:#fef2f2; padding:8px 12px; border-radius:6px; border:1px solid #fecaca;">
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+        <button type="button" class="btn-admin-secondary" id="btnCancelUserProfileModal">Cancelar</button>
+        <button type="submit" class="btn-admin-primary">
+          <i data-lucide="check"></i> Guardar Cambios
         </button>
       </div>
     </form>

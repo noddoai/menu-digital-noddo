@@ -25,9 +25,11 @@ let pool = null;
 
 if (process.env.DATABASE_URL) {
   try {
+    const connStr = process.env.DATABASE_URL.replace('?sslmode=require', '');
     const testPool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      connectionTimeoutMillis: 2000
+      connectionString: connStr,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 8000
     });
     testPool.query('SELECT 1').then(() => {
       console.log('✅ Base de Datos PostgreSQL Cloud (Supabase) Conectada');
@@ -43,7 +45,7 @@ if (process.env.DATABASE_URL) {
 }
 
 app.use(cors({ origin: '*' }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 const ROOT_DIR = process.cwd().endsWith('server') ? path.join(process.cwd(), '..') : process.cwd();
 const APP_DIR = path.join(ROOT_DIR, 'app');
@@ -96,7 +98,9 @@ const memoryDb = {
   users: [
     { id: 'u-1', tenantId: 'tenant-rest-01', email: 'admin@gourmetbistro.com', role: 'owner' },
     { id: 'u-2', tenantId: 'tenant-cafe-02', email: 'admin@maisoncafe.com', role: 'owner' },
-    { id: 'u-3', tenantId: 'tenant-passport-03', email: 'admin@lepassportnice.com', role: 'owner' }
+    { id: 'u-3', tenantId: 'tenant-passport-03', email: 'admin@lepassportnice.com', role: 'owner' },
+    { id: 'u-staff-1', tenantId: 'tenant-rest-01', email: 'barra@gourmetbistro.com', role: 'staff', name: 'Lucas Mozo Barra' },
+    { id: 'u-staff-2', tenantId: 'tenant-rest-01', email: 'encargada@gourmetbistro.com', role: 'manager', name: 'Sofía Encargada' }
   ],
   items: [...MENU_ITEMS],
   leads: loadLocalLeads()
@@ -191,6 +195,25 @@ app.post('/api/v1/auth/login', async (req, res) => {
     return res.json({ token, user: mockUser });
   }
 
+  if (email === 'barra@gourmetbistro.com' && (password === 'barra123password' || password === 'barra')) {
+    const mockUser = memoryDb.users[3];
+    const token = jwt.sign(
+      { userId: mockUser.id, tenantId: mockUser.tenantId, role: mockUser.role, email: mockUser.email },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+    return res.json({ token, user: mockUser });
+  }
+
+  if (email === 'encargada@gourmetbistro.com' && (password === 'manager456secret' || password === 'manager')) {
+    const mockUser = memoryDb.users[4];
+    const token = jwt.sign(
+      { userId: mockUser.id, tenantId: mockUser.tenantId, role: mockUser.role, email: mockUser.email },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+    return res.json({ token, user: mockUser });
+  }
   return res.status(401).json({ error: 'Credenciales inválidas' });
 });
 
@@ -216,7 +239,7 @@ app.get('/api/v1/public/menus/:slug', async (req, res) => {
       const itemsRes = await pool.query('SELECT * FROM items WHERE tenant_id = $1 AND is_available = TRUE ORDER BY display_order ASC', [tenant.id]);
       const promoRes = await pool.query('SELECT * FROM promotions WHERE tenant_id = $1 AND is_active = TRUE LIMIT 1', [tenant.id]);
 
-      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
+      res.setHeader('Cache-Control', 'no-store');
       return res.json({
         tenant: {
           id: tenant.id,
@@ -225,7 +248,8 @@ app.get('/api/v1/public/menus/:slug', async (req, res) => {
           tagline: tenant.tagline,
           heroBadge: tenant.hero_badge,
           currencySymbol: tenant.currency_symbol,
-          accentColor: tenant.accent_color
+          accentColor: tenant.accent_color,
+          logoUrl: tenant.logo_url || ''
         },
         items: itemsRes.rows,
         promotion: promoRes.rows[0] || null
@@ -240,8 +264,50 @@ app.get('/api/v1/public/menus/:slug', async (req, res) => {
   const profileKey = slug.includes('passport') ? 'le-passport-nice' : (slug.includes('cafe') ? 'bakery_cafe' : 'restaurant');
   const items = memoryDb.items.filter(i => i.tenantId === tenant.id || i.businessProfile === profileKey);
 
-  res.setHeader('Cache-Control', 'public, max-age=30');
+  res.setHeader('Cache-Control', 'no-store');
   res.json({ tenant, items, promotion: null });
+});
+
+// Sincronizar marca, logo y tema desde el Admin (persistente en DB + memoria)
+app.patch('/api/v1/admin/theme', async (req, res) => {
+  const { profileId, name, tagline, logoUrl, accentColor, currencySymbol } = req.body || {};
+  const slug = profileId === 'bakery_cafe' ? 'maison-cafe' : 'gourmet-bistro';
+
+  const memTenant = memoryDb.tenants.find(t => t.slug === slug);
+  if (memTenant) {
+    if (name !== undefined) memTenant.name = name;
+    if (tagline !== undefined) memTenant.tagline = tagline;
+    if (logoUrl !== undefined) memTenant.logoUrl = logoUrl;
+    if (accentColor !== undefined) memTenant.accentColor = accentColor;
+    if (currencySymbol !== undefined) memTenant.currencySymbol = currencySymbol;
+  }
+
+  if (pool) {
+    try {
+      await pool.query(
+        `UPDATE tenants
+         SET name = COALESCE($1, name),
+             tagline = COALESCE($2, tagline),
+             logo_url = COALESCE($3, logo_url),
+             accent_color = COALESCE($4, accent_color),
+             currency_symbol = COALESCE($5, currency_symbol),
+             updated_at = CURRENT_TIMESTAMP
+         WHERE slug = $6`,
+        [
+          name !== undefined ? name : null,
+          tagline !== undefined ? tagline : null,
+          logoUrl !== undefined ? logoUrl : null,
+          accentColor !== undefined ? accentColor : null,
+          currencySymbol !== undefined ? currencySymbol : null,
+          slug
+        ]
+      );
+    } catch (err) {
+      console.error('Error DB PATCH theme:', err);
+    }
+  }
+
+  res.json({ success: true, slug });
 });
 
 // ==========================================
