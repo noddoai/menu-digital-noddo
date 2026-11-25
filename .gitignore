@@ -3,9 +3,15 @@ node_modules/
 
 # Environment variables and credentials
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 supabase_credentials.txt
+
+# Databases & local stores
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
 
 # Logs
 npm-debug.log*

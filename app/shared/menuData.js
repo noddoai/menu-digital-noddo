@@ -10,6 +10,7 @@ export const BUSINESS_PROFILES = {
     tagline: "Cocina Fresca, Natural & Sabores de Estación",
     currencySymbol: "$",
     theme: "restaurant",
+    themeMode: "dark",
     heroBadge: "RESTAURANTE FRESCO 2026",
     categories: [
       { id: "all", name: "Todas las Opciones", icon: "sparkles" },
@@ -60,6 +61,7 @@ export const BUSINESS_PROFILES = {
     tagline: "Café de Especialidad, Brunchs & Pastelería Fresca",
     currencySymbol: "$",
     theme: "bakery_cafe",
+    themeMode: "light",
     heroBadge: "BEST BRUNCH 2026",
     categories: [
       { id: "all", name: "Todas las Opciones", icon: "sparkles" },

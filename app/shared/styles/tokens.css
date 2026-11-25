@@ -1,0 +1,105 @@
+/* =============================================================================
+   AURA & MAISON - ESTILOS GLOBALES & DESIGN SYSTEM (PRODUCCIÓN COMPLETA 2026)
+   CSS Unificado para Menú Digital de Comensales (Dark/Light) y Panel Admin
+   ============================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Paleta Base */
+  --bg-main: #0b0f17;
+  --bg-surface: #131c2a;
+  --bg-surface-elevated: #1e293b;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-focus: #207567;
+  
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-inverse: #0b0f17;
+  
+  --accent-gold: #207567;
+  --accent-gold-hover: #15574c;
+  --accent-gold-light: rgba(32, 117, 103, 0.18);
+  --accent-gold-gradient: linear-gradient(135deg, #207567 0%, #15574c 100%);
+  --accent-text-color: #ffffff;
+  --accent-text-display: #34d399;
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 9999px;
+
+  --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  --font-heading: 'Roboto', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Roboto', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+[data-theme-mode="dark"] {
+  --bg-main: #0b0f17 !important;
+  --bg-surface: #131c2a !important;
+  --bg-surface-elevated: #1e293b !important;
+  --border-color: rgba(255, 255, 255, 0.12) !important;
+  --text-main: #f8fafc !important;
+  --text-muted: #cbd5e1 !important;
+  --text-inverse: #0b0f17 !important;
+}
+
+[data-theme-mode="light"] {
+  --bg-main: #f8fafc !important;
+  --bg-surface: #ffffff !important;
+  --bg-surface-elevated: #f1f5f9 !important;
+  --border-color: rgba(0, 0, 0, 0.1) !important;
+  --text-main: #0f172a !important;
+  --text-muted: #475569 !important;
+  --text-inverse: #ffffff !important;
+}
+
+[data-theme="restaurant"] {
+  --bg-main: #0b0f17;
+  --bg-surface: #131c2a;
+  --bg-surface-elevated: #1e293b;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --accent-gold: #207567;
+  --accent-gold-light: rgba(32, 117, 103, 0.2);
+  --accent-gold-gradient: linear-gradient(135deg, #207567 0%, #15574c 100%);
+  --accent-text-color: #ffffff;
+  --accent-text-display: #34d399;
+}
+
+[data-theme="bakery_cafe"] {
+  --bg-main: #fcf9f5;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f4ede4;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --text-main: #1c140e;
+  --text-muted: #5c4b3e;
+  --text-inverse: #ffffff;
+  --accent-gold: #7c4a27;
+  --accent-gold-light: rgba(124, 74, 39, 0.15);
+  --accent-gold-gradient: linear-gradient(135deg, #8c532b 0%, #683d1e 100%);
+  --accent-text-color: #ffffff;
+  --accent-text-display: #7c4a27;
+}
+
+[data-theme="warm_wine"],
+[data-theme="le-passport-nice"] {
+  --bg-main: #fdfaf7;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #f7ede8;
+  --border-color: rgba(128, 20, 43, 0.12);
+  --text-main: #2b1117;
+  --text-muted: #7d4d57;
+  --text-inverse: #ffffff;
+  --accent-gold: #80142B;
+  --accent-gold-hover: #5e0d1f;
+  --accent-gold-light: rgba(128, 20, 43, 0.12);
+  --accent-gold-gradient: linear-gradient(135deg, #80142B 0%, #5e0d1f 100%);
+}
+

@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=401">
+  <link rel="stylesheet" href="/shared/styles/tokens.css?v=402">
+  <link rel="stylesheet" href="/shared/styles/base.css?v=402">
+  <link rel="stylesheet" href="/admin/styles/admin.css?v=402">
   <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="admin-body">
@@ -62,7 +64,7 @@
       </div>
 
       <div class="admin-login-footer">
-        <a href="index.html" class="back-link"><i data-lucide="arrow-left"></i> Volver al Menú Digital Público</a>
+        <a href="/index.html" class="back-link"><i data-lucide="arrow-left"></i> Volver al Menú Digital Público</a>
       </div>
     </div>
   </section>
@@ -630,7 +632,7 @@
               <div class="iphone-speaker"></div>
             </div>
             <div class="iphone-screen">
-              <iframe id="phonePreviewIframe" src="restaurant.html" frameborder="0"></iframe>
+              <iframe id="phonePreviewIframe" src="/restaurant.html" frameborder="0"></iframe>
             </div>
             <div class="iphone-home-bar"></div>
           </div>
@@ -780,7 +782,7 @@
             <label>Fotografía del Producto</label>
             <div class="compact-media-uploader-box" id="dishDropzone">
               <div class="compact-image-thumb">
-                <img id="dishImagePreview" src="assets/images/fresh_salmon.png" alt="Vista previa plato">
+                <img id="dishImagePreview" src="/assets/images/fresh_salmon.png" alt="Vista previa plato">
               </div>
               <div class="compact-upload-actions">
                 <button type="button" class="btn-upload-pill" onclick="document.getElementById('dishFileInput').click()">
@@ -1008,6 +1010,6 @@
     <span id="toastMessage">Acción completada con éxito</span>
   </div>
 
-  <script type="module" src="admin.js"></script>
+  <script type="module" src="/admin/admin.js"></script>
 </body>
 </html>

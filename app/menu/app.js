@@ -4,8 +4,10 @@
  * Sin elementos transaccionales (no pedidos / no mozo).
  */
 
-import { BUSINESS_PROFILES } from './menuData.js';
-import { db } from './db.js';
+import { BUSINESS_PROFILES } from '../shared/menuData.js';
+import { db } from '../shared/db.js';
+import { apiRequest } from '../shared/services/api-client.js';
+import { resolveAssetUrl } from '../shared/utils/asset-url.js';
 
 // ==========================================
 // 1. ESTADO GLOBAL DE LA VISTA
@@ -34,17 +36,17 @@ function getProfileDef(pId) {
 }
 
 export function getDishImageUrl(dish) {
-  if (dish.media?.heroImage) return dish.media.heroImage;
-  if (dish.heroImage_url) return dish.heroImage_url;
-  if (dish.heroImage) return dish.heroImage;
+  if (dish.media?.heroImage) return resolveAssetUrl(dish.media.heroImage);
+  if (dish.heroImage_url) return resolveAssetUrl(dish.heroImage_url);
+  if (dish.heroImage) return resolveAssetUrl(dish.heroImage);
 
   if (dish.businessProfile === 'le-passport-nice') {
-    if (dish.category === 'galettes') return 'assets/images/le-passport-nice/galettes.png';
-    if (dish.category === 'crepes') return 'assets/images/le-passport-nice/crepes.png';
-    if (dish.category === 'petit_dejeuner') return 'assets/images/le-passport-nice/Viennoiserie.png';
-    if (dish.category === 'plats_du_jour') return 'assets/images/le-passport-nice/entrecote.png';
-    if (dish.category === 'cocktails') return 'assets/images/signature_cocktail.png';
-    if (dish.category === 'bieres_cidre' || dish.category === 'boissons_froides') return 'assets/images/specialty_coffee.png';
+    if (dish.category === 'galettes') return '/assets/images/le-passport-nice/galettes.png';
+    if (dish.category === 'crepes') return '/assets/images/le-passport-nice/crepes.png';
+    if (dish.category === 'petit_dejeuner') return '/assets/images/le-passport-nice/Viennoiserie.png';
+    if (dish.category === 'plats_du_jour') return '/assets/images/le-passport-nice/entrecote.png';
+    if (dish.category === 'cocktails') return '/assets/images/signature_cocktail.png';
+    if (dish.category === 'bieres_cidre' || dish.category === 'boissons_froides') return '/assets/images/specialty_coffee.png';
   }
   return '';
 }
@@ -62,9 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function syncTenantBrandingFromApi() {
   try {
     const slug = state.profileId === 'bakery_cafe' ? 'maison-cafe' : 'gourmet-bistro';
-    const res = await fetch(`${window.location.origin}/api/v1/public/menus/${slug}`, { cache: 'no-store' });
-    if (!res.ok) return;
-    const data = await res.json();
+    const data = await apiRequest(`/public/menus/${slug}`, { auth: false, cache: 'no-store' });
     if (!data?.tenant) return;
 
     const current = db.getThemeConfig(state.profileId);
@@ -368,7 +368,7 @@ function renderPromoBanner() {
       <div class="promo-carousel-track" id="promoCarouselTrack">
         ${banners.map((b, idx) => `
           <div class="promo-slide" data-index="${idx}">
-            <img src="${b.image || 'assets/images/specialty_coffee.png'}" alt="${b.title || 'Banner Promocional'}" class="promo-slide-img" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="${resolveAssetUrl(b.image) || '/assets/images/specialty_coffee.png'}" alt="${b.title || 'Banner Promocional'}" class="promo-slide-img" style="width: 100%; height: 100%; object-fit: cover;">
             ${(b.showTextOverlay && (b.title || b.badge)) ? `
               <div class="promo-slide-overlay">
                 ${b.badge ? `<span class="promo-slide-badge">${b.badge}</span>` : ''}

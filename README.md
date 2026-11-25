@@ -53,7 +53,7 @@ Plataforma B2B para restaurantes, cafeterías y bares que permite la gestión ce
    ```
 
 5. **Acceder a la aplicación**:
-   - **Panel Admin**: `http://localhost:3000/admin.html` (Credenciales demo: `admin@gourmetbistro.com` / `admin123`)
+   - **Panel Admin**: `http://localhost:3000/admin/` (también redirige desde `/admin.html` — Credenciales demo: `admin@gourmetbistro.com` / `admin123`)
    - **Menú Comensal**: `http://localhost:3000/index.html?tenant=gourmet-bistro`
 
 ---

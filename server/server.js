@@ -11,7 +11,7 @@ import dotenv from 'dotenv';
 import pg from 'pg';
 import fs from 'fs';
 import path from 'path';
-import { MENU_ITEMS } from '../app/menuData.js';
+import { BUSINESS_PROFILES, MENU_ITEMS } from '../app/shared/menuData.js';
 
 dotenv.config();
 
@@ -50,8 +50,8 @@ app.use(express.json({ limit: '10mb' }));
 const ROOT_DIR = process.cwd().endsWith('server') ? path.join(process.cwd(), '..') : process.cwd();
 const APP_DIR = path.join(ROOT_DIR, 'app');
 
-// Servir archivos estáticos del frontend desde la carpeta 'app' sin caché durante desarrollo
-app.use(express.static(APP_DIR, {
+// Servir archivos estáticos del frontend desacoplados por dominio sin caché durante desarrollo
+const noCacheStaticOptions = {
   etag: false,
   maxAge: 0,
   setHeaders: (res) => {
@@ -59,7 +59,13 @@ app.use(express.static(APP_DIR, {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
   }
-}));
+};
+
+app.use('/shared', express.static(path.join(APP_DIR, 'shared'), noCacheStaticOptions));
+app.use('/assets', express.static(path.join(APP_DIR, 'assets'), noCacheStaticOptions));
+app.use('/admin', express.static(path.join(APP_DIR, 'admin'), noCacheStaticOptions));
+app.get('/admin.html', (req, res) => res.redirect(301, '/admin/'));
+app.use('/', express.static(path.join(APP_DIR, 'menu'), noCacheStaticOptions));
 
 // ==========================================
 // MOCK MEMORY DB (Fallback cuando no hay Postgres activo)
@@ -91,9 +97,9 @@ function saveLocalLeads(leadsArray) {
 
 const memoryDb = {
   tenants: [
-    { id: 'tenant-rest-01', name: 'Gourmet Bistro & Grill', slug: 'gourmet-bistro', accentColor: '#207567', currencySymbol: '$' },
-    { id: 'tenant-cafe-02', name: 'Maison Cafe & Bakery', slug: 'maison-cafe', accentColor: '#7c4a27', currencySymbol: '$' },
-    { id: 'tenant-passport-03', name: "Le Pass'Port Nice", slug: 'le-passport-nice', accentColor: '#80142B', currencySymbol: '€' }
+    { id: 'tenant-rest-01', name: 'Gourmet Bistro & Grill', slug: 'gourmet-bistro', accentColor: '#207567', currencySymbol: '$', theme: 'restaurant', themeMode: 'dark' },
+    { id: 'tenant-cafe-02', name: 'Maison Cafe & Bakery', slug: 'maison-cafe', accentColor: '#7c4a27', currencySymbol: '$', theme: 'bakery_cafe', themeMode: 'light' },
+    { id: 'tenant-passport-03', name: "Le Pass'Port Nice", slug: 'le-passport-nice', accentColor: '#80142B', currencySymbol: '€', theme: 'warm_wine', themeMode: 'light' }
   ],
   users: [
     { id: 'u-1', tenantId: 'tenant-rest-01', email: 'admin@gourmetbistro.com', role: 'owner' },
@@ -228,6 +234,11 @@ app.get('/api/v1/auth/me', authenticateToken, (req, res) => {
 app.get('/api/v1/public/menus/:slug', async (req, res) => {
   const { slug } = req.params;
 
+  const profileKey = slug.includes('passport') ? 'le-passport-nice' : (slug.includes('cafe') ? 'bakery_cafe' : 'restaurant');
+  const profileDef = (profileKey === 'le-passport-nice') 
+    ? BUSINESS_PROFILES.LE_PASSPORT_NICE 
+    : (profileKey === 'bakery_cafe' ? BUSINESS_PROFILES.BAKERY_CAFE : BUSINESS_PROFILES.RESTAURANT);
+
   if (pool) {
     try {
       const tenantRes = await pool.query('SELECT * FROM tenants WHERE slug = $1 AND is_active = TRUE', [slug]);
@@ -237,7 +248,7 @@ app.get('/api/v1/public/menus/:slug', async (req, res) => {
 
       const tenant = tenantRes.rows[0];
       const itemsRes = await pool.query('SELECT * FROM items WHERE tenant_id = $1 AND is_available = TRUE ORDER BY display_order ASC', [tenant.id]);
-      const promoRes = await pool.query('SELECT * FROM promotions WHERE tenant_id = $1 AND is_active = TRUE LIMIT 1', [tenant.id]);
+      const promoRes = await pool.query('SELECT * FROM promotions WHERE tenant_id = $1 AND is_active = TRUE ORDER BY id ASC', [tenant.id]);
 
       res.setHeader('Cache-Control', 'no-store');
       return res.json({
@@ -245,14 +256,18 @@ app.get('/api/v1/public/menus/:slug', async (req, res) => {
           id: tenant.id,
           name: tenant.name,
           slug: tenant.slug,
-          tagline: tenant.tagline,
-          heroBadge: tenant.hero_badge,
-          currencySymbol: tenant.currency_symbol,
-          accentColor: tenant.accent_color,
-          logoUrl: tenant.logo_url || ''
+          tagline: tenant.tagline || profileDef.tagline,
+          heroBadge: tenant.hero_badge || profileDef.heroBadge,
+          currencySymbol: tenant.currency_symbol || profileDef.currencySymbol,
+          accentColor: tenant.accent_color || profileDef.accentColor,
+          logoUrl: tenant.logo_url || '',
+          theme: profileDef.theme || (profileKey === 'restaurant' ? 'restaurant' : profileKey === 'bakery_cafe' ? 'bakery_cafe' : 'warm_wine'),
+          themeMode: profileDef.themeMode || (profileKey === 'restaurant' ? 'dark' : 'light'),
+          categories: profileDef.categories || []
         },
         items: itemsRes.rows,
-        promotion: promoRes.rows[0] || null
+        promoBanners: promoRes.rows.length > 0 ? promoRes.rows : (profileDef.promoBanners || []),
+        promotion: promoRes.rows[0] || (profileDef.promoBanners && profileDef.promoBanners[0]) || null
       });
     } catch (err) {
       console.error('Error cargando menú público DB:', err);
@@ -261,11 +276,22 @@ app.get('/api/v1/public/menus/:slug', async (req, res) => {
 
   // Memory fallback
   const tenant = memoryDb.tenants.find(t => t.slug === slug || t.slug.includes(slug)) || memoryDb.tenants[0];
-  const profileKey = slug.includes('passport') ? 'le-passport-nice' : (slug.includes('cafe') ? 'bakery_cafe' : 'restaurant');
   const items = memoryDb.items.filter(i => i.tenantId === tenant.id || i.businessProfile === profileKey);
 
   res.setHeader('Cache-Control', 'no-store');
-  res.json({ tenant, items, promotion: null });
+  res.json({
+    tenant: {
+      ...tenant,
+      tagline: tenant.tagline || profileDef.tagline,
+      heroBadge: tenant.hero_badge || profileDef.heroBadge,
+      theme: tenant.theme || profileDef.theme || (profileKey === 'restaurant' ? 'restaurant' : profileKey === 'bakery_cafe' ? 'bakery_cafe' : 'warm_wine'),
+      themeMode: tenant.themeMode || profileDef.themeMode || (profileKey === 'restaurant' ? 'dark' : 'light'),
+      categories: profileDef.categories || []
+    },
+    items,
+    promoBanners: profileDef.promoBanners || [],
+    promotion: (profileDef.promoBanners && profileDef.promoBanners[0]) || null
+  });
 });
 
 // Sincronizar marca, logo y tema desde el Admin (persistente en DB + memoria)

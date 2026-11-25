@@ -5,14 +5,13 @@
  */
 
 import { BUSINESS_PROFILES, MENU_ITEMS } from './menuData.js';
+import { apiRequest, AUTH_TOKEN_STORAGE_KEY, getAuthToken } from './services/api-client.js';
 
 const STORAGE_KEY_ITEMS = 'aura_menu_items_v7';
 const STORAGE_KEY_THEMES = 'aura_menu_themes_v7';
 const STORAGE_KEY_BANNERS = 'aura_menu_banners_v9';
-const STORAGE_KEY_AUTH_TOKEN = 'aura_auth_token_v1';
+const STORAGE_KEY_AUTH_TOKEN = AUTH_TOKEN_STORAGE_KEY;
 const STORAGE_KEY_AUTH_USER = 'aura_auth_user_v1';
-
-const API_BASE_URL = window.LOCATION_API_URL || `${window.location.origin}/api/v1`;
 
 function getProfileDef(profileId) {
   if (!profileId) return BUSINESS_PROFILES.RESTAURANT;
@@ -28,8 +27,8 @@ export const db = {
 
   async checkApiStatus() {
     try {
-      const res = await fetch(`${API_BASE_URL}/health`, { method: 'GET', signal: AbortSignal.timeout(2000) });
-      this.apiAvailable = res.ok;
+      await apiRequest('/health', { auth: false, timeoutMs: 2000 });
+      this.apiAvailable = true;
     } catch {
       this.apiAvailable = false;
     }
@@ -37,7 +36,7 @@ export const db = {
   },
 
   getAuthHeaders() {
-    const token = localStorage.getItem(STORAGE_KEY_AUTH_TOKEN);
+    const token = getAuthToken();
     return {
       'Content-Type': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -431,25 +430,22 @@ export const db = {
   },
 
   async syncItemToApi(itemData) {
-    return fetch(`${API_BASE_URL}/admin/items`, {
+    return apiRequest('/admin/items', {
       method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(itemData)
+      body: itemData
     }).catch(() => {});
   },
 
   async syncPatchToApi(path, payload) {
-    return fetch(`${API_BASE_URL}${path}`, {
+    return apiRequest(path, {
       method: 'PATCH',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(payload)
+      body: payload
     }).catch(() => {});
   },
 
   async syncDeleteToApi(path) {
-    return fetch(`${API_BASE_URL}${path}`, {
-      method: 'DELETE',
-      headers: this.getAuthHeaders()
+    return apiRequest(path, {
+      method: 'DELETE'
     }).catch(() => {});
   },
 
