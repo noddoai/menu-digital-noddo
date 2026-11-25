@@ -1,0 +1,100 @@
+/* =============================================================================
+   PORTAL LANDING PAGE
+   ============================================================================= */
+.portal-body {
+  background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.portal-wrapper {
+  max-width: 1080px;
+  width: 100%;
+}
+
+.portal-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.portal-header h1 {
+  font-family: var(--font-heading);
+  font-size: 2.6rem;
+  margin-bottom: 8px;
+}
+
+.portal-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.portal-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xl);
+  padding: 32px 24px;
+  text-decoration: none;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.portal-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+}
+
+.portal-card-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(32, 117, 103, 0.3);
+  border: 1px solid #207567;
+  color: #6ee7b7;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.portal-card-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+}
+
+.portal-card h2 {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.portal-card p {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.portal-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #38bdf8;
+}
+

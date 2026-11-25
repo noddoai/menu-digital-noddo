@@ -3,8 +3,9 @@
  * Soporta Edición Rápida de Precios Inline, Aumento Masivo de Precios (%), Filtros Avanzados para Cartas Grandes, Popup Centrado y Códigos QR.
  */
 
-import { BUSINESS_PROFILES } from './menuData.js';
-import { db } from './db.js';
+import { BUSINESS_PROFILES } from '../shared/menuData.js';
+import { db } from '../shared/db.js';
+import { resolveAssetUrl } from '../shared/utils/asset-url.js';
 
 const adminState = {
   isLoggedIn: false,
@@ -299,7 +300,7 @@ function updateProfileUI() {
 
   const iframe = document.getElementById('phonePreviewIframe');
   if (iframe) {
-    const targetSrc = isBistro ? 'restaurant.html' : 'cafe.html';
+    const targetSrc = isBistro ? '/restaurant.html' : '/cafe.html';
     if (!iframe.src.endsWith(targetSrc)) {
       iframe.src = targetSrc;
     }
@@ -362,7 +363,7 @@ function populateCategoryFilter() {
 function reloadPhonePreview() {
   const iframe = document.getElementById('phonePreviewIframe');
   if (iframe) {
-    const targetSrc = adminState.currentProfileId === 'le-passport-nice' ? 'passport.html' : (adminState.currentProfileId === 'bakery_cafe' ? 'cafe.html' : 'restaurant.html');
+    const targetSrc = adminState.currentProfileId === 'le-passport-nice' ? '/passport.html' : (adminState.currentProfileId === 'bakery_cafe' ? '/cafe.html' : '/restaurant.html');
     if (!iframe.src || iframe.src.indexOf(targetSrc) === -1) {
       iframe.src = targetSrc;
     } else if (iframe.contentWindow) {
@@ -487,7 +488,7 @@ function renderItemsTable() {
   const currSymbol = adminState.currencySymbol || '$';
   items.forEach(item => {
     const tr = document.createElement('tr');
-    const imgUrl = (item.media?.heroImage || item.heroImage_url || item.heroImage || '').trim();
+    const imgUrl = resolveAssetUrl(item.media?.heroImage || item.heroImage_url || item.heroImage || '');
     const thumbHTML = imgUrl
       ? `<img src="${imgUrl}" alt="${item.name}" class="table-dish-thumb">`
       : `<div class="table-dish-thumb" style="display:flex;align-items:center;justify-content:center;background:#f1f5f9;color:#94a3b8;font-size:0.65rem;border:1px dashed #cbd5e1;" title="Sin foto"><i data-lucide="image-off" style="width:14px;height:14px;"></i></div>`;
@@ -692,7 +693,7 @@ function openDishModal(item) {
     document.getElementById('editHeroImage').value = item.media?.heroImage || item.heroImage_url || '';
 
     const preview = document.getElementById('dishImagePreview');
-    const heroImg = (item.media?.heroImage || item.heroImage_url || item.heroImage || '').trim();
+    const heroImg = resolveAssetUrl(item.media?.heroImage || item.heroImage_url || item.heroImage || '');
     if (preview) {
       if (heroImg) {
         preview.src = heroImg;
@@ -731,7 +732,7 @@ function openDishModal(item) {
     if (wrapperVar) wrapperVar.style.display = 'none';
     const preview = document.getElementById('dishImagePreview');
     if (preview) {
-      preview.src = 'assets/images/fresh_salmon.png';
+      preview.src = '/assets/images/fresh_salmon.png';
       preview.style.display = 'block';
     }
   }
@@ -1307,7 +1308,7 @@ function renderBannersList() {
 
     card.innerHTML = `
       <div class="banner-card-media">
-        <img src="${banner.image}" alt="Banner promocional">
+        <img src="${resolveAssetUrl(banner.image)}" alt="Banner promocional">
         <span class="banner-status-badge ${banner.enabled !== false ? 'active' : 'inactive'}">
           ${banner.enabled !== false ? 'Activo en Carta' : 'Desactivado'}
         </span>
@@ -1825,7 +1826,7 @@ function renderQuickStockGrid(query = '') {
       const card = document.createElement('div');
       card.className = 'quick-stock-card';
 
-      const imgUrl = (item.media?.heroImage || item.heroImage_url || item.heroImage || '').trim();
+      const imgUrl = resolveAssetUrl(item.media?.heroImage || item.heroImage_url || item.heroImage || '');
       const thumbHTML = imgUrl
         ? `<img src="${imgUrl}" alt="${item.name}">`
         : `<div style="width:50px;height:50px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#94a3b8;flex-shrink:0;border:1px dashed #cbd5e1;" title="Sin foto"><i data-lucide="image-off" style="width:16px;height:16px;"></i></div>`;
