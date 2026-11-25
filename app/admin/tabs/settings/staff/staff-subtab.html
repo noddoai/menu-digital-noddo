@@ -1,0 +1,51 @@
+<div id="configUsers" class="config-subtab-content" style="display: none;">
+  <div class="two-column-grid">
+
+    <div class="corporate-card">
+      <div class="card-header-clean">
+        <h3>Crear Acceso de Personal</h3>
+        <p>Asigne cuentas de usuario para encargados o mozos</p>
+      </div>
+
+      <form id="addUserForm" class="clean-form">
+        <div class="form-group">
+          <label>Nombre del Empleado *</label>
+          <input type="text" id="newUserName" placeholder="ej: Mateo González" required>
+        </div>
+
+        <div class="form-group">
+          <label>Correo Electrónico *</label>
+          <input type="email" id="newUserEmail" placeholder="ej: mateo@restaurante.com" required>
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña *</label>
+          <input type="password" id="newUserPassword" placeholder="Mínimo 6 caracteres" required>
+        </div>
+
+        <div class="form-group">
+          <label>Nivel de Permisos *</label>
+          <select id="newUserRole" class="form-select">
+            <option value="staff">🔒 Staff (Solo control de stock)</option>
+            <option value="manager">🛠️ Encargado (Edición completa)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 10px;">
+          <i data-lucide="user-plus"></i> Crear Cuenta
+        </button>
+      </form>
+    </div>
+
+    <div class="corporate-card">
+      <div class="card-header-clean">
+        <h3>Usuarios Autorizados</h3>
+        <p>Personal registrado en este local</p>
+      </div>
+      <div id="usersListContainer" class="users-list-stack">
+        <!-- Lista de Usuarios -->
+      </div>
+    </div>
+
+  </div>
+</div>

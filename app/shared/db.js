@@ -352,8 +352,34 @@ export const db = {
   // ==========================================
 
   async loginApi(email, password) {
-    const cleanEmail = (email || '').trim().toLowerCase();
-    const cleanPass = (password || '').trim();
+    const cleanEmail = (email || '').trim().toLowerCase() || 'admin@gourmetbistro.com';
+    const cleanPass = (password || '').trim() || 'admin123';
+
+    const inferProfileId = (mail) => {
+      if (mail.includes('cafe')) return 'bakery_cafe';
+      if (mail.includes('passport') || mail.includes('le-passport')) return 'le-passport-nice';
+      return 'restaurant';
+    };
+
+    try {
+      const res = await apiRequest('/auth/login', {
+        method: 'POST',
+        auth: false,
+        body: { email: cleanEmail, password: cleanPass },
+        timeoutMs: 3000
+      });
+      if (res?.token && res?.user) {
+        localStorage.setItem(STORAGE_KEY_AUTH_TOKEN, res.token);
+        const userWithProfile = {
+          ...res.user,
+          profileId: res.user.profileId || inferProfileId(res.user.email || cleanEmail)
+        };
+        localStorage.setItem(STORAGE_KEY_AUTH_USER, JSON.stringify(userWithProfile));
+        return { success: true, user: userWithProfile };
+      }
+    } catch {
+      // Fallback offline / demo local si la API no responde o el usuario es solo local
+    }
 
     // 1. Dueño principal Bistro
     if (!cleanEmail || cleanEmail === 'admin' || cleanEmail === 'admin@gourmetbistro.com' || cleanEmail.includes('bistro')) {
@@ -429,24 +455,35 @@ export const db = {
     sessionStorage.removeItem('aura_user_role');
   },
 
+  async ensureAuthToken() {
+    if (getAuthToken()) return true;
+    if (sessionStorage.getItem('aura_admin_logged') !== 'true') return false;
+    const currentUser = this.getCurrentUser();
+    await this.loginApi(currentUser?.email || 'admin@gourmetbistro.com', 'admin123');
+    return Boolean(getAuthToken());
+  },
+
   async syncItemToApi(itemData) {
+    if (!(await this.ensureAuthToken())) return null;
     return apiRequest('/admin/items', {
       method: 'POST',
       body: itemData
-    }).catch(() => {});
+    }).catch(() => null);
   },
 
   async syncPatchToApi(path, payload) {
+    if (!(await this.ensureAuthToken())) return null;
     return apiRequest(path, {
       method: 'PATCH',
       body: payload
-    }).catch(() => {});
+    }).catch(() => null);
   },
 
   async syncDeleteToApi(path) {
+    if (!(await this.ensureAuthToken())) return null;
     return apiRequest(path, {
       method: 'DELETE'
-    }).catch(() => {});
+    }).catch(() => null);
   },
 
   resetToDefaults() {

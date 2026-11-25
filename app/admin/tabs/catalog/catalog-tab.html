@@ -1,0 +1,43 @@
+<div id="tabItems" class="admin-tab-content active">
+
+  <div class="admin-toolbar">
+    <div class="toolbar-left">
+      <select id="adminCategoryFilter" class="toolbar-select">
+        <option value="all">Todas las Categorías</option>
+      </select>
+
+      <select id="adminStockFilter" class="toolbar-select">
+        <option value="all">Todos los Estados</option>
+        <option value="available">✓ En Stock</option>
+        <option value="unavailable">✗ Agotados</option>
+      </select>
+    </div>
+
+    <div class="toolbar-right">
+      <button id="btnAddNewDish" class="btn-admin-primary">
+        <i data-lucide="plus"></i> Nuevo Producto
+      </button>
+    </div>
+  </div>
+
+  <!-- TABLA DE PRODUCTOS CORPORATIVA -->
+  <div class="corporate-table-card">
+    <table class="corporate-table">
+      <thead>
+        <tr>
+          <th style="width: 60px;">Imagen</th>
+          <th>Producto & Categoría</th>
+          <th style="width: 160px;">Precio (<span class="currency-symbol-label">$</span>)</th>
+          <th style="width: 150px;">Disponibilidad</th>
+          <th style="width: 90px; text-align: center;">Destacado</th>
+          <th style="width: 130px; text-align: right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="adminItemsTableBody">
+        <!-- Filas inyectadas por admin.js -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TAB 2: DISPONIBILIDAD DE PRODUCTOS -->

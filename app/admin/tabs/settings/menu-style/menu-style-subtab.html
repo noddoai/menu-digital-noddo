@@ -1,0 +1,61 @@
+<div id="configVisual" class="config-subtab-content" style="display: none;">
+  <div class="corporate-card max-w-600">
+    <div class="card-header-clean">
+      <h3>Configuración del Menú</h3>
+      <p>Personalice moneda, paleta de colores probados, modo visual y detalles</p>
+    </div>
+
+    <form id="themeConfigForm" class="clean-form">
+      <div class="form-group">
+        <label for="inputCurrency">Moneda del Comercio (Símbolo de Precios) *</label>
+        <select id="inputCurrency" class="form-select">
+          <option value="$" data-code="ARS">ARS ($) - Peso Argentino</option>
+          <option value="$" data-code="USD">USD ($) - Dólar Estadounidense</option>
+          <option value="€" data-code="EUR">EUR (€) - Euro</option>
+          <option value="R$" data-code="BRL">BRL (R$) - Real Brasileño</option>
+          <option value="$" data-code="CLP">CLP ($) - Peso Chileno</option>
+          <option value="$U" data-code="UYU">UYU ($U) - Peso Uruguayo</option>
+          <option value="$" data-code="MXN">MXN ($) - Peso Mexicano</option>
+          <option value="Bs" data-code="BOB">BOB (Bs) - Boliviano</option>
+          <option value="S/" data-code="PEN">PEN (S/) - Sol Peruano</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="inputThemeMode">Modo Visual Predeterminado de la Carta *</label>
+        <select id="inputThemeMode" class="form-select">
+          <option value="dark">Modo Oscuro</option>
+          <option value="light">Modo Claro</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label style="font-weight:700; font-size:0.86rem; color:#0f172a;">Color Identitario para Resaltar (Paleta de 20 Colores)</label>
+        <div style="font-size: 0.78rem; font-weight: 600; color: #64748b; margin-top: 4px; margin-bottom: 10px;">20 colores probados para garantizar legibilidad y alto contraste:</div>
+
+        <div class="brand-swatches-grid-20" id="swatchesGrid20">
+          <!-- 20 colores inyectados por admin.js -->
+        </div>
+        <input type="hidden" id="inputAccentColor" value="#207567">
+      </div>
+
+      <div class="form-group" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid #e2e8f0;">
+        <label style="font-weight:700; font-size:0.86rem; color:#0f172a; margin-bottom: 8px; display: block;">Opciones de Visualización en los Platos</label>
+        <div class="toggle-control-card">
+          <div>
+            <span class="toggle-title">Mostrar tiempo de preparación</span>
+            <span class="toggle-desc">Muestra la insignia con el tiempo de preparación estimado</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="inputShowPrepTime" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 20px;">
+        <i data-lucide="save"></i> Guardar Configuración del Menú
+      </button>
+    </form>
+  </div>
+</div>

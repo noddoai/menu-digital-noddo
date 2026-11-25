@@ -1,0 +1,106 @@
+<div id="tabQrCode" class="admin-tab-content">
+  <div class="qr-showcase-container">
+
+    <!-- COLUMNA IZQUIERDA: DISPLAY DEL CÓDIGO QR EN BLANCO Y NEGRO -->
+    <div class="qr-display-card">
+      <div class="qr-status-badge">
+        <span class="live-dot-pulse"></span>
+        <span>QR Activo & Listo para Escanear</span>
+      </div>
+
+      <!-- MARCO BLANCO DEL QR (ALTO CONTRASTE) -->
+      <div class="qr-frame-box">
+        <img id="qrCodeImage" src="" alt="Código QR en blanco y negro del Menú Digital">
+        <div class="qr-frame-footer">
+          <i data-lucide="smartphone"></i>
+          <span>Escanee con la cámara de su teléfono</span>
+        </div>
+      </div>
+
+      <!-- BOTONES DE DESCARGA DIRECTA -->
+      <div class="qr-download-actions">
+        <button type="button" id="btnDownloadQrPng" class="btn-admin-primary flex-1">
+          <i data-lucide="download"></i> Descargar PNG
+        </button>
+        <button type="button" id="btnDownloadQrSvg" class="btn-admin-secondary flex-1">
+          <i data-lucide="file-code"></i> Vector SVG
+        </button>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: INFORMACIÓN, ENLACE Y GUÍA DE IMPRENTA -->
+    <div class="qr-info-column">
+
+      <div class="qr-header-info">
+        <h2>Código QR del Menú Digital</h2>
+        <p class="qr-lead-desc">
+          Este código dirige de forma instantánea a la carta digital de <strong id="qrCurrentStoreName">Gourmet Bistro & Grill</strong>. Los comensales acceden al menú sin descargar aplicaciones ni registrarse.
+        </p>
+      </div>
+
+      <!-- CAJA INTERACTIVA DEL ENLACE -->
+      <div class="qr-url-interactive-card">
+        <div class="qr-url-label">
+          <i data-lucide="link"></i>
+          <span>Enlace Web Público:</span>
+        </div>
+        <div class="qr-url-bar">
+          <input type="text" id="qrTargetUrlText" readonly class="qr-url-input">
+          <div class="qr-url-buttons">
+            <button type="button" id="btnCopyQrUrl" class="btn-url-action" title="Copiar enlace al portapapeles">
+              <i data-lucide="copy"></i> Copiar
+            </button>
+            <a id="btnOpenQrUrl" href="#" target="_blank" class="btn-url-action btn-url-open" title="Abrir en pestaña nueva">
+              <i data-lucide="external-link"></i> Abrir
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- GUÍA PRÁCTICA DE IMPRENTA & SOPORTES (3 CARDS) -->
+      <div class="qr-guide-grid">
+        <div class="qr-guide-card">
+          <div class="qr-guide-icon icon-blue">
+            <i data-lucide="maximize-2"></i>
+          </div>
+          <div class="qr-guide-body">
+            <h4>Medida Recomendada</h4>
+            <p>8×8 cm a 10×10 cm para soportes acrílicos sobre mesa, servilleteros o cartas físicas.</p>
+          </div>
+        </div>
+
+        <div class="qr-guide-card">
+          <div class="qr-guide-icon icon-purple">
+            <i data-lucide="layers"></i>
+          </div>
+          <div class="qr-guide-body">
+            <h4>Vector SVG para Imprenta</h4>
+            <p>Resolución infinita sin pixelado. El formato perfecto para enviar directamente a su diseñador o imprenta.</p>
+          </div>
+        </div>
+
+        <div class="qr-guide-card">
+          <div class="qr-guide-icon icon-emerald">
+            <i data-lucide="zap"></i>
+          </div>
+          <div class="qr-guide-body">
+            <h4>Lectura Ultrarrápida</h4>
+            <p>Generado en blanco y negro puro para garantizar máxima legibilidad bajo luces tenues o reflejos de mesa.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTA DE ACTUALIZACIÓN EN TIEMPO REAL -->
+      <div class="qr-sync-notice">
+        <i data-lucide="refresh-cw"></i>
+        <div>
+          <strong>Código Permanente & Dinámico:</strong> Todos los cambios de precios, productos o fotos que realice en este panel se actualizan al instante. Nunca necesitará volver a imprimir el código QR tras una modificación de la carta.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- TAB 5: CONFIGURACIÓN GENERAL, VISUAL, CATEGORÍAS Y PERSONAL -->

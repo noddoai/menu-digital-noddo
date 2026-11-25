@@ -49,10 +49,15 @@ menu-digital-noddo/
     │   ├── components/        # Módulos UI del comensal (cards, filtros, modales)
     │   └── styles/            # menu.css, portal.css
     └── admin/                 # Exclusivo del panel de administración (servido en /admin/)
-        ├── index.html         # Panel de control de comercios
-        ├── admin.js           # Entry point del panel admin
-        ├── tabs/              # Módulos por pestaña (catalog-tab.js, banners-tab.js, etc.)
-        ├── components/        # Componentes UI exclusivos del admin
+        ├── index.html         # Layout general liviano del panel (slots de pestañas y preview)
+        ├── admin.js           # Entry point y orquestador de parciales del admin
+        ├── tabs/              # Cada pestaña en su carpeta (.html + .js)
+        │   ├── catalog/       # catalog-tab.html + catalog-tab.js
+        │   ├── stock/         # stock-tab.html + stock-tab.js
+        │   ├── banners/       # banners-tab.html + banners-tab.js
+        │   ├── qr/            # qr-tab.html + qr-tab.js
+        │   └── settings/      # settings-tab.html/.js + subcarpetas (general/, menu-style/, categories/, staff/)
+        ├── components/        # Componentes UI exclusivos del admin (ej. phone-preview/)
         └── styles/            # admin.css (modularizable en layout.css, forms.css, etc.)
 ```
 

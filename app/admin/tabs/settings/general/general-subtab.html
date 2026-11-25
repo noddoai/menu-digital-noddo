@@ -1,0 +1,63 @@
+<div id="configGeneral" class="config-subtab-content active">
+  <div class="corporate-card max-w-600">
+    <div class="card-header-clean">
+      <h3>Información General del Comercio</h3>
+      <p>Ajuste el nombre comercial, subtítulo y estado de la carta pública</p>
+    </div>
+
+    <form id="generalConfigForm" class="clean-form">
+      <div class="form-group">
+        <label>Logo del Local (PNG / SVG / JPG)</label>
+        <div style="display: flex; align-items: center; gap: 14px; padding: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px;">
+          <div id="configLogoPreviewBox" style="width: 56px; height: 56px; border-radius: 10px; background: #0f172a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid #e2e8f0;">
+            <img id="configLogoPreviewImg" src="" alt="Logo" style="width: 100%; height: 100%; object-fit: contain; display: none; padding: 4px;">
+            <span id="configLogoFallback" style="color: #94a3b8; font-size: 0.72rem; font-weight: 700;">SIN LOGO</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <input type="file" id="inputLogoFile" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display: none;">
+              <button type="button" class="btn-secondary-xs" onclick="document.getElementById('inputLogoFile').click()">
+                <i data-lucide="upload"></i> Subir Logo PNG
+              </button>
+              <button type="button" id="btnRemoveConfigLogo" class="btn-secondary-xs" style="color: #ef4444; display: none;">
+                <i data-lucide="trash-2"></i> Quitar
+              </button>
+            </div>
+            <input type="hidden" id="inputBrandLogoUrl" value="">
+            <span style="font-size: 0.74rem; color: #64748b;">Se mostrará arriba a la izquierda en la carta del cliente.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Nombre del Establecimiento *</label>
+        <input type="text" id="inputBrandName" required placeholder="ej: Gourmet Bistro & Grill">
+      </div>
+
+      <div class="form-group">
+        <label>Slogan o Descripción Corta (Opcional)</label>
+        <input type="text" id="inputBrandTagline" placeholder="ej: Cocina Fresca & Sabores de Estación">
+      </div>
+
+      <div class="form-group" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid #e2e8f0;">
+        <label style="font-weight:700; font-size:0.86rem; color:#0f172a; margin-bottom: 8px; display: block;">Estado de la Carta Digital</label>
+        <div class="toggle-control-card">
+          <div>
+            <span class="toggle-title">Menú Activo en Línea</span>
+            <span class="toggle-desc" id="menuActiveStatusText">Los clientes pueden visualizar y explorar la carta digital</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="inputMenuIsActive" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-admin-primary btn-block" style="margin-top: 20px;">
+        <i data-lucide="save"></i> Guardar Datos Generales
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- SUB-TAB 2: CONFIGURACIÓN DEL MENÚ (VISUAL & PALETA) -->

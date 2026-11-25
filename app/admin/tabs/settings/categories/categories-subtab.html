@@ -1,0 +1,24 @@
+<div id="configCategories" class="config-subtab-content" style="display: none;">
+  <div class="corporate-card max-w-700">
+    <div class="card-header-clean">
+      <h3>Categorías de los Platos</h3>
+      <p>Cree rápidamente categorías a medida para organizar el menú de su local</p>
+    </div>
+
+    <!-- FORMULARIO EN UN SOLO RENGLÓN (INLINE) -->
+    <form id="addCategoryForm" class="inline-add-category-form">
+      <input type="text" id="newCategoryName" placeholder="Escriba una nueva categoría (ej: Pizzas a la Leña, Entradas, Postres...)" required>
+      <button type="submit" class="btn-admin-primary">
+        <i data-lucide="plus-circle"></i> Agregar Categoría
+      </button>
+    </form>
+
+    <div style="margin-top: 24px; margin-bottom: 12px; font-weight:700; font-size:0.88rem; color:#0f172a;">
+      Categorías Activas
+    </div>
+
+    <div id="categoriesListStack" class="categories-list-stack">
+      <!-- Lista inyectada dinámicamente por admin.js -->
+    </div>
+  </div>
+</div>

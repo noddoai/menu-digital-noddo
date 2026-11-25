@@ -47,10 +47,16 @@ menu-digital-noddo/
 │   │       └── menu.css               # Estilos exclusivos del menú comensal y bottom-sheet
 │   │
 │   └── admin/                         # Frontend exclusivo del Panel Admin (servido en /admin/)
-│       ├── index.html                 # Panel de administración (carga /shared/styles + /admin/styles)
-│       ├── admin.js                   # Script principal actual del panel admin
-│       ├── tabs/                      # Pestañas modulares (catalog-tab.js, stock-tab.js, banners-tab.js, etc.)
-│       ├── components/                # Componentes modulares del admin (modals, preview, etc.)
+│       ├── index.html                 # Layout general del panel (carga /shared/styles + /admin/styles)
+│       ├── admin.js                   # Orquestador del panel admin y cargador de parciales HTML
+│       ├── tabs/                      # Carpetas por pestaña (.html + .js)
+│       │   ├── catalog/               # catalog-tab.html + catalog-tab.js
+│       │   ├── stock/                 # stock-tab.html + stock-tab.js
+│       │   ├── banners/               # banners-tab.html + banners-tab.js
+│       │   ├── qr/                    # qr-tab.html + qr-tab.js
+│       │   └── settings/              # settings-tab.html/.js + subcarpetas (general/, menu-style/, categories/, staff/)
+│       ├── components/                # Componentes modulares del admin
+│       │   └── phone-preview/         # phone-preview.html + phone-preview.js (vista previa iframe)
 │       └── styles/
 │           └── admin.css              # Estilos exclusivos del panel admin (modularizable en sub-hojas)
 │
