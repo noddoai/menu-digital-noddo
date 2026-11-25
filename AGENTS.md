@@ -86,11 +86,12 @@ menu-digital-noddo/
    - SQL: `snake_case` y plural para tablas (`tenants`, `items`), `_id` para Foreign Keys (`tenant_id`).
 8. **Cambios grandes documentados primero**: Antes de una refactorización grande o feature nueva compleja, documentar el plan y los archivos afectados en `docs/specs/` o `docs/architecture/`.
 9. **Verificación mínima tras editar**: Confirmar que el servidor (`npm run dev` / `node server/server.js`) arranca sin errores y que los imports ES Modules (`.js`) y hojas CSS resuelven sin errores en consola.
+10. **Mantener actualizado `docs/architecture/file-index.md`**: Cada vez que se cree, mueva, elimine o cambie la responsabilidad de un archivo, actualizar su entrada en `docs/architecture/file-index.md`.
 
 ---
 
 ## 4. Guía rápida para trabajar con agentes en este repo
 Cuando pidas una tarea a un agente, indicale:
 - En qué dominio trabaja: `app/menu/`, `app/admin/`, `app/shared/` o `server/server.js`.
-- Que respete `AGENTS.md` y `docs/architecture/folder-structure.md`.
+- Que respete `AGENTS.md`, `docs/architecture/folder-structure.md` y `docs/architecture/file-index.md`.
 - Que mantenga módulos chicos en JS Vanilla (ES Modules) y CSS organizado, sin mezclar código de `admin/` en `menu/` ni agregar dependencias externas innecesarias.
